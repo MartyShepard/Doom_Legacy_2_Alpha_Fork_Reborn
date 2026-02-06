@@ -184,7 +184,7 @@ bool MiddleMouselock = 0; //Global variable
       bool is_doublebuf  = (screen->flags & SDL_DOUBLEBUF) != 0;
       bool is_opengl     = (screen->flags & SDL_OPENGL) != 0;      
         
-      printf("[%s][%d] Fullscreen: %s, DoubleBuf: %s, OpengGL: %s\n",
+      CONS_Printf("[%s][%d] Fullscreen: %s, DoubleBuf: %s, OpengGL: %s\n",
             __FILE__,__LINE__,
             is_fullscreen ? "Ja" : "Nein",
             is_doublebuf  ? "Ja" : "Nein",
@@ -225,7 +225,7 @@ bool MiddleMouselock = 0; //Global variable
       ClipCursor(NULL);  // NULL = gesamter Desktop      
       MiddleMouselock = 1;
     }   
-    printf("[%s][%d] Middle Mouse Capture -> %s\n", __FILE__,__LINE__,(MiddleMouselock==0)?"Ja":"Nein");	
+    //printf("[%s][%d] Middle Mouse Capture -> %s\n", __FILE__,__LINE__,(MiddleMouselock==0)?"Ja":"Nein");	
   }
   #endif
 #endif

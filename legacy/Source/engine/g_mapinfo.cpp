@@ -815,8 +815,8 @@ MapInfo *GameInfo::FindMapInfo(const char *name)
   for (mapinfo_iter_t i = mapinfo.begin(); i != mapinfo.end(); i++)
   {
     
-    CONS_Printf(" [%s][%d]::FindMapInfo Find=\"%s\"? [%2d]:Found LumpName = \"%8s\" \n",
-                __FILE__, __LINE__, name, i->first, i->second->lumpname.c_str());
+    //CONS_Printf(" [%s][%d]::FindMapInfo Find=\"%s\"? [%2d]:Found LumpName = \"%8s\" \n",
+    //            __FILE__, __LINE__, name, i->first, i->second->lumpname.c_str());
                 
     if (i->second->lumpname == name)
       return i->second;

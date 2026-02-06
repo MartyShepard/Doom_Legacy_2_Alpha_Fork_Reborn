@@ -27,6 +27,8 @@
 #include <sys/stat.h>
 #include <dirent.h>
 
+#include "doomdata.h"
+
 #include "command.h"
 #include "console.h"
 
@@ -54,8 +56,6 @@ void SV_Init();
 void CL_Init();
 void PrepareGameData();
 // Marty
-static char *ProgrammPath(void);
-static byte DirectoryCheck_isPath(const char *path);
 static void Help( void );
 
 #ifndef SVN_REV
@@ -68,8 +68,8 @@ const int  LEGACY_REVISION = 0; // for bugfix releases, should not affect compat
 const char LEGACY_VERSIONSTRING[] = "alpha0 (rev " SVN_REV ")";
 char LEGACY_VERSION_BANNER[80];
 
-
 // Name of local directory for config files and savegames
+/*
 #ifdef LINUX 
 # define DEFAULTDIR "/.legacy"
 #elif defined(__MACOS__) || defined(__APPLE_CC__)
@@ -77,17 +77,28 @@ char LEGACY_VERSION_BANNER[80];
 #else
 # define DEFAULTDIR "/legacy"
 #endif
+*/
 
 // the file where all game vars and settings are saved
 #define CONFIGFILENAME   "config.cfg"  
 
-
-
 bool devparm    = false; // started game with -devparm
 bool singletics = false; // timedemo
 
+const iwad_info_t iwads[] = {
+    {"doom2.wad",    gm_doom2, gmi_doom2},
+    {"doomu.wad",    gm_doom1, gmi_ultimate},
+    {"doom.wad",     gm_doom1, gmi_doom1},
+    {"heretic.wad",  gm_heretic, gmi_heretic},
+    {"hexen.wad",    gm_hexen, gmi_hexen},
+    {"tnt.wad",      gm_doom2, gmi_tnt},
+    {"plutonia.wad", gm_doom2, gmi_plut},
+    {"doom1.wad",    gm_doom1, gmi_shareware},
+    {"heretic1.wad", gm_heretic, gmi_heretic},   
+};
+const int NUM_IWADS = sizeof(iwads) / sizeof(iwads[0]);
 
-
+/*
 // "Mission packs". Used only during startup.
 enum gamemission_t
 {
@@ -100,7 +111,7 @@ enum gamemission_t
   gmi_heretic,
   gmi_hexen
 };
-
+*/
 static gamemission_t mission = gmi_doom2;
 
 
@@ -283,6 +294,7 @@ static void D_IdentifyVersion()
   // The -iwad parameter just means that we MUST have this wad file
   // in order to continue. It is also loaded right after legacy.wad.
 
+/*
 #define NUM_IWADS 9
   struct {
     const char    *wadname;
@@ -299,6 +311,8 @@ static void D_IdentifyVersion()
     {"doom1.wad",    gm_doom1, gmi_shareware},
     {"heretic1.wad", gm_heretic, gmi_heretic},   
   };
+*/  
+  
 
   // default
   game.mode = gm_doom2;
@@ -536,10 +550,11 @@ bool D_DoomMain()
   game.dedicated = M_CheckParm("-dedicated");
 
     //added:18-02-98:keep error messages until the final flush(stderr)
-    // if (setvbuf(stderr, NULL, _IOFBF, 1000))
-     //   printf("setvbuf didnt work\n");
-      
-   //setbuf(stdout, NULL);       // non-buffered output
+    //#ifdef DRAGFILE
+     //setvbuf(stderr, NULL, _IOFBF, 1000);
+     //   printf("setvbuf didnt work\n");     
+     //setbuf(stdout, NULL);       // non-buffered output  
+    
   if (!game.dedicated)
     {
 	  //FIXME: these files should be placed in ~/Library/Logs/ as Legacy_%s.log
@@ -592,14 +607,25 @@ bool D_DoomMain()
   if (devparm)
     CONS_Printf("Development mode on.\n");
 
-  // add any files specified on the command line with -file to the wad list
+//#ifdef DRAGFILE
+  if (DrgFile_Requested)
+  {
+     /// Add Wad/Zip/Deh via Drag'n'Drop         
+     CONS_Printf("Drag & Drop erkannt – Datei wird geladen: %s\n", DrgFile_AutoStart);
+     D_AddFile( DrgFile_AutoStart);
+  }
+//#endif
+
   if (M_CheckParm("-file"))
-    {
+  {
+      // add any files specified on the command line with -file to the wad list
       // the parms after p are wadfile/lump names,
       // until end of parms or another - preceded parm
-      while (M_IsNextParm())
-	D_AddFile(M_GetNextParm());
-    }
+      while ( M_IsNextParm() )
+      {
+         D_AddFile( M_GetNextParm() );
+      }
+  }
 
   //========================== start subsystem initializations ==========================
 
@@ -610,6 +636,9 @@ bool D_DoomMain()
   if (!fc.InitMultipleFiles(startupwadfiles))
     I_Error("A WAD file was not found\n");
 
+  // file cache Debug List View
+  fc.CacheListIndex();
+  
   // see that legacy.wad version matches program version
   if (!M_CheckParm("-noversioncheck"))
     D_CheckWadVersion();
@@ -722,83 +751,7 @@ bool D_DoomMain()
     S_PrecacheSounds();
   }   
 
-    /*
-    
-    
-    int lump = fc.GetNumForName("000emg.wad", false);
-    if (lump != -1)
-    {
-      CONS_Printf("ZIP-Lump '000EMG' gefunden: combined index %08X\n", lump);
-      void* data = fc.CacheLumpNum(lump, PU_STATIC, false);
-      if (data)
-        CONS_Printf("ZIP-Lump geladen – Größe %d Bytes\n", fc.LumpLength(lump));
-      else
-        CONS_Printf("ZIP-Lump konnte nicht gecached werden\n");
-    }
-    else
-      CONS_Printf("ZIP-Lump '000EMG' nicht gefunden\n");    
-    
-    int lump_map01 = fc.GetNumForName("MAP01", false);
-    if (lump_map01 != -1)
-    {
-      CONS_Printf("ZIP-Lump 'MAP01' gefunden: index %08X\n", lump_map01);
-      void* data = fc.CacheLumpNum(lump_map01, PU_STATIC, false);
-      if (data)
-        CONS_Printf("MAP01 aus ZIP geladen – Größe %d Bytes\n", fc.LumpLength(lump_map01));
-    }
-        
-    
-    */
   return true;
-}
-
-
-
-
-static char *ProgrammPath(void)
-{
-  static char dosroot[MAX_PATH] = {0}; 	
-  static char exepath[MAX_PATH] = {0};  // static = nur einmal initialisiert
-
-  if (exepath[0] == '\0')  // Nur einmal berechnen
-  {
-       GetModuleFileNameA(NULL, exepath, MAX_PATH);
-       char *last = strrchr(exepath, '\\');
-       if (last) *(last /*+ 1*/) = '\0';  // Nur Ordner und entferne '\' den auch.
-  }
-
-  if (dosroot[0] == '\0')  // Nur einmal berechnen  
-       getcwd(dosroot, MAX_PATH);
-
-  if (strcmp(exepath, dosroot ) == 0)
-  {
-  //    printf(, "ProgrammPath [exedir]:[getcwd] sind identisch\n");
-  }
-  else
-  {
-      printf("ProgrammPath [exedir]: %s\n", exepath);
-      printf("ProgrammPath [getcwd]: %s\n", dosroot);
-      printf("Main->Argv hat eine anderes Arbeitsverzeichnis bekommen...\n");  
-  }
-
-  return exepath; 
-}
-
-static byte DirectoryCheck_isPath(const char *path)
-{
-      byte Result = 1;
-      
-      DIR *dir = opendir(path);
-      if (!dir) // Kein Verzeichnis? Dann normale Datei?     
-          Result = 0;
-      
-      closedir(dir);
-
-      printf("[%s][%d] Directory Check: is Path = %s\n"
-             "        : %s\n",__FILE__,__LINE__,
-                      (Result==1)?"True":"False",path);
-                                      
-      return Result;
 }
 
 static void Help( void )
@@ -843,4 +796,3 @@ static void Help( void )
     return;
 //      "-home name      Config and savegame directory\n"    
 }
- 

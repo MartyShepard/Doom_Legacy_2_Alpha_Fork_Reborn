@@ -40,9 +40,15 @@ extern char LEGACY_VERSION_BANNER[];
 /// Frame rate, original number of game tics / second.
 #define TICRATE 35
 
-#define BORDERLESS_WIN32 // Marty
-#define GRAB_MIDDLEMOUSE // Marty
+	// Add Borderless
+     #define BORDERLESS_WIN32
+     
+	// Release/DeRelease Mouse in Window Mode
+     #define GRAB_MIDDLEMOUSE
 
+	// Drag Wad/Zip over the Doom Legacy Icon
+     #define DRAGFILE
+     
 /// Max. numbers of local players (human and bot) on a client.
 enum
 {

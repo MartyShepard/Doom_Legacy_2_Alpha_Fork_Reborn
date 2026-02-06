@@ -314,18 +314,18 @@ int I_GetVideoModeForSize(int w, int h)
 
 int I_SetVideoMode(int modeNum)
 {
-  printf("\n [%s][%d]I_SetVideoMode\n",__FILE__,__LINE__);	
+  //printf("\n [%s][%d]I_SetVideoMode\n",__FILE__,__LINE__);	
   
   Uint32 flags = surfaceFlags;
   vid.modenum  = modeNum;
   
-  printf(" [%s][%d]I_SetVideoMode: Modus -> %d (BitsPerPixel = %dbit)\n",__FILE__,__LINE__,modeNum,vid.BitsPerPixel);	
+  printf(" I_SetVideoMode: Screenmode %d (%dbit)\n",modeNum,vid.BitsPerPixel);	
   
 	if (vid.BitsPerPixel == 0) // Marty Fallback
   {
      /* Klasse Video:: */
 		  vid.BitsPerPixel = 8;
-      printf(" [%s][%d]I_SetVideoMode: Fallback to %dbit)\n",__FILE__,__LINE__,vid.BitsPerPixel);
+      //printf(" [%s][%d]I_SetVideoMode: Fallback to %dbit)\n",__FILE__,__LINE__,vid.BitsPerPixel);
   }
 	    
   if (cv_fullscreen.value)
@@ -342,14 +342,14 @@ int I_SetVideoMode(int modeNum)
       }
       
 
-      CONS_Printf ("I_SetVideoMode: fullscreen %d x %d (%d bpp)\n", vid.width, vid.height, vid.BitsPerPixel);
+      CONS_Printf (" I_SetVideoMode: fullscreen %d x %d (%d bpp)\n", vid.width, vid.height, vid.BitsPerPixel);
   }
   else
   { // !cv_fullscreen.value
       vid.width = windowedModes[modeNum].w;
       vid.height = windowedModes[modeNum].h;
     
-      CONS_Printf("I_SetVideoMode: windowed %d x %d (%d bpp)\n", vid.width, vid.height, vid.BitsPerPixel);
+      CONS_Printf(" I_SetVideoMode: windowed %d x %d (%d bpp)\n", vid.width, vid.height, vid.BitsPerPixel);
   }
 
   if (rendermode == render_soft)
@@ -450,7 +450,7 @@ bool I_StartupGraphics()
   }
 
   // name the windowed modes
-  printf(" [%s][%d] I_StartupGraphics: Definiere und bennen Window Modes\n",__FILE__,__LINE__);
+  //printf(" [%s][%d] I_StartupGraphics: Definiere und bennen Window Modes\n",__FILE__,__LINE__);
   for (n=0; n<MAXWINMODES; n++)
   {
     sprintf(windowedModes[n].name, "win %dx%d", windowedModes[n].w, windowedModes[n].h);
@@ -482,7 +482,7 @@ bool I_StartupGraphics()
   vid.width  = BASEVIDWIDTH;
   vid.height = BASEVIDHEIGHT;
   
-  printf(" [%s][%d] I_StartupGraphics           \n"
+  printf(" [%s][%d] I_StartupGraphics...\n"
          "          Set [vid.] Width        : %d\n"
          "          Set [vid.] Height       : %d\n"
          "          Set [vid.] BytesPerPixel: %d\n"
@@ -494,7 +494,7 @@ bool I_StartupGraphics()
   if (M_CheckParm("-opengl"))
   {
     // OpenGL mode
-    printf(" [%s][%d] I_StartupGraphics: OpenGL Modus\n",__FILE__,__LINE__);
+    printf(" I_StartupGraphics: OpenGL Modus\n",__FILE__,__LINE__);
     rendermode = render_opengl;
     oglrenderer = new OGLRenderer;
   }
@@ -502,7 +502,7 @@ bool I_StartupGraphics()
   {
     // software mode
     rendermode = render_soft;
-    printf(" [%s][%d] I_StartupGraphics: Software Modus\n",__FILE__,__LINE__);    
+    printf(" I_StartupGraphics: Software Modus\n",__FILE__,__LINE__);    
     //CONS_Printf("I_StartupGraphics: Windowed %dx%dx%dbit\n", vid.width, vid.height, vid.BitsPerPixel);
     vidSurface = SDL_SetVideoMode(vid.width, vid.height, vid.BitsPerPixel, surfaceFlags);
 
@@ -520,7 +520,7 @@ bool I_StartupGraphics()
 
   graphics_started = true;
 
-  printf(" [%s][%d] I_StartupGraphics: Return -> True\n",__FILE__,__LINE__);
+  //printf(" [%s][%d] I_StartupGraphics: Return -> True\n",__FILE__,__LINE__);
   return true;
 }
 

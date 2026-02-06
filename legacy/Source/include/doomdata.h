@@ -31,6 +31,7 @@
 
 // The most basic types we use, portability.
 #include "doomtype.h"
+#include "g_game.h"
 
 const Uint16 NULL_INDEX    = 0xFFFF; // or -1. Used for sidenums and blocklist linedefnums.
 const Uint32 NULL_INDEX_32 = 0xFFFFFFFF; // or -1. Used for GLsegs
@@ -42,6 +43,17 @@ const Uint32 NULL_INDEX_32 = 0xFFFFFFFF; // or -1. Used for GLsegs
 #define VERT_IS_GL_V5 (1 << 31)
 
 #define CHILD_IS_SUBSECTOR_OLD (1 << 15) // old leaf node flag for BSP
+
+/// IWAD recognition table
+typedef struct {
+    const char     *wadname;       // Dateiname (case-insensitive)
+    gamemode_t      mode;          // z. B. gm_doom2, gm_heretic
+    gamemission_t   mission;       // z. B. gmi_doom2, gmi_hexen
+} iwad_info_t;
+
+// Die Tabelle (extern deklariert, definiert in d_main.cpp oder g_game.cpp)
+extern const iwad_info_t iwads[];
+extern const int NUM_IWADS;
 
 
 // TODO lightlevels to unsigned?

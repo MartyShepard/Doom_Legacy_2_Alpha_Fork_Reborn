@@ -27,7 +27,7 @@
 #define m_misc_h 1
 
 #include "doomtype.h"
-
+#include <string>           // Muss hier rein, weil string benutzt wird
 //===========================================================================
 
 bool  FIL_WriteFile(const char *name, void *source, int length);
@@ -60,5 +60,18 @@ void M_SaveConfig(char *filename);
 // s1=s2+s3+s1 (1024 lenghtmax)
 void strcatbf(char *s1,char *s2,char *s3);
 
-string string_to_upper(const char *c);
+std::string string_to_upper(const char *c);
+
+//===========================================================================
+//#ifdef DRAGFILE
+  extern byte  DrgFile_Requested;
+  extern char *DrgFile_AutoStart;
+//#endif
+byte CheckMainWad(const char *MainWadFile);
+byte isFullFilePath(const char *str);
+byte isWadFile(const char *path);
+byte Get_DragFile(char *dragged_file);
+byte DirectoryCheck_isPath(const char *path);
+char *ProgrammPath(void);
+
 #endif

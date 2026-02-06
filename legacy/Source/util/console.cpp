@@ -354,21 +354,21 @@ void Console::Init()
   if (lump_consback != -1)
   {
     fc.CacheLumpNum(lump_consback, PU_STATIC, false);
-    CONS_Printf("CONSBACK vorgecacht\n");
+    //CONS_Printf("CONSBACK vorgecacht\n");
   }
 
   int lump_cbleft = fc.GetNumForName("CBLEFT", false);
   if (lump_cbleft != -1)
   {
     fc.CacheLumpNum(lump_cbleft, PU_STATIC, false);
-    CONS_Printf("CBLEFT vorgecacht\n");
+    //CONS_Printf("CBLEFT vorgecacht\n");
   }
 
   int lump_cbright = fc.GetNumForName("CBRIGHT", false);
   if (lump_cbright != -1)
   {
     fc.CacheLumpNum(lump_cbright, PU_STATIC, false);
-    CONS_Printf("CBRIGHT vorgecacht\n");
+    //CONS_Printf("CBRIGHT vorgecacht\n");
   }
   
   // load console background pic & borders

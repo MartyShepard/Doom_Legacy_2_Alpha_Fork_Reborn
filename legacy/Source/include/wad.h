@@ -84,7 +84,7 @@ public:
   virtual ~WadFromMemory();
 
   virtual bool Open(byte* data, size_t datasize, const char* virtual_name = nullptr);
-
+  virtual bool Create(byte* data, size_t datasize, const char* virtual_name, const char *lumpname);
   // query data item properties
   virtual const char *GetItemName(int i);
   virtual int  GetItemSize(int i);

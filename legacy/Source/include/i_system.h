@@ -26,6 +26,7 @@
 
 #include "doomtype.h"
 
+
 /// basic system initialization
 void I_SysInit();
 
@@ -103,6 +104,7 @@ struct ticcmd_t *I_BaseTiccmd();
 
 
 extern int Console_Requested;// Marty
+
 void DL_CaptureMouse(void);
 //=================================================================
 // Some old stuff I like to keep here for the nostalgia value:)

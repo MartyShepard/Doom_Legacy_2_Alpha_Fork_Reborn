@@ -22,19 +22,26 @@
 
 // in m_argv.h
   #include <SDL.h>
-  #include <windows.h>
   #include <string.h>
   #include <ctype.h>
   #include <stdio.h>
   #include <iostream>
   #include <locale>
-  
+  #include <stdint.h>
+
+  #include "doomtype.h"
+
   #include "i_system.h"
-  
+  #include "m_misc.h"
+
+
+ 
 extern  int     myargc;
 extern  char**  myargv;
 
 int Console_Requested;
+
+
 
 static void  Console_Request(int console_request); //Marty
 
@@ -43,14 +50,14 @@ bool D_DoomMain();
 
 int main(int argc, char **argv)
 { 
-  //Für Umlaute  
-  //setlocale(LC_ALL, "de_DE.UTF-8");  // oder ".65001" für Windows
-  //std::cout << "Umlaute: äöü ÄÖÜ ß\n";
 
-    
+  SetCurrentDirectoryA(ProgrammPath());  // Jetzt ist CWD = Ordner der exe   
+  
   myargc = argc; 
   myargv = argv; 
  
+
+
     /* Marty
      * Damit man on the fly auch in der CMD sieht was das abgeht
      */
@@ -58,7 +65,18 @@ int main(int argc, char **argv)
     Console_Requested = 0;
 
     for (i = 1; i < myargc; i++)
-    {  
+    {
+      //#ifdef DRAGFILE
+      if (isFullFilePath(argv[i]) && isWadFile(argv[i]))
+      {        
+          if (Get_DragFile(argv[i]))
+          {
+              DrgFile_AutoStart = argv[i]; // liegt in d_main
+              //Console_Requested = 1;
+              break;  // Erste gefundene WAD nehmen
+          }
+      }
+      //#endif      
       if (strcmp(argv[i], "-v" ) == 0)
       {
         Console_Requested = 1;
@@ -80,7 +98,7 @@ int main(int argc, char **argv)
     D_DoomLoop();
 
   return 0;
-} 
+}
 
 /* Marty
  * Öffne die Konsole wenn man in der Eingabeaufoderung ist oder

@@ -57,7 +57,43 @@ enum gamemode_t
   gm_hexen
 };
 
-
+// "Mission packs". Used only during startup.
+enum gamemission_t
+{
+  gmi_shareware, // DOOM 1 shareware (E1M9)
+  gmi_doom1,     // registered (E3M27)
+  gmi_ultimate,  // retail (Ultimate DOOM) (E4M36)
+  gmi_doom2,   // DOOM 2, default
+  gmi_tnt,     // TNT Evilution mission pack
+  gmi_plut,    // Plutonia Experiment pack
+  gmi_heretic,
+  gmi_hexen
+    /*
+    gmi_none = -1,
+    gmi_doom1,// registered (E3M27)
+    gmi_ultimate,// retail (Ultimate DOOM) (E4M36)
+    gmi_doom2,// DOOM 2, default
+    gmi_tnt,// TNT Evilution mission pack
+    gmi_plut,// Plutonia Experiment pack
+    gmi_shareware,// DOOM 1 shareware (E1M9)
+    gmi_heretic,
+    gmi_hexen
+    // ggf. gmi_strife
+    */
+};
+/*
+enum gamemission_t
+{
+  gmi_shareware, 
+  gmi_doom1,     
+  gmi_ultimate,  
+  gmi_doom2,   
+  gmi_tnt,     
+  gmi_plut,    
+  gmi_heretic,
+  gmi_hexen
+};
+*/
 /// \brief Game info common to all players.
 /// \ingroup g_central
 /*!

@@ -79,17 +79,45 @@ void FileCache::SetPath(const char *p)
 
 // Not like libc access(). If file exists, returns the path+filename where it was found, otherwise NULL.
 const char *FileCache::Access(const char *f)
-{
+{ 
   if (!access(f, F_OK))
+  {
+    //CONS_Printf(" File Added:[Loose]  %s\n", f);
     return f; // first try the current dir
+  }
 
-  static string n; // needs to be static so that our return value stays valid
+
+  // Extrahiere NUR den Dateinamen (ohne Pfad)
+  const char *filename_only = strrchr(f, '\\');
+  if (!filename_only)
+      filename_only = strrchr(f, '\\');
+  if (!filename_only)
+      filename_only = f;  // kein Pfad vorhanden
+  else
+      filename_only++;    // nach dem letzten \ oder /
+      
+  //// needs to be static so that our return value stays valid      
+  static string p;      
+  static string n;
+  
   n.assign(datapath);
-  n.push_back('/');
-  n.append(f);
+  n.push_back('\\'); 
+  n.append(filename_only);   // ← nur Dateiname! //n.append(f);
+  
+  p.assign(ProgrammPath());
+  p.push_back('\\');
+  p.append(filename_only);   // ← nur Dateiname!  
 
   if (!access(n.c_str(), F_OK))
+  {
+    //CONS_Printf(" File Added:[DataP] %s\n", n.c_str());
     return n.c_str();
+  }
+  else if (!access(p.c_str(), F_OK))
+  {
+    //CONS_Printf(" File Added:[ProgP] %s\n", p.c_str());      
+    return p.c_str();
+  }
 
   return NULL;
 }
@@ -186,7 +214,7 @@ bool FileCache::InitMultipleFiles(const char *const*filenames)
       // Vergleich case-insensitive (Dateinamen)
       if (stricmp(vf->filename.c_str(), curfile) == 0)
       {
-        CONS_Printf("  %s already loaded internally (ZIP/Memory) – skip disk check\n", curfile);
+        //CONS_Printf("  %s already loaded internally (ZIP/Memory) – skip disk check\n", curfile);
         already_loaded = true;
         break;
       }
@@ -247,7 +275,7 @@ int FileCache::AddFile(const char *fname, bool silent)
   
   if (nfiles >= MAX_WADFILES)
     {
-      CONS_Printf(" Maximum number of resource files reached\n");
+      CONS_Printf(" FileCache: Maximum number of resource files reached\n");
       return -1;
     }
 
@@ -258,14 +286,14 @@ int FileCache::AddFile(const char *fname, bool silent)
   {
     if (vfiles[i]->filename == fname)
     {
-      CONS_Printf(" Datei schon geladen: %s – überspringe\n", fname);
+      CONS_Printf(" FileCache: Datei schon geladen: %s – überspringe\n", fname);
       return i;
     }
   }
   
   if (!name && !silent)
     {
-      CONS_Printf(" FileCache::AddFile: Can't access file %s (path %s)\n", fname, datapath.c_str());
+      CONS_Printf(" FileCache: AddFile> Can't access file %s (path %s)\n", fname, datapath.c_str());
       return -1;
     }
 
@@ -282,6 +310,13 @@ int FileCache::AddFile(const char *fname, bool silent)
         ok = vf->Create(name, "DEHACKED");
         goto done;
       }
+      else if (!strcasecmp(&fname[len - 4], ".hhe"))
+      {
+        // detect dehacked file with the "deh" extension
+        vf = new Wad();
+        ok = vf->Create(name, "DEHACKED");
+        goto done;
+      }      
       else if (!strcasecmp(&fname[len - 4], ".lmp"))
       {
         // a single lump file
@@ -348,7 +383,7 @@ int FileCache::AddFile(const char *fname, bool silent)
       
       else
       {
-        CONS_Printf(" FileCache::AddFile: Unknown file signature '%4c'\n", magic);
+        CONS_Printf(" FileCache: AddFile> Unknown file signature '%4c'\n", magic);
         fclose(str);
         return -1;
       }
@@ -363,7 +398,7 @@ int FileCache::AddFile(const char *fname, bool silent)
   {
     vfiles.push_back(vf); 
     nfiles = CacheArchiveFile_Remove();
-    CacheListIndex();    
+    //CacheListIndex();    
     return nfiles;
   }
 
@@ -564,7 +599,7 @@ Uint16 FileCache::CacheArchiveFile_Remove()
             ext++;  // Nach dem Punkt
             if (strcasecmp(ext, "zip") == 0)
             {
-                CONS_Printf("* ZIP/PK3 Entferne: %s aus der internen VfileList\n", vfiles[k]->filename.c_str());
+                CONS_Printf("*ZIP/PK3 Entferne: %s aus der internen VfileList\n", vfiles[k]->filename.c_str());
                 delete vfiles[k];  // Füge das hinzu, falls nicht schon in ~FileCache!
                 vfiles.erase(vfiles.begin() + k);
                 // Kein k++, da nächstes jetzt an k ist

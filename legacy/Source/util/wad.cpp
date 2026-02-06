@@ -30,7 +30,11 @@
 
 #include "doomdef.h"
 
+#include "i_video.h"    // rendermode
+
+
 #include "m_swap.h"
+#include "m_misc.h"
 #include "parser.h"
 #include "dehacked.h"
 
@@ -56,51 +60,6 @@ inline uint16_t read_le16(const void* ptr)
           (p[1] << 8);
 }
 
-static char *ProgrammPath(void)
-{
-  static char dosroot[MAX_PATH] = {0}; 	
-  static char exepath[MAX_PATH] = {0};  // static = nur einmal initialisiert
-
-  if (exepath[0] == '\0')  // Nur einmal berechnen
-  {
-       GetModuleFileNameA(NULL, exepath, MAX_PATH);
-       char *last = strrchr(exepath, '\\');
-       if (last) *(last /*+ 1*/) = '\0';  // Nur Ordner und entferne '\' den auch.
-  }
-
-  if (dosroot[0] == '\0')  // Nur einmal berechnen  
-       getcwd(dosroot, MAX_PATH);
-
-  if (strcmp(exepath, dosroot ) == 0)
-  {
-  //    printf(, "ProgrammPath [exedir]:[getcwd] sind identisch\n");
-  }
-  else
-  {
-      printf("ProgrammPath [exedir]: %s\n", exepath);
-      printf("ProgrammPath [getcwd]: %s\n", dosroot);
-      printf("Main->Argv hat eine anderes Arbeitsverzeichnis bekommen...\n");  
-  }
-
-  return exepath; 
-}
-
-static byte DirectoryCheck_isPath(const char *path)
-{
-      byte Result = 1;
-      
-      DIR *dir = opendir(path);
-      if (!dir) // Kein Verzeichnis? Dann normale Datei?     
-          Result = 0;
-      
-      closedir(dir);
-/*
-      printf("[%s][%d] Directory Check: is Path = %s\n"
-             "        : %s\n",__FILE__,__LINE__,
-                      (Result==1)?"True":"False",path);
-*/                                    
-      return Result;
-}
 
 static bool TestPadding(char *name, int len)
 {
@@ -359,10 +318,24 @@ WadFromMemory::WadFromMemory()
   : memory_data(nullptr), memory_size(0)
 {directory = NULL;}
 
-void WadFromMemory::Lump_Extract(int numitems, waddir_t *directory, const char* lump_ext, const char* destinationpath)
+
+WadFromMemory::~WadFromMemory()
 {
-    
-      CONS_Printf("=== DEBUG: Extrahiere Lumps nach Maps in 'Lump_Extract' ===\n");
+  if (directory)
+    Z_Free(directory);
+  
+  if (memory_data)
+    Z_Free(memory_data);
+  
+  memory_data = nullptr;
+}
+
+// Extracts the data from an open WAD file in memory and saves
+// it to the hard drive, for example to perform a comparison.
+// look at the end from  WadFromMemory::Open
+void WadFromMemory::Lump_Extract(int numitems, waddir_t *directory, const char* lump_ext, const char* destinationpath)
+{    
+    CONS_Printf("=== DEBUG: Extrahiere Lumps nach Maps in 'Lump_Extract' ===\n");
 
     // Basis-Verzeichnis einmalig anlegen
     const char* base_dir = "Lump_Extract";
@@ -463,16 +436,68 @@ void WadFromMemory::Lump_Extract(int numitems, waddir_t *directory, const char* 
 
     CONS_Printf("=== DEBUG: Extraktion fertig ===\n");
 }
-
-WadFromMemory::~WadFromMemory()
+bool WadFromMemory::Create(byte* data, size_t datasize, const char* virtual_name, const char* lumpname)
 {
-  if (directory)
-    Z_Free(directory);
-  
-  if (memory_data)
-    Z_Free(memory_data);
-  
-  memory_data = nullptr;
+    if (!data || datasize == 0 || !lumpname || lumpname[0] == '\0')
+    {
+        CONS_Printf("WadFromMemory::Create: Invalid input (data=%p, size=%zu, lumpname=%s)\n",
+                    data, datasize, lumpname ? lumpname : "(null)");
+        return false;
+    }
+
+    // Filename setzen (wie bei normalem Open)
+    filename = virtual_name ? virtual_name : "memory single-lump";
+
+    // Deep Copy – wichtig!
+    memory_data = (byte*)Z_Malloc(datasize, PU_STATIC, NULL);
+    if (!memory_data)
+    {
+        CONS_Printf("WadFromMemory::Create: Z_Malloc failed (%zu bytes) for '%s'\n",
+                    datasize, filename.c_str());
+        return false;
+    }
+    memcpy(memory_data, data, datasize);
+    memory_size = datasize;
+
+    // Fake-Directory mit genau 1 Lump
+    numitems = 1;
+    directory = (waddir_t*)Z_Malloc(sizeof(waddir_t), PU_STATIC, NULL);
+    if (!directory)
+    {
+        Z_Free(memory_data);
+        memory_data = nullptr;
+        memory_size = 0;
+        return false;
+    }
+
+    directory[0].offset = 0;
+    directory[0].size   = (int)datasize;  // size_t → int (Legacy erwartet int)
+    strncpy(directory[0].name, lumpname, 8);
+    directory[0].name[8] = '\0';
+
+    // iname setzen (für schnelle Suche)
+    directory[0].iname[0] = 0;
+    directory[0].iname[1] = 0;
+    for (int i = 0; i < 8 && directory[0].name[i]; i++)
+    {
+        if (i < 4)
+            directory[0].iname[0] |= (Uint32)(unsigned char)directory[0].name[i] << (i*8);
+        else
+            directory[0].iname[1] |= (Uint32)(unsigned char)directory[0].name[i] << ((i-4)*8);
+    }
+
+    // Cache allokieren
+    cache = (lumpcache_t*)Z_Malloc(numitems * sizeof(lumpcache_t), PU_STATIC, NULL);
+    if (cache)
+        memset(cache, 0, numitems * sizeof(lumpcache_t));
+
+    // DeHackEd-Lump laden, falls es einer ist
+    LoadDehackedLumps();
+
+    //CONS_Printf("WadFromMemory::Create: Added single-lump '%s' (%zu bytes) as '%s'\n",
+    //            lumpname, datasize, filename.c_str());
+
+    return true;
 }
 
 bool WadFromMemory::Open(byte* data, size_t datasize, const char* virtual_name)
@@ -484,7 +509,7 @@ bool WadFromMemory::Open(byte* data, size_t datasize, const char* virtual_name)
 
   filename = virtual_name ? virtual_name : "memory wad";
   
-  // === DEEP COPY – das ist der Fix! ===
+  // === DEEP COPY – Ja dat isser... dat isch der Fix! ===
   memory_data = (byte*)Z_Malloc(datasize, PU_STATIC, NULL);
   if (!memory_data)
   {
@@ -501,8 +526,8 @@ bool WadFromMemory::Open(byte* data, size_t datasize, const char* virtual_name)
   memcpy(&h, data, sizeof(wadheader_t));
    
   Uint8 isIWAD = -1;
-  if (memcmp(h.magic, "IWAD", 4) == 0) isIWAD = 0;
-  if (memcmp(h.magic, "PWAD", 4) == 0) isIWAD = 1;
+  if (memcmp(h.magic, "IWAD", 4) == 0) isIWAD = 0; // IWAD
+  if (memcmp(h.magic, "PWAD", 4) == 0) isIWAD = 1; // PWAD
 
   if (isIWAD == -1) {
       Z_Free(memory_data);
@@ -549,7 +574,7 @@ bool WadFromMemory::Open(byte* data, size_t datasize, const char* virtual_name)
   }
   Z_Free(temp);
   
-  // 6. Cache allokieren
+  // Cache allokieren
   cache = (lumpcache_t*)Z_Malloc(numitems * sizeof(lumpcache_t), PU_STATIC, NULL);
   if (cache)
   {
@@ -567,6 +592,10 @@ bool WadFromMemory::Open(byte* data, size_t datasize, const char* virtual_name)
   CONS_Printf(" ZIP/PK3 Added %s file %s (%i lumps from memory)\n", ((isIWAD==0)?"IWAD":"PWAD"),filename.c_str(), numitems);  
   return true;
 }
+
+//==============================
+//  Memory class implementation
+//==============================
 
 int WadFromMemory::GetItemSize(int i)
 {
@@ -721,8 +750,6 @@ Wad3::~Wad3()
 {
   Z_Free(directory);
 }
-
-
 
 // Loads a WAD2 or WAD3 file, sets up the directory and cache.
 // Returns false in case of problem
@@ -1336,37 +1363,69 @@ bool ZipFile::Open(const char *fname)
 }
 
 
-/* Marty */
-
-
+/* Marty 
+ * GetItemListFromMemory() reads the table of contents of a ZIP file
+ * that is already completely in RAM and returns a list of all contained
+ * files (name, size, position, compression) – without reading the ZIP
+ * from disk again.
+ *
+ * The function essentially does exactly what "unzip -l file.zip" does on the
+ * command line – only entirely in memory and without an external library:
+ * It receives a pointer to the fully loaded ZIP file in RAM
+ * (memory_data,memory_size).
+ *
+ * It searches the ZIP file for the central directory (at the end of the file),
+ * which contains the list of all files.
+ * For each file in the directory, it extracts:
+ * - filename
+ * - uncompressed size (size)
+ * - compressed size
+ * - position in the ZIP (offset)
+ * - compression method (usually "Deflate")
+ * - CRC32 checksum, etc.
+ * It then builds its own internal list (directory array) from this information.
+ * This list is later used to selectively extract individual files from the ZIP
+ * file (e.g., only the .wad,.gwa,.deh,.lmp files) – without having to rescan
+ * the entire ZIP file.
+ */
 int ZipFile::GetItemListFromMemory()
 {
   //CONS_Printf(" ZIP/PK3 Get Item List From Memory\n");
   
   ListItems();
   
-  Uint16 Added = -1;
-  Uint8 isIWAD = -1; 
+  Uint16 Added    = -1;
+  Uint8  isFormat = -1; 
+  
   if (directory == NULL || numitems <= 0)
   {
-    CONS_Printf("  [%s][%d]Error::GetItemListFromMemory:  -> Kein Verzeichnis oder keine Items (numitems = %d)\n", numitems);
+    CONS_Printf("  [%s][%d]Error::GetItemListFromMemory:\n  -> Kein Verzeichnis oder keine Items (numitems = %d)\n", numitems);
     return Added;
   }
-      
+ 
     for (int i = 0; i < numitems; i++)
     {
-       
+      char InternalLumpName[9]; // For *.LMP or Dehacked
       zipdir_t *l = &directory[i];
+      
       if (l->size < 12) continue; // zu klein für WAD-Header
 
       const char *ext = strrchr(l->name, '.');
       if (!ext) continue;
     
-      ext++; // Nach dem Punkt
-      if ((strcasecmp(ext, "wad") == 0) ||  // Dateinamen Prüfung
-         (strcasecmp(ext, "gwa") == 0)) 
+      ext++; // Nach dem Punkt - Dateinamen Prüfung
+      string_to_upper(ext);
+
+      if ((strcasecmp(ext, "ACS") == 0) ||  // Hexen AC3 Bytecode File 
+          (strcasecmp(ext, "DEH") == 0) ||  // Erlaube Dehacked (Doom 1,2)
+          (strcasecmp(ext, "GWA") == 0) ||  // OpenGL Defintionen (Usually IWAD\PWAD)
+          (strcasecmp(ext, "HHE") == 0) ||  // Erlaube Dehacked (Heritage Patch)
+          (strcasecmp(ext, "LMP") == 0) ||  // Single Lump (Demo)
+          (strcasecmp(ext, "RAW") == 0) ||  // Hexen AC3 Bytecode File
+          (strcasecmp(ext, "WAD") == 0))    // Ja Wad denn sonst ..
       { 
     
+        CONS_Printf(" ZIP/PK3 Erlaubt: %s (*.%s)\n", l->name,ext);
         // Temporär laden
         byte* wad_data = (byte*)Z_Malloc(l->size, PU_STATIC, NULL);
         if (!wad_data) continue;
@@ -1378,27 +1437,67 @@ int ZipFile::GetItemListFromMemory()
         }
 
         // Magic prüfen
-        if (memcmp(wad_data, "IWAD", 4) == 0)
-            isIWAD = 0;
-
-        if (memcmp(wad_data, "PWAD", 4) == 0)
-            isIWAD = 1;    
+        if (memcmp(wad_data, "IWAD", 4) == 0) isFormat = 0;// IWAD
+        if (memcmp(wad_data, "PWAD", 4) == 0) isFormat = 1;// PWAD       
         
-        if (isIWAD >= 0)
+        if ((memcmp(wad_data, "Patch File for DeHackEd", 23) == 0)||// DEHACKED
+            (memcmp(wad_data, "Patch File for HHE"     , 18) == 0)||// DEHACKED Heretic
+            (strcasecmp(ext, "LMP")                          == 0) ) // LMP ... ouch no Header
+        {
+            isFormat = 3; // Dehacked /BEHAVIOR / Single Lump 
+            if (strcasecmp(ext, "LMP") == 0)
+            {
+              const char *lname = FIL_StripPath(l->name);
+              strncpy(InternalLumpName, lname, 8);
+              InternalLumpName[min(int(strlen(lname))-4, 8)] = '\0';            
+            }
+            else              
+            {
+              strncpy(InternalLumpName, "DEHACKED", 8);
+              InternalLumpName[min(int(strlen("DEHACKED"))-4, 8)] = '\0';
+            }
+            CONS_Printf(" ZIP/PK3 \"%s\" Magic Header = %s\n",l->name,InternalLumpName);
+        }
+        else if (strcasecmp(ext, "ACS") == 0 || strcasecmp(ext, "RAW") == 0)
+        {
+            // Optional: Als Text-Lump laden (für Debugging)
+            isFormat = 3; 
+            strncpy(InternalLumpName, l->name, 8);
+            InternalLumpName[8] = '\0';
+            strupr(InternalLumpName);
+            CONS_Printf(" ZIP/PK3 ACS-Quelltext als Lump geladen: %s (nur lesbar, nicht ausführbar)\n", l->name);
+        }
+                
+        if (isFormat >= 0)
         {  
-          //CONS_Printf(" ZIP/PK3 \"%s\" Magic Header = %s\n", l->name, (isIWAD==0)?"IWAD":"PWAD");
+          //CONS_Printf(" ZIP/PK3 \"%s\" Magic Header = %s\n", l->name, (isFormat==0)?"IWAD":"PWAD");
           // Neue Wad-Instanz erstellen und direkt parsen
           WadFromMemory* inner_wad = new WadFromMemory();
-          if (inner_wad->Open(wad_data, l->size, l->name))
+          
+          if (isFormat == 0 || isFormat == 1) 
           {
+            if (inner_wad->Open(wad_data, l->size, l->name))
+            {
               fc.CacheArchiveFile(inner_wad);
               //CONS_Printf(" ZIP/PK3 \"%s\" Added to vFiles (%d Lumps)\n", l->name,
               //                                           inner_wad->GetNumItems());
               Added++; 
+            }
+            else           
+              delete inner_wad;       
           }
-          else
+          
+          if (isFormat == 3) // Dehacked
           {
-            delete inner_wad;
+            if (inner_wad->Create(wad_data, l->size, l->name, InternalLumpName) && isFormat == 3)
+            {
+              fc.CacheArchiveFile(inner_wad);
+              //CONS_Printf(" ZIP/PK3 \"%s\" Dehacked to vFiles (%d Lumps)\n", l->name,
+              //                                           inner_wad->GetNumItems());              
+              Added++;
+            }
+            else           
+              delete inner_wad;          
           }
           //fc.CacheArchiveFile_Remove(inner_wad);          
         }
@@ -1455,6 +1554,14 @@ void ZipFile::ListItems()
 int ZipFile::Internal_ReadItem(int item, void *dest, uint32_t size, uint32_t offset)
 {
   zipdir_t *l = directory + item;
+  
+  const char *ext = strrchr(l->name, '.');
+  if (ext)    
+  {
+    ext++; // nach dem Punkt
+    string_to_upper(ext);
+  }
+  
   CONS_Printf("\n-------------------------------------------------ZIP EXTRACT\n"); 
   if (item >= numitems || item < 0)
   {
@@ -1551,22 +1658,45 @@ int ZipFile::Internal_ReadItem(int item, void *dest, uint32_t size, uint32_t off
     }
   // successful
   // Magic prüfen
-  Uint8 isIWAD = -1;
+  Uint8 isFormat = -1;
   
-  if (memcmp(cache[item], "IWAD", 4)     == 0)
-    isIWAD = 0;
-  else if (memcmp(cache[item], "PWAD", 4) == 0)
+  if (      memcmp(cache[item], "IWAD", 4) == 0) isFormat = 0; // IWAD
+  else if  (memcmp(cache[item], "PWAD", 4) == 0) isFormat = 1; // PWAD
+  else if  (memcmp(cache[item], "FORM", 4) == 0) isFormat = 4; // Optional: MIDI oder andere RIFF-Formate
+  else if  (strcasecmp(ext, "LMP")         == 0)
   {
-    isIWAD = 1;   
+    isFormat = 3; // Single  Lump File
+    CONS_Printf(" ZIP/PK3 Demo (.lmp) als Single-Lump geladen: %s (%zu Bytes)\n", l->name, size);
   }
-  else 
+  else if (memcmp(cache[item], "Patch File for DeHackEd", 23) == 0)
   {
-    CONS_Printf(" ZIP/PK3 Successful. Item Extracted but not a IWAD or PWAD\n"/*,cache[item]*/); 
+    isFormat = 3; // Dehacked Doom or Heretic (Heritage DeHackEd HHE))
+    CONS_Printf(" ZIP/PK3 DeHackEd-Patch als Single-Lump geladen: %s (%zu Bytes)\n", l->name, size);    
+     
+  }
+  else if (memcmp(cache[item], "Patch File for HHE",18) == 0)// DEHACKED Heretic
+  {
+    isFormat = 3; // Dehacked Doom or Heretic (Heritage DeHackEd HHE))
+    CONS_Printf(" ZIP/PK3 Heritage DeHackEd-Patch als Single-Lump geladen: %s (%zu Bytes)\n", l->name, size);         
+  }              
+  else if (memcmp(cache[item],"BEHAVIOR",8)==0)
+  {
+     isFormat = 3;// ACS-Bytecode
+     CONS_Printf(" ZIP/PK3 ACS BEHAVIOR als Single-Lump geladen: %s (%zu Bytes)\n", l->name, size); 
+  }
+  else
+  {
+    CONS_Printf(" ?ZIP/PK3 Successful Extracted \"%s\" %zu Bytes but not relevant game content... \n",l->name,size/*cache[item]*/); 
     return 0;
   }
   
-  CONS_Printf(" ZIP/PK3 Successful. Lump is Uncompressed & Cached as %s\n\n", (isIWAD==0)?"IWAD":"PWAD");  
+                 
   //// now the lump is uncompressed and cached
-  memcpy(dest, static_cast<byte*>(cache[item]) + offset, size);
+  if (isFormat >= 0)
+    
+    memcpy(dest, static_cast<byte*>(cache[item]) + offset, size);
+  else
+    return 0;
+  
   return size;
 }

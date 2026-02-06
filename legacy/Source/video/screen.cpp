@@ -129,7 +129,7 @@ Video::Video()
 //  by setting the setmodeneeded to a value >0
 void Video::SetMode()
 {
-  byte DebugVerbose = 1;
+  byte DebugVerbose = 0;
   
   if (DebugVerbose)
 	printf("\n [%s][%d]::SetMode\n",__FILE__,__LINE__);
@@ -195,7 +195,7 @@ void R_Init8to16();
 // Starts and initializes the video subsystem
 void Video::Startup()
 {
-  byte DebugVerbose = 1;
+  byte DebugVerbose = 0;
     
   if (game.dedicated)
     return;

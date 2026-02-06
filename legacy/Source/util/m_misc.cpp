@@ -26,8 +26,11 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <dirent.h>
+
 
 #include "doomdef.h"
+#include "doomdata.h"   // IWAD recognition table
 #include "command.h"
 
 #include "m_misc.h"
@@ -508,4 +511,134 @@ string string_to_upper(const char *c) {
   delete []newc;
 
   return result;
+}
+
+// ==========================================================================
+//                        VARIOUS UTIL FUNCTIONS
+// ==========================================================================
+
+byte CheckMainWad(const char *MainWadFile)
+{
+    int i;
+
+    for (i = 0; i < NUM_IWADS; i++)
+    {
+        if (strcasecmp(MainWadFile, iwads[i].wadname) == 0)
+        {
+            CONS_Printf("Main WAD match: %s -> mode=%d, mission=%d\n",
+                        iwads[i].wadname, iwads[i].mode, iwads[i].mission);
+            return 1; // gefunden
+        }
+    }
+
+    CONS_Printf("No IWAD match for: %s\n", MainWadFile);
+    return 0;
+}
+
+
+byte isFullFilePath(const char *str)
+{
+    if (!str || !*str) return 0;
+
+    int has_slash = 0;
+    int has_extension = 0;
+
+    const char *p = str;
+
+    // Hat Pfadtrenner (\ oder /)?
+    while (*p)
+    {
+        if (*p == '\\' || *p == '/') has_slash = 1;
+        p++;
+    }
+
+    // Hat Dateiendung? (mindestens . + 3 Zeichen, z. B. .wad)
+    const char *dot = strrchr(str, '.');
+    if (dot && strlen(dot) >= 4) has_extension = 1;
+
+    // Muss mindestens einen Trenner UND eine Endung haben
+    return has_slash && has_extension;
+}
+
+// Prüft, ob es eine WAD/ZIP/DEH-Datei ist (case-insensitive)
+//#ifdef DRAGFILE
+  byte  DrgFile_Requested = 0;
+  char *DrgFile_AutoStart = NULL;
+//#endif
+byte isWadFile(const char *path)
+{
+    if (!path) return 0;
+
+    const char *ext = strrchr(path, '.');
+    if (!ext) return 0;
+
+    ext++; // Nach dem Punkt
+
+    DrgFile_Requested = 1;       // liegt in d_main 
+
+    CONS_Printf("DrgFile_Requested: %d\n", DrgFile_Requested);
+    if (CheckMainWad( path ) == 0)
+    {
+      CONS_Printf("DrgFile_Requested: strcasecmp\n");
+      return  strcasecmp(ext, "wad") == 0 ||
+              strcasecmp(ext, "zip") == 0 ||
+              strcasecmp(ext, "deh") == 0  ;
+    }
+    CONS_Printf("DrgFile_Requested: return 0\n");
+    return 0;
+}
+//#ifdef DRAGFILE
+byte Get_DragFile(char *dragged_file)
+{
+    if (dragged_file)
+      return 1;// Optional: Spiel sofort starten     
+
+   return 0;// Normaler Start ohne Drag & Drop
+}
+//#endif
+
+char *ProgrammPath(void)
+{
+  static char dosroot[MAX_PATH] = {0}; 	
+  static char exepath[MAX_PATH] = {0};  // static = nur einmal initialisiert
+
+  if (exepath[0] == '\0')  // Nur einmal berechnen
+  {
+       GetModuleFileNameA(NULL, exepath, MAX_PATH);
+       char *last = strrchr(exepath, '\\');
+       if (last) *(last /*+ 1*/) = '\0';  // Nur Ordner und entferne '\' den auch.
+  }
+
+  if (dosroot[0] == '\0')  // Nur einmal berechnen  
+       getcwd(dosroot, MAX_PATH);
+
+  if (strcmp(exepath, dosroot ) == 0)
+  {
+  //    printf(, "ProgrammPath [exedir]:[getcwd] sind identisch\n");
+  }
+  else
+  {
+      printf("ProgrammPath [exedir]: %s\n", exepath);
+      printf("ProgrammPath [getcwd]: %s\n", dosroot);
+      printf("Main->Argv hat eine anderes Arbeitsverzeichnis bekommen...\n");  
+  }
+
+  return exepath; 
+}
+
+byte DirectoryCheck_isPath(const char *path)
+{
+      byte Result = 1;
+      
+      DIR *dir = opendir(path);
+      if (!dir) // Kein Verzeichnis? Dann normale Datei?     
+          Result = 0;
+      
+      closedir(dir);
+/*
+      printf("[%s][%d] Directory Check: is Path = %s\n"
+             "        : %s\n",__FILE__,__LINE__,
+                      (Result==1)?"True":"False",path);
+*/                                    
+      return Result;
 }
