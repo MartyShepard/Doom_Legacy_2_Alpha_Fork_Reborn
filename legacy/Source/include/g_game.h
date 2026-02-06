@@ -35,17 +35,27 @@ class LNetInterface;
 
 using namespace std;
 
-
-/// skill levels
-enum skill_t
+// game title
+// Reihenfolge muss mit gamemission_t übereinstimmen
+const char *Titles[] =
 {
-  sk_baby,
-  sk_easy,
-  sk_medium,
-  sk_hard,
-  sk_nightmare
+  "DOOM PreAlpha Startup",  
+  "DOOM Alpha Startup",
+  "DOOM Beta Startup",
+  "DOOM PresDemo Startup",   
+  "DOOM 1: Shareware Startup",
+  "DOOM 1: Registered Startup",
+  "DOOM 1: The Ultimate DOOM Startup",
+  "DOOM 2: Hell on Earth",
+  "DOOM 2: TNT - Evilution",
+  "DOOM 2: Plutonia Experiment",
+  "Heretic 1: Shadow of the Serpent Riders",
+  "Hexen 1: Beyond Heretic",
+  "HACX - Twich'n'KIll (IWAD release v1.2)",
+  "Strife",
+  "FreeDOOM: Phase 1 Startup",
+  "FreeDOOM: Phase 2 Startup"
 };
-
 
 /// Game mode. For game-specific rules, IWAD dependent animations etc.
 enum gamemode_t
@@ -60,40 +70,35 @@ enum gamemode_t
 // "Mission packs". Used only during startup.
 enum gamemission_t
 {
-  gmi_shareware, // DOOM 1 shareware (E1M9)
-  gmi_doom1,     // registered (E3M27)
-  gmi_ultimate,  // retail (Ultimate DOOM) (E4M36)
-  gmi_doom2,   // DOOM 2, default
-  gmi_tnt,     // TNT Evilution mission pack
-  gmi_plut,    // Plutonia Experiment pack
-  gmi_heretic,
-  gmi_hexen
-    /*
-    gmi_none = -1,
-    gmi_doom1,// registered (E3M27)
-    gmi_ultimate,// retail (Ultimate DOOM) (E4M36)
-    gmi_doom2,// DOOM 2, default
-    gmi_tnt,// TNT Evilution mission pack
-    gmi_plut,// Plutonia Experiment pack
-    gmi_shareware,// DOOM 1 shareware (E1M9)
-    gmi_heretic,
-    gmi_hexen
-    // ggf. gmi_strife
-    */
+//gmi_none = -1,  
+  gmi_prealpha,
+  gmi_alpha,
+  gmi_beta,
+  gmi_presdemo,  
+  gmi_shareware,  // DOOM 1 shareware (E1M9)
+  gmi_doom1,      // registered (E3M27)
+  gmi_ultimate,   // retail (Ultimate DOOM) (E4M36)
+  gmi_doom2,      // DOOM 2, default
+  gmi_tnt,        // TNT Evilution mission pack
+  gmi_plut,       // Plutonia Experiment pack
+  gmi_heretic,    // Heretic
+  gmi_hexen,      // Hexen
+  gmi_hacx,       // HacX
+  gmi_strife,
+  gmi_fdoomu,
+  gmi_fdoom2  
 };
-/*
-enum gamemission_t
+
+/// skill levels
+enum skill_t
 {
-  gmi_shareware, 
-  gmi_doom1,     
-  gmi_ultimate,  
-  gmi_doom2,   
-  gmi_tnt,     
-  gmi_plut,    
-  gmi_heretic,
-  gmi_hexen
+  sk_baby,
+  sk_easy,
+  sk_medium,
+  sk_hard,
+  sk_nightmare
 };
-*/
+
 /// \brief Game info common to all players.
 /// \ingroup g_central
 /*!

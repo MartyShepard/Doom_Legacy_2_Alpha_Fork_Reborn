@@ -58,62 +58,44 @@ void PrepareGameData();
 // Marty
 static void Help( void );
 
-#ifndef SVN_REV
-#define SVN_REV "none"
-#endif
+//#ifndef SVN_REV
+//#define SVN_REV "none"
+//#endif
 
 // Version number: major.minor.revision
-const int  LEGACY_VERSION = 200;  // major*100 + minor
-const int  LEGACY_REVISION = 0; // for bugfix releases, should not affect compatibility
-const char LEGACY_VERSIONSTRING[] = "alpha0 (rev " SVN_REV ")";
-char LEGACY_VERSION_BANNER[80];
+const int  LEGACY_VERSION           = 200;               // major*100 + minor
+const int  LEGACY_REVISION          = DOOMLEGACY2_MINOR; // for bugfix releases, should not affect compatibility
+const char LEGACY_VERSIONSTRING[]   = "Alpha (rev " STR(DOOMLEGACY2_PATCH) "." STR(DOOMLEGACY2_BUILD) " )";
+char       LEGACY_VERSION_BANNER[80];
 
-// Name of local directory for config files and savegames
-/*
-#ifdef LINUX 
-# define DEFAULTDIR "/.legacy"
-#elif defined(__MACOS__) || defined(__APPLE_CC__)
-# define DEFAULTDIR "/Library/Application Support/DooMLegacy"
-#else
-# define DEFAULTDIR "/legacy"
-#endif
-*/
+// Suchreihenfolge der IWAD's
+const iwad_info_t iwads[] = {
+    {"doomalpha.wad", gm_doom1,   gmi_alpha},
+    {"doombeta.wad",  gm_doom1,   gmi_beta},
+    {"doom01.wad",    gm_doom1,   gmi_prealpha},
+    {"doompres.wad",  gm_doom1,   gmi_presdemo},  
+    {"doom1.wad",     gm_doom1,   gmi_shareware},  
+    {"doom.wad",      gm_doom1,   gmi_doom1},
+    {"doomu.wad",     gm_doom1,   gmi_ultimate},    
+    {"doom2.wad",     gm_doom2,   gmi_doom2},
+    {"tnt.wad",       gm_doom2,   gmi_tnt},
+    {"plutonia.wad",  gm_doom2,   gmi_plut},    
+    {"heretic.wad",   gm_heretic, gmi_heretic},
+    {"heretic1.wad",  gm_heretic, gmi_heretic},    
+    {"hexen.wad",     gm_hexen,   gmi_hexen},
+    {"hacx.wad",      gm_doom2,   gmi_hacx},
+    {"fdoomu.wad",    gm_doom1,   gmi_fdoomu},
+    {"fdoom2.wad",    gm_doom2,   gmi_fdoom2}    
+};
+const int NUM_IWADS = sizeof(iwads) / sizeof(iwads[0]);
+
+static gamemission_t mission = gmi_doom2;
 
 // the file where all game vars and settings are saved
 #define CONFIGFILENAME   "config.cfg"  
 
 bool devparm    = false; // started game with -devparm
 bool singletics = false; // timedemo
-
-const iwad_info_t iwads[] = {
-    {"doom2.wad",    gm_doom2, gmi_doom2},
-    {"doomu.wad",    gm_doom1, gmi_ultimate},
-    {"doom.wad",     gm_doom1, gmi_doom1},
-    {"heretic.wad",  gm_heretic, gmi_heretic},
-    {"hexen.wad",    gm_hexen, gmi_hexen},
-    {"tnt.wad",      gm_doom2, gmi_tnt},
-    {"plutonia.wad", gm_doom2, gmi_plut},
-    {"doom1.wad",    gm_doom1, gmi_shareware},
-    {"heretic1.wad", gm_heretic, gmi_heretic},   
-};
-const int NUM_IWADS = sizeof(iwads) / sizeof(iwads[0]);
-
-/*
-// "Mission packs". Used only during startup.
-enum gamemission_t
-{
-  gmi_shareware, // DOOM 1 shareware (E1M9)
-  gmi_doom1,     // registered (E3M27)
-  gmi_ultimate,  // retail (Ultimate DOOM) (E4M36)
-  gmi_doom2,   // DOOM 2, default
-  gmi_tnt,     // TNT Evilution mission pack
-  gmi_plut,    // Plutonia Experiment pack
-  gmi_heretic,
-  gmi_hexen
-};
-*/
-static gamemission_t mission = gmi_doom2;
-
 
 // Helper function: start a new game
 void BeginGame(int episode, int skill, bool public_server)
@@ -123,7 +105,6 @@ void BeginGame(int episode, int skill, bool public_server)
   else
     COM.AppendText(va("newgame %s local %d %d\n", game.mapinfo_lump.c_str(), episode, skill));
 }
-
 
 //======================================================================
 // EVENT HANDLING
@@ -155,21 +136,23 @@ void D_PostEvent(const event_t* ev)
 void D_ProcessEvents()
 {
   for ( ; eventtail != eventhead ; eventtail = (eventtail+1)&(MAXEVENTS-1) )
-    {
+  {
       event_t *ev = &events[eventtail];
 
       if (game.dedicated)
-	con.Responder(ev); // dedicated server only has a console interface
+        con.Responder(ev); // dedicated server only has a console interface
       else
-	{
-	  // Menu input
-	  if (Menu::Responder(ev))
-	    continue;              // menu ate the event
-	  // console input
-	  if (con.Responder(ev))
-	    continue;              // ate the event
-	  game.Responder(ev);
-	}
+      {
+        // Menu input
+        if (Menu::Responder(ev))
+          continue;              // menu ate the event
+        
+        // console input
+        if (con.Responder(ev))
+          continue;              // ate the event
+        
+        game.Responder(ev);
+      }
     }
 }
 
@@ -583,22 +566,8 @@ bool D_DoomMain()
   // set game.mode, mission accordingly
   D_IdentifyVersion();
 
-  // game title
-  const char *Titles[] =
-  {
-    //"No game mode chosen.",
-    "DOOM Shareware Startup",
-    "DOOM Registered Startup",
-    "The Ultimate DOOM Startup",
-    "DOOM 2: Hell on Earth",
-    "DOOM 2: TNT - Evilution",
-    "DOOM 2: Plutonia Experiment",
-    "Heretic: Shadow of the Serpent Riders",
-    "Hexen: Beyond Heretic"
-  };
 
   const char *title = Titles[mission];
-
   // print out game title
   CONS_Printf("%s\n\n", title);
 
