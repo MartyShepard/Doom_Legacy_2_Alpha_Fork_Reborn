@@ -1,0 +1,127 @@
+Index: libtomcrypt/makefile
+===================================================================
+RCS file: /cvsroot/opentnl/tnl/libtomcrypt/makefile,v
+retrieving revision 1.3
+diff -d -U0 -r1.3 makefile
+--- libtomcrypt/makefile	28 Apr 2005 17:29:26 -0000	1.3
++++ libtomcrypt/makefile	24 Jan 2007 09:11:43 -0000
+@@ -18 +18 @@
+-CFLAGS += -c -I./testprof/ -I./headers/ -Wall -Wsign-compare -W -Wshadow -Wno-unused-parameter
++CFLAGS += -c -I./headers/ -Wall -Wsign-compare -W -Wshadow -Wno-unused-parameter
+@@ -42 +41,0 @@
+-LIBTEST=testprof/libtomcrypt_prof.a
+@@ -181 +179,0 @@
+-	ranlib $(LIBNAME)
+Index: master/Makefile
+===================================================================
+RCS file: /cvsroot/opentnl/tnl/master/Makefile,v
+retrieving revision 1.3
+diff -d -U0 -r1.3 Makefile
+--- master/Makefile	22 Feb 2005 21:29:39 -0000	1.3
++++ master/Makefile	24 Jan 2007 09:11:44 -0000
+@@ -10 +10 @@
+-CC=g++ -g -I../tnl #-O2
++CXXFLAGS=-I../tnl -O2
+@@ -20 +20 @@
+-	$(CC) -c $(CFLAGS) $<
++	$(CXX) -c $(CXXFLAGS) $<
+@@ -23 +23 @@
+-	$(CC) -o ../exe/master $(OBJECTS_MASTER) ../tnl/libtnl.a ../libtomcrypt/libtomcrypt.a -lstdc++ -lm
++	$(CC) -o ../exe/master $(OBJECTS_MASTER) ../tnl/libtnl.a ../libtomcrypt/libtomcrypt.a -lstdc++ -lm $(EXTRALIBS)
+Index: masterclient/Makefile
+===================================================================
+RCS file: /cvsroot/opentnl/tnl/masterclient/Makefile,v
+retrieving revision 1.1
+diff -d -U0 -r1.1 Makefile
+--- masterclient/Makefile	20 Apr 2004 04:27:15 -0000	1.1
++++ masterclient/Makefile	24 Jan 2007 09:11:44 -0000
+@@ -10 +10 @@
+-CC=g++ -g -I../tnl #-O2
++CXXFLAGS=-I../tnl -O2
+@@ -19 +19 @@
+-	$(CC) -c $(CFLAGS) $<
++	$(CXX) -c $(CXXFLAGS) $<
+@@ -22 +22 @@
+-	$(CC) -o masterclient $(OBJECTS_MASTER) ../tnl/libtnl.a ../libtomcrypt/libtomcrypt.a -lstdc++ -lm
++	$(CC) -o masterclient $(OBJECTS_MASTER) ../tnl/libtnl.a ../libtomcrypt/libtomcrypt.a -lstdc++ -lm $(EXTRALIBS)
+Index: test/Makefile
+===================================================================
+RCS file: /cvsroot/opentnl/tnl/test/Makefile,v
+retrieving revision 1.3
+diff -d -U0 -r1.3 Makefile
+--- test/Makefile	28 Sep 2004 19:08:17 -0000	1.3
++++ test/Makefile	24 Jan 2007 09:11:44 -0000
+@@ -10 +10 @@
+-CC=g++ -g #-O2
++CXXFLAGS=-O2
+@@ -24 +24 @@
+-	$(CC) -c $(CFLAGS) $<
++	$(CXX) -c $(CXXFLAGS) $<
+@@ -28 +28 @@
+-	$(CC) -o server $(OBJECTS_SERVER) ../tnl/libtnl.a ../libtomcrypt/libtomcrypt.a -lstdc++ -lm
++	$(CC) -o server $(OBJECTS_SERVER) ../tnl/libtnl.a ../libtomcrypt/libtomcrypt.a -lstdc++ -lm $(EXTRALIBS)
+Index: tnl/Makefile
+===================================================================
+RCS file: /cvsroot/opentnl/tnl/tnl/Makefile,v
+retrieving revision 1.5
+diff -d -U0 -r1.5 Makefile
+--- tnl/Makefile	12 May 2004 21:16:11 -0000	1.5
++++ tnl/Makefile	24 Jan 2007 09:11:44 -0000
+@@ -10 +10 @@
+-CC=g++ -g -DTNL_DEBUG -DTNL_ENABLE_LOGGING -I../libtomcrypt # -O2
++CXXFLAGS += -DTNL_DEBUG -DTNL_ENABLE_LOGGING -I../libtomcrypt/headers -O2
+@@ -39,2 +38,0 @@
+-CFLAGS=
+-
+@@ -42 +40 @@
+-	$(CC) -c $(CFLAGS) $<
++	$(CXX) -c $(CXXFLAGS) $<
+@@ -46 +44 @@
+-	ar rcv libtnl.a $(OBJECTS)
++	$(AR) rcv libtnl.a $(OBJECTS)
+Index: tnl/netStringTable.cpp
+===================================================================
+RCS file: /cvsroot/opentnl/tnl/tnl/netStringTable.cpp,v
+retrieving revision 1.3
+diff -d -U0 -r1.3 netStringTable.cpp
+--- tnl/netStringTable.cpp	14 Feb 2005 06:15:28 -0000	1.3
++++ tnl/netStringTable.cpp	24 Jan 2007 09:11:44 -0000
+@@ -196 +196 @@
+-      if(mNodeList[i] && !(U32(mNodeList[i]) & 1))
++      if(mNodeList[i] && !(U64(mNodeList[i]) & 1))
+@@ -220 +220 @@
+-        TNLAssert((U32(node) & 1) == 0, "Free list entry in node chain!!!");
++        TNLAssert((U64(node) & 1) == 0, "Free list entry in node chain!!!");
+Index: tnl/tnlNetStringTable.h
+===================================================================
+RCS file: /cvsroot/opentnl/tnl/tnl/tnlNetStringTable.h,v
+retrieving revision 1.3
+diff -d -U0 -r1.3 tnlNetStringTable.h
+--- tnl/tnlNetStringTable.h	28 Sep 2004 18:45:25 -0000	1.3
++++ tnl/tnlNetStringTable.h	24 Jan 2007 09:11:44 -0000
+@@ -37 +37 @@
+-typedef U32 StringTableEntryId;
++typedef U64 StringTableEntryId;
+Index: tnl/tnlTypes.h
+===================================================================
+RCS file: /cvsroot/opentnl/tnl/tnl/tnlTypes.h,v
+retrieving revision 1.11
+diff -d -U0 -r1.11 tnlTypes.h
+--- tnl/tnlTypes.h	27 Mar 2005 07:03:30 -0000	1.11
++++ tnl/tnlTypes.h	24 Jan 2007 09:11:45 -0000
+@@ -287 +287 @@
+-#if defined(_M_IX86) || defined(i386)
++#if defined(_M_IX86) || defined(i386) || defined(__x86_64) || defined(__amd64)
+@@ -297,0 +298,2 @@
++# elif __GNUC__ == 4
++# define TNL_GCC_4
+Index: tnl/tnlVector.h
+===================================================================
+RCS file: /cvsroot/opentnl/tnl/tnl/tnlVector.h,v
+retrieving revision 1.6
+diff -d -U0 -r1.6 tnlVector.h
+--- tnl/tnlVector.h	25 Feb 2005 16:15:15 -0000	1.6
++++ tnl/tnlVector.h	24 Jan 2007 09:11:45 -0000
+@@ -38,0 +39,2 @@
++#include "tnlAssert.h"
++

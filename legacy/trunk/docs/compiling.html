@@ -1,0 +1,150 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta name="description" content="New, even better Doom Legacy"/>
+<meta name="keywords" lang="en" content="doom, legacy, fps, heretic, hexen"/>
+<link rel="stylesheet" href="legacy.css" type="text/css"/>
+<title>Compiling Doom Legacy</title>
+</head>
+
+<!-- $Id: compiling.html 1108 2014-05-17 16:57:46Z smite-meister $ -->
+<body>
+
+<h1>How to compile Doom Legacy 2.0 (SDL version)</h1>
+
+<p>In order to compile Doom Legacy 2.0 SDL you'll need to have several
+libraries installed on your system.<br/>
+Make sure you install the <b>developer</b> packages of the
+libraries, which include both the runtime libraries (DLLs) and
+the stuff required during compilation (header files and import libraries).</p>
+<p>
+NOTE: Most Linux distributions offer these libraries in the form of
+precompiled packages, with the exception of OpenTNL.
+</p>
+
+<table>
+<tr>
+  <th>Library</th><th>Version</th><th>Ubuntu/Debian package</th><th>Description</th>
+</tr>
+<tr>
+  <td><a href="http://www.libsdl.org/download-1.2.php">SDL</a></td> <td>1.2.10+</td>
+  <td><a href="http://packages.ubuntu.com/libsdl1.2-dev">libsdl1.2-dev</a></td>
+  <td>Simple DirectMedia Layer. A multiplatform multimedia library.</td>
+</tr>
+<tr>
+  <td><a href="http://www.libsdl.org/projects/SDL_mixer/">SDL_mixer</a></td>
+  <td>1.2.7+</td>
+  <td><a href="http://packages.ubuntu.com/libsdl-mixer1.2-dev">libsdl-mixer1.2-dev</a></td>
+  <td>A multichannel mixer library based on SDL.</td>
+</tr>
+<tr>
+  <td>OpenGL</td> <td>1.3+</td> <td>(several)</td>
+  <td>The standard cross-platform graphics library, usually comes with
+    the OS. GLSL shaders require OpenGL 2.0+.</td>
+</tr>
+<tr>
+  <td><a href="http://www.zlib.org/">zlib</a></td> <td>1.1.4+</td>
+  <td><a href="http://packages.ubuntu.com/zlib1g-dev">zlib1g-dev</a></td>
+  <td>A free compression library.</td>
+</tr>
+<tr>
+  <td><a href="http://www.libpng.org/pub/png/libpng.html">libpng</a></td>
+  <td>1.2.5+</td>
+  <td><a href="http://packages.ubuntu.com/libpng12-dev">libpng12-dev</a></td>
+  <td>The official PNG reference library.</td>
+</tr>
+<tr>
+  <td><a href="http://www.ijg.org/">libjpeg</a></td> <td>6b</td>
+  <td><a href="http://packages.ubuntu.com/libjpeg62-dev">libjpeg62-dev</a></td>
+  <td>The unofficial JPEG reference library.</td>
+</tr>
+<tr>
+  <td><a href="http://sourceforge.net/projects/opentnl/">OpenTNL</a></td> <td>HEAD revision</td> <td>-</td>
+  <td>A free game networking library based on the Torque Network Library.<br/>
+    The OpenTNL distribution contains <b>libtomcrypt</b>, which
+    provides strong encryption.</td>
+</tr>
+</table>
+
+<p>
+You will require the following programs during the build process:
+</p>
+
+<ul>
+<li><a href="http://gcc.gnu.org/">GCC</a> 4, the Gnu Compiler Collection which, among other things, is
+a free C/C++ compiler.<br/>
+Linux systems most likely already have it installed.<br/>
+Windows users should install <a href="http://www.mingw.org/">MinGW</a>, a
+GCC port, and <a href="http://www.mingw.org/node/18">MSYS</a>, a
+collection of POSIX utilities for Win32.</li>
+
+<li><a href="http://flex.sourceforge.net/">GNU flex</a>, a scanner
+  generator. (Ubuntu package <a href="http://packages.ubuntu.com/flex">flex</a>)</li>
+
+<li>(optional) <a href="http://www.doxygen.org/">Doxygen</a>, an automatic
+source documentation system.</li>
+</ul>
+
+<p>
+Finally, download the
+<a href="http://sourceforge.net/projects/doomlegacy/">Doom Legacy source</a>.
+You can either get the source package or, for the latest code
+snapshot, checkout the <b>legacy/trunk/</b> directory from the
+<a href="http://subversion.apache.org/">Subversion</a> repository:
+</p>
+<div class="code">svn co https://doomlegacy.svn.sourceforge.net/svnroot/doomlegacy/legacy/trunk some_local_dir</div>
+From now on, your local copy of this directory will be referred to as <b>TRUNK</b>.
+
+
+<h3>Compiling OpenTNL</h3>
+
+<ol>
+<li>Download the latest OpenTNL source from the CVS:
+<div class="code">cvs -z3 -d:pserver:anonymous@opentnl.cvs.sourceforge.net:/cvsroot/opentnl co -P tnl</div>
+</li>
+<li>Go to the <b>TRUNK</b>, say '<b>make tnl TNL=/absolute/path/to/tnl_source</b>' to build
+libtomcrypt.a and libtnl.a.</li>
+</ol>
+
+<h3>Compiling Legacy</h3>
+
+<ol>
+<li>Open a shell window. Go to the <b>TRUNK</b>.</li>
+<li>Say '<b>make depend</b>' to create the dependency files.</li>
+<li>Say '<b>make OPT=1</b>' or just '<b>make</b>' to build the executable.<br/>
+ Omitting the 'OPT=1' parameter adds debugging symbols to the
+ executable.</li>
+<li>Get the file <b>legacy.wad</b> (or <b>legacy.dat</b>) from Doom Legacy version 1.40 (or later).<br/>
+Say '<b>make wad WAD=/absolute/path/to/old/legacy.wad</b>' to generate an
+updated legacy.wad.<br/>
+</li>
+<li>Say '<b>make docs</b>' to generate the Doxygen documentation.</li>
+</ol>
+
+<h3>Compiling with CMake (experimental)</h3>
+
+<p>There is a new CMake-based build system. It is only recommended for the adventurous.</p>
+
+<p>You should always keep separate source directories for the regular and CMake builds.
+Trying to use both in the same directory <b>will break stuff</b> eventually.</p>
+
+<p>You'll get <a href="http://www.cmake.org">CMake</a> from your Linux distribution.</p>
+
+<p>The build steps are roughly as follows.</p>
+
+<ol>
+<li>Go to your source root.</li>
+<li><b>mkdir builddir; cd builddir</b></li>
+<li>Find out where your TNL headers and libraries are.</li>
+<li><b>CXXFLAGS=-I/path/to/tnl/headers LDFLAGS=-L/path/to/libtnl cmake -DCMAKE_BUILD_TYPE=debug ..</b></li>
+<li>If it doesn't find libtnl or tomcrypt, you can set the paths manually with <b>ccmake</b> or <b>cmake-gui</b>
+once you activate advanced mode.</li>
+<li>Then just type <b>make</b>.</li>
+</ol>
+
+</body>
+</html>

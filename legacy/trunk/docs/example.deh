@@ -1,0 +1,35 @@
+
+# Doom Legacy 2.0 dehacked/BEX example
+# $Id: example.deh 255 2005-06-21 12:53:47Z smite-meister $
+# This is a comment.
+
+Doom version = 21
+Patch format = 6
+
+Thing 44		# Modified green armor
+Hit points = 75		# armor points
+Speed = 60000		# 16.16 fixed point value which gives the armor "savefactor" or toughness
+
+Thing 46		# A larger health bonus
+Hit points = 3		# how much health you will get
+
+Thing 70		# Shotgun shells that come in sets of five
+Hit points = 5		# how many shells you will get
+
+Thing 31		# Barrels are converted into a new type of item!
+Bits = SPECIAL
+Missile damage = 1	# script number to run when a player touches it
+
+
+Frame 457               # Dying imp runs a FraggleScript
+Codep    = StartFS
+Duration = 2            # script number to run
+
+
+[CODEPTR]
+Frame   454 = HeadAttack	# Doom imp shoots cacoballs
+Frame  H963 = MummyAttack2	# Heretic undead knight shoots screamers
+Frame X2430 = IceGuyAttack	# Hexen firedemon shoots ice
+
+[STRINGS]
+GOTARMOR = You got the flak vest.

@@ -1,0 +1,189 @@
+; Doom/Heretic sound sequences for Doom Legacy
+; Doom Legacy Team 2003-2004
+
+
+; platforms
+:Plat		0
+  playuntildone	plat/start
+  playrepeat	plat/move
+  stopsound	plat/stop
+end
+
+
+; Heretic doors
+:Door		10
+  playuntildone	door/start
+  stopsound	door/stop
+end
+
+
+; floors, stairs, elevators...
+:Floor		100
+  playrepeat	floor/move
+  stopsound	floor/stop
+end
+
+
+; ceilings, crushers
+:Ceiling	101
+  playrepeat	ceil/move
+  stopsound	ceil/stop
+end
+
+
+
+
+; Heretic ambient sequences
+
+; scream
+:AmbSndSeq1	1000
+  volumerand	1 25
+  play		ambient/scream
+  delayrand	210 465
+end
+
+; squish
+:AmbSndSeq2	1001
+  volumerand	1 25
+  play		ambient/squish
+  delayrand	210 465
+end
+
+; Drops
+:AmbSndSeq3	1002
+  volumerand	1 25
+  play		ambient/drops1
+  delayrand	16 47
+  play		ambient/drops2
+  delayrand	16 47
+  play		ambient/drops1
+  delayrand	16 47
+  play		ambient/drops2
+  delayrand	16 47
+  play		ambient/drops1
+  delayrand	16 47
+  play		ambient/drops2
+;  delayrand	16 47
+  delayrand	210 465
+end
+
+; SlowFootSteps
+:AmbSndSeq4	1003
+  volumerand	1 25
+  play		ambient/step1
+  delay		15
+  chvol		-1
+  play		ambient/step2
+  delay		15
+  chvol		-1
+  play		ambient/step1
+  delay		15
+  chvol		-1
+  play		ambient/step2
+  delay		 15
+  chvol		-1
+  play		ambient/step1
+  delay		15
+  chvol		-1
+  play		ambient/step2
+  delay		 15
+  chvol		-1
+  play		ambient/step1
+  delay		15
+  chvol		-1
+  play		ambient/step2
+  delayrand	210 465
+end
+
+; Heartbeat
+:AmbSndSeq5	1004
+  volumerand	1 25
+  play		ambient/heartbeat
+  delay		35
+  play		ambient/heartbeat
+  delay		35
+  play		ambient/heartbeat
+  delay		35
+  play		ambient/heartbeat
+  delayrand	210 465
+end
+
+; Bells
+:AmbSndSeq6	1005
+  volumerand	1 25
+  play		ambient/bells
+  delay		17
+  chvol		-1
+  play		ambient/bells
+  delay		17
+  chvol		-1
+  play		ambient/bells
+  delay		17
+  chvol		-1
+  play		ambient/bells
+  delayrand	210 465
+end
+
+; Growl
+:AmbSndSeq7	1006
+  volumerand	1 25
+  play		beast/sight
+  delayrand	210 465
+end
+
+; Magic
+:AmbSndSeq8	1007
+  volumerand	1 25
+  play		ambient/magic
+  delayrand	210 465
+end
+
+; Laughter
+:AmbSndSeq9	1008
+  volumerand	1 25
+  play		ambient/laugh1
+  delay		16
+  chvol		-2
+  play		ambient/laugh1
+  delay		16
+  chvol		-2
+  play		ambient/laugh1
+  delay		16
+  chvol		-2
+  play		ambient/laugh2
+  delay		16
+  chvol		-2
+  play		ambient/laugh2
+  delay		16
+  chvol		-2
+  play		ambient/laugh2
+  delayrand	210 465
+end
+
+; FastFootsteps
+:AmbSndSeq10	1009
+  volumerand	1 25
+  play		ambient/step1
+  delay		8
+  chvol		-1
+  play		ambient/step2
+  delay		8
+  chvol		-1
+  play		ambient/step1
+  delay		8
+  chvol		-1
+  play		ambient/step2
+  delay		8
+  chvol		-1
+  play		ambient/step1
+  delay		8
+  chvol		-1
+  play		ambient/step2
+  delay		8
+  chvol		-1
+  play		ambient/step1
+  delay		8
+  chvol		-1
+  play		ambient/step2 
+  delayrand	210 465
+end

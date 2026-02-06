@@ -1,0 +1,99 @@
+// Experimental DECORATE file for Doom Legacy 2.0
+// Doom Legacy Team 2006-2007
+
+// Doom monsters
+
+actor Arachnotron
+{
+  obituary "%s was killed by an Arachnotron\n"
+}
+
+actor Archvile
+{
+  obituary "%s was blasted by an Arch-vile\n"
+}
+
+actor BaronOfHell
+{
+  obituary "%s was slain by a Baron of Hell\n"
+}
+
+actor HellKnight
+{
+  obituary "%s was slain by a Hell Knight\n"
+}
+
+actor Cacodemon
+{
+  obituary "%s was fried by a Cacodemon\n"
+}
+
+actor Cyberdemon
+{
+  obituary "%s was crushed by the Cyberdemon\n"
+}
+
+actor Demon
+{
+  obituary "%s was eviscerated by a Demon\n"
+}
+
+actor Spectre
+{
+  obituary "%s was mauled by a Shadow Demon\n"
+}
+
+actor ChaingunGuy
+{
+  obituary "%s was punctured by a Chainguy\n"
+}
+
+actor DoomImp
+{
+  obituary "%s was fried by an Imp\n"
+}
+
+actor Fatso
+{
+  obituary "%s was exploded by a Mancubus\n"
+}
+
+actor LostSoul
+{
+  obituary "%s was killed by a Lost Soul\n"
+}
+
+actor PainElemental
+{
+  obituary "%s was killed by a Pain Elemental\n"
+}
+
+actor Revenant
+{
+  obituary "%s was smashed by a Revenant\n"
+}
+
+actor ShotgunGuy
+{
+  obituary "%s was shot down by a Shotguy\n"
+}
+
+actor SpiderMastermind
+{
+  obituary "%s was killed by the Spider Mastermind\n"
+}
+
+actor WolfensteinSS
+{
+  obituary "%s was killed by a WolfSS\n"
+}
+
+actor ZombieMan
+{
+  obituary "%s was shot by a Possessed\n"
+}
+
+actor ExplosiveBarrel
+{
+  obituary "%s dies from a barrel explosion\n"
+}

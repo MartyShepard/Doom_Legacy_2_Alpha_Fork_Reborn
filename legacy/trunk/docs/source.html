@@ -1,0 +1,127 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="description" content="Doom Legacy source information" />
+<meta name="keywords" lang="en" content="doom, legacy, fps, heretic, hexen" />
+<link rel="stylesheet" href="legacy.css" type="text/css" />
+<title>Doom Legacy Source</title>
+</head>
+
+<!-- $Id: source.html 541 2009-09-24 04:36:30Z smite-meister $ -->
+<body>
+
+<h1>Doom Legacy in C++</h1>
+
+Branched off from version 1.40.
+
+<h2>Main ideas behind the conversion:</h2>
+
+<ul>
+<li>Extendable:
+ <ul>
+ <li>Real C++ code, classes, encapsulation, inheritance, polymorphism.</li>
+ <li>Logical, easy to understand source file structure.</li>
+ <li>Well documented code, standard coding style.</li>
+ </ul>
+</li>
+
+<li>Easily portable:
+ <ul>
+ <li>Multimedia API always SDL 1.2.5+ if possible.</li>
+ <li>Graphics rendered using OpenGL 1.2 through SDL.</li>
+ <li>Audio maybe through OpenAL?</li>
+ <li>Absolute minimum of platform-specific #ifdefs
+  (only used to sort out standard library differences).</li>
+ </ul>
+</li>
+
+<li>Utilizes existing code:
+ <ul>
+ <li>Data structures constructed using STL 3.0.</li>
+ <li>Use existing, efficient, portable LGPL libraries whenever possible
+ (libpng, zlib etc.).</li>
+ </ul>
+</li>
+</ul>
+
+<hr />
+<h2>Coding conventions</h2>
+
+<ul>
+<li>Use Emacs-style indentation. Better yet, use Emacs to write your code.</li>
+<li>Fully document all files, classes, data members, methods and
+non-class functions using Doxygen syntax.</li>
+<li>If you must commit something that is broken, leave a comment including
+the exact word <font color="#FF4000">FIXME</font> and a description of
+what should be fixed. For example,
+<div>
+<font color="#FF4000">
+  // FIXME : here it crashes because int *p is sometimes NULL
+</font>
+</div>
+This keyword can be then grepped by other developers.</li>
+
+<li>If something in your code isn't exactly broken, but you think it could
+be improved, you can use the word <font color="#FFA000">TODO</font> in the same way:
+<div>
+<font color="#FFA000">
+  // TODO : replace the bubble sort with STL introsort
+</font>
+</div>
+</li>
+
+</ul>
+
+<hr />
+
+<h2>Documentation</h2>
+
+Basic Doom/Boom/Heretic/Hexen docs:
+
+<ul>
+<li>Matt Fell's <a href="http://www.gamers.org/dEngine/doom/spec/uds.1666.txt">Unofficial Doom specs v1.666</a></li>
+<li>Dr Sleep's <a href="http://www.hut.fi/u/vberghol/doom/hereticspec10.txt">Unofficial Heretic specs v1.0</a></li>
+<li>Ben Morris's <a href="http://www.hut.fi/u/vberghol/doom/hexenspec09.txt">Hexen specs v0.9</a></li>
+<li>Team TNT's <a href="boomref.html">Boom reference v1.3</a></li>
+</ul>
+
+C++ guides:
+<ul>
+<li>A good <a href="http://www.cplusplus.com/">C++ tutorial</a></li>
+<li>SGI's <a href="http://www.sgi.com/tech/stl/">STL documentation</a></li>
+</ul>
+
+<hr />
+
+
+<h2>Programming tools and libraries</h2>
+
+<ul>
+<li><a href="http://www.mingw.org/">MinGW</a>, Minimalist GNU for
+Windows. Gnu Compiler Collection (GCC) for Win32.</li>
+<li><a href="http://www.mingw.org/msys.shtml">MSYS</a>, Minimal POSIX
+system for Win32. Needed to properly run Makefiles and configuration
+tools. Includes a real shell (BASH) and utilities like grep and sed
+(of utmost importance).</li>
+<li><a href="http://www.libsdl.org/">SDL</a>, Simple DirectMedia
+Layer. A multiplatform multimedia library.</li>
+<li><a href="http://www.libsdl.org/projects/SDL_mixer/">SDL_mixer</a>, a
+multichannel mixer library based on SDL.</li>
+<li><a href="http://www.zlib.org/">zlib</a>, a free compression library.</li>
+<li><a href="http://www.opentnl.org/">OpenTNL</a>, a free game
+networking library based on the Torque Network Library.</li>
+<li><a href="http://www.mesa3d.org/">Mesa 3D</a>, a free OpenGL
+implementation.<br /> Note: Windows includes OpenGL runtime dll's, all you
+need are the header files and import libraries used when
+compiling and linking.
+They should be included in the MinGW standard distribution.</li>
+<li><a href="http://www.doxygen.org/">Doxygen</a>, an automatic
+source documentation system.</li>
+</ul>
+
+</body>
+</html>

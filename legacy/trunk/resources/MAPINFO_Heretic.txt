@@ -1,0 +1,374 @@
+; MAPINFO file: original Heretic map ordering
+; Doom Legacy Team 2003-2005
+; Partimes are Heretic-N speedruns + 30s (as of 2005-4-13). Good luck in beating those:)
+
+episode E1M1 "City of the Damned"
+picname M_EPI1
+
+episode E2M1 "Hell's Maw"
+picname M_EPI2
+
+episode E3M1 "The Dome of D'Sparil"
+picname M_EPI3
+
+episode E4M1 "The Ossuary"
+picname M_EPI4
+
+episode E5M1 "The Stagnant Demesne"
+picname M_EPI5
+
+
+;------------------------------------------
+; Episode 1
+
+clusterdef 1 "City of the Damned"
+finale 1
+music MUS_CPTD
+flat FLOOR25
+exittext "With the destruction of the iron\nliches and their minions, the last\nof the undead are cleared from this\nplane of existence.\n\nThose creatures had to come from\nsomewhere, though, and you have the\nsneaky suspicion that the fiery\nportal of Hell's Maw opens onto\ntheir home dimension.\n\nTo make sure that more undead\n(or even worse things) don't come\nthrough, you'll have to seal Hell's\nMaw from the other side. Of course\nthis means you may get stuck in a\nvery unfriendly world, but no one\never said being a Heretic was easy!"
+
+defaultmap
+cluster 1
+nextlevel -1 19
+sky1 SKY1 0
+interpic MAPE1
+intermusic MUS_INTR
+
+map E1M1 "E1M1: The Docks" 11
+nextlevel 12
+par 57
+music MUS_E1M1
+
+map E1M2 "E1M2: The Dungeons" 12
+nextlevel 13
+par 112
+music MUS_E1M2
+
+map E1M3 "E1M3: The Gatehouse" 13
+nextlevel 14
+par 75
+music MUS_E1M3
+
+map E1M4 "E1M4: The Guard Tower" 14
+nextlevel 15
+par 75
+music MUS_E1M4
+
+map E1M5 "E1M5: The Citadel" 15
+nextlevel 16
+par 82
+music MUS_E1M5
+
+map E1M6 "E1M6: The Cathedral" 16
+nextlevel 17
+par 100
+music MUS_E1M6
+
+map E1M7 "E1M7: The Crypts" 17
+nextlevel 18
+par 94
+music MUS_E1M7
+
+map E1M8 "E1M8: Hell's Maw" 18
+nextlevel -1
+par 61
+music MUS_E1M8
+; Ironliches
+bossdeath 512
+
+map E1M9 "E1M9: The Graveyard" 19
+nextlevel 17
+par 95
+music MUS_E1M9
+
+
+
+;------------------------------------------
+; Episode 2
+
+clusterdef 2 "Hell's Maw"
+finale 2
+music MUS_CPTD
+flat FLATHUH1
+exittext "The mighty maulotaurs have proved\nto be no match for you, and as\ntheir steaming corpses slide to the\nground you feel a sense of grim\nsatisfaction that they have been\ndestroyed.\n\nThe gateways which they guarded\nhave opened, revealing what you\nhope is the way home. But as you\nstep through, mocking laughter\nrings in your ears.\n\nWas some other force controlling\nthe maulotaurs? Could there be even\nmore horrific beings through this\ngate? The sweep of a crystal dome\noverhead where the sky should be is\ncertainly not a good sign...."
+
+defaultmap
+cluster 2
+nextlevel -1 29
+sky1 SKY2 0
+interpic MAPE2
+intermusic MUS_INTR
+
+map E2M1 "E2M1: The Crater" 21
+nextlevel 22
+par 52
+music MUS_E2M1
+
+map E2M2 "E2M2: The Lava Pits" 22
+nextlevel 23
+par 73
+music MUS_E2M2
+
+map E2M3 "E2M3: The River of Fire" 23
+nextlevel 24
+par 71
+music MUS_E2M3
+
+map E2M4 "E2M4: The Ice Grotto" 24
+nextlevel 25
+par 99
+music MUS_E2M4
+
+map E2M5 "E2M5: The Catacombs" 25
+nextlevel 26
+par 51
+music MUS_E1M4
+
+map E2M6 "E2M6: The Labyrinth" 26
+nextlevel 27
+par 107
+music MUS_E2M6
+
+map E2M7 "E2M7: The Great Hall" 27
+nextlevel 28
+par 97
+music MUS_E2M7
+
+map E2M8 "E2M8: The Portals of Chaos" 28
+nextlevel -1
+par 93
+music MUS_E2M8
+; Maulotaurs
+bossdeath 2048
+
+map E2M9 "E2M9: The Glacier" 29
+nextlevel 25
+par 84
+music MUS_E2M9
+
+
+
+;------------------------------------------
+; Episode 3
+
+clusterdef 3 "The Dome of D'Sparil"
+finale 3
+music MUS_CPTD
+flat FLTWAWA2
+exittext "The death of D'Sparil has loosed\nthe magical bonds holding his\ncreatures on this plane, their\ndying screams overwhelming his own\ncries of agony.\n\nYour oath of vengeance fulfilled,\nyou enter the portal to your own\nworld, mere moments before the dome\nshatters into a million pieces.\n\nBut if D'Sparil's power is broken\nforever, why don't you feel safe?\nWas it that last shout just before\nhis death, the one that sounded\nlike a curse? Or a summoning? You\ncan't really be sure, but it might\njust have been a scream.\n\nThen again, what about the other\nserpent riders?"
+
+defaultmap
+cluster 3
+nextlevel -1 39
+sky1 SKY3 0
+interpic MAPE3
+intermusic MUS_INTR
+
+map E3M1 "E3M1: The Storehouse" 31
+nextlevel 32
+par 58
+music MUS_E1M1
+
+map E3M2 "E3M2: The Cesspool" 32
+nextlevel 33
+par 68
+music MUS_E3M2
+
+map E3M3 "E3M3: The Confluence" 33
+nextlevel 34
+par 103
+music MUS_E3M3
+
+map E3M4 "E3M4: The Azure Fortress" 34
+nextlevel 35
+par 109
+music MUS_E1M6
+
+map E3M5 "E3M5: The Ophidian Lair" 35
+nextlevel 36
+par 85
+music MUS_E1M3
+
+map E3M6 "E3M6: The Halls of Fear" 36
+nextlevel 37
+par 97
+music MUS_E1M2
+
+map E3M7 "E3M7: The Chasm" 37
+nextlevel 38
+par 131
+music MUS_E1M5
+
+map E3M8 "E3M8: D'Sparil's Keep" 38
+nextlevel -1
+par 110
+music MUS_E1M9
+; D'Sparil
+bossdeath 4096
+
+map E3M9 "E3M9: The Aquifer" 39
+nextlevel 35
+par 64
+music MUS_E2M6
+
+
+
+;------------------------------------------
+; Episode 4
+
+clusterdef 4 "The Ossuary"
+finale 4
+music MUS_CPTD
+flat FLOOR28
+exittext "You thought you would return to your\nown world after D'Sparil died, but\nhis final act banished you to his\nown plane. Here you entered the\nshattered remnants of lands\nconquered by D'Sparil. You defeated\nthe last guardians of these lands,\nbut now you stand before the gates\nto D'Sparil's stronghold. Until this\nmoment you had no doubts about your\nability to face anything you might\nencounter, but beyond this portal\nlies the very heart of the evil\nwhich invaded your world. D'Sparil\nmight be dead, but the pit where he\nwas spawned remains. Now you must\nenter that pit in the hopes of\nfinding a way out. And somewhere,\nin the darkest corner of D'Sparil's\ndemesne, his personal bodyguards\nawait your arrival ..."
+
+defaultmap
+cluster 4
+nextlevel -1 49
+sky1 SKY1 0
+interpic MAPE1
+intermusic MUS_INTR
+
+map E4M1 "E4M1: Catafalque" 41
+nextlevel 42
+par 128
+music MUS_E1M6
+
+map E4M2 "E4M2: Blockhouse" 42
+nextlevel 43
+par 102
+music MUS_E1M2
+
+map E4M3 "E4M3: Ambulatory" 43
+nextlevel 44
+par 148
+music MUS_E1M3
+
+map E4M4 "E4M4: Sepulcher" 44
+nextlevel 45
+par 58
+music MUS_E1M4
+
+map E4M5 "E4M5: Great Stair" 45
+nextlevel 46
+par 125
+music MUS_E1M5
+
+map E4M6 "E4M6: Halls of the Apostate" 46
+nextlevel 47
+par 114
+music MUS_E1M1
+
+map E4M7 "E4M7: Ramparts of Perdition" 47
+nextlevel 48
+par 111
+music MUS_E1M7
+
+map E4M8 "E4M8: Shattered Bridge" 48
+nextlevel -1
+par 142
+music MUS_E1M8
+; Ironliches again
+bossdeath 1024
+
+map E4M9 "E4M9: Mausoleum" 49
+nextlevel 45
+par 169
+music MUS_E1M9
+
+
+
+;------------------------------------------
+; Episode 5
+
+clusterdef 5 "The Stagnant Demesne"
+finale 5
+music MUS_CPTD
+flat FLOOR08
+exittext "As the final maulotaur bellows his\ndeath-agony, you realize that you\nhave never come so close to your own\ndestruction. Not even the fight with\nD'Sparil and his disciples had been\nthis desperate. Grimly you stare at\nthe gates which open before you,\nwondering if they lead home, or if\nthey open onto some undreamed-of\nhorror. You find yourself wondering\nif you have the strength to go on,\nif nothing but death and pain await\nyou. But what else can you do, if\nthe will to fight is gone? Can you\nforce yourself to continue in the\nface of such despair? Do you have\nthe courage? You find, in the end,\nthat it is not within you to\nsurrender without a fight. Eyes\nwide, you go to meet your fate."
+
+defaultmap
+cluster 5
+nextlevel -1 59
+sky1 SKY3 0
+interpic MAPE2
+intermusic MUS_INTR
+
+MAP E5M1 "E5M1: Ochre Cliffs" 51
+nextlevel 52
+par 147
+music MUS_E2M1
+
+MAP E5M2 "E5M2: Rapids" 52
+nextlevel 53
+par 137
+music MUS_E2M2
+
+MAP E5M3 "E5M3: Quay" 53
+nextlevel 54
+par 71
+music MUS_E2M3
+
+MAP E5M4 "E5M4: Courtyard" 54
+nextlevel 55
+par 122
+music MUS_E2M4
+
+MAP E5M5 "E5M5: Hydratyr" 55
+nextlevel 56
+par 185
+music MUS_E1M4
+
+MAP E5M6 "E5M6: Colonnade" 56
+nextlevel 57
+par 142
+music MUS_E2M6
+
+MAP E5M7 "E5M7: Foetid Manse" 57
+nextlevel 58
+par 148
+music MUS_E2M7
+
+MAP E5M8 "E5M8: Field of Judgement" 58
+nextlevel -1
+par 279
+music MUS_E2M8
+; Maulotaurs
+bossdeath 2048
+
+MAP E5M9 "E5M9: Skein of D'Sparil" 59
+nextlevel 54
+par 162
+music MUS_E2M9
+
+
+
+;------------------------------------------
+; Episode 6 has only three maps...
+
+clusterdef 6 "Unfinished Episode"
+finale 6
+music MUS_CPTD
+flat FLOOR25
+entertext "You have entered the Unfinished\nEpisode of Heretic: Shadow of the\nSerpent Riders."
+
+defaultmap
+cluster 6
+sky1 SKY2 0
+interpic MAPE3
+intermusic MUS_INTR
+
+map E6M1 "E6M1:" 61
+nextlevel 62
+par 51
+music MUS_E3M2
+
+map E6M2 "E6M2:" 62
+nextlevel 63
+par 86
+music MUS_E3M3
+
+map E6M3 "E6M3:" 63
+nextlevel -1
+par 0
+music MUS_E1M6

@@ -1,0 +1,116 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="description" content="New, even better Doom Legacy" />
+<meta name="keywords" lang="en" content="doom, legacy, fps, heretic, hexen" />
+<link rel="stylesheet" href="legacy.css" type="text/css" />
+<title>Doom Legacy features</title>
+<style>
+span.s1 { color: #D00000; }
+span.s2 { color: #D0D000; }
+span.s3 { color: #40D000; }
+</style>
+</head>
+
+<!-- $Id: features.html 541 2009-09-24 04:36:30Z smite-meister $ -->
+<body>
+
+<h1>Doom Legacy features</h1>
+
+<p>
+As of version 2.0, the Legacy game engine has been rewritten in
+C++. A host of features were added to the game. Here is a short
+summary.
+</p>
+<p>
+<span class="s1">In a planning stage</span><br/>
+<span class="s2">Partly implemented</span><br/>
+<span class="s3">Almost finished</span><br/>
+Done
+</p>
+
+<h2>Graphics</h2>
+
+<ul>
+ <li><span class="s3">A brand new OpenGL graphics engine.</span></li>
+ <li>Support for v2 and v5 GL nodes and glVIS.
+ <li>Hi-res sprites/textures/flats, PNG and JPEG/JFIF support.</li>
+ <li>Generic graphic presentations for game objects. Support for sprites, <span class="s2">MD2s and MD3s</span>.</li>
+</ul>
+
+
+<h2>Sound and Music</h2>
+
+<p>
+The preferred multimedia interface is now SDL, the Simple DirectMedia
+Layer. This makes Legacy easily portable and offers great multimedia
+capabilities. Music is produced using the SDL_mixer
+library. Highlights:
+</p>
+<ul>
+ <li>Supports MUS, MIDI, MP3 and Ogg Vorbis music, as well as various
+ module formats.</li>
+ <li>Original Doom and WAV/RIFF sounds.</li>
+ <li>Software 3D sound renderer.</li>
+</ul>
+
+
+<h2>Gameplay</h2>
+
+<p>
+Doom Legacy 2.0 supports Doom, Heretic and Hexen.
+Gameplay is nearly the same as in original games. However,
+it can be enhanced with the following features:
+</p>
+<ul>
+ <li><span class="s2">Completely new netcode using OpenTNL</span>.</li>
+ <li>Advanced teamplay. Deathmatch, co-operative, <span class="s1">capture the
+ flag, domination, assault</span>.</li>
+ <li>Client-side bots (<span class="s1">as DLLs</span>).</li>
+ <li>Asynchronous map changes, several maps can be run simultaneously.</li>
+ <li>Level hubs (it's possible to return to a previously visited map).</li>
+ <li>All weapons from Doom/Heretic/Hexen usable in any game type if you
+ supply the required graphics and sounds! Weapon groups á la Half-Life.</li>
+ <li>Customizable translucent HUD.</li>
+ <li>Up to four-way splitscreen enabling several local players.</li>
+</ul>
+
+
+<h2>Editing</h2>
+
+<ul>
+ <li>LevelInfo lumps.</li>
+ <li>Hexen/ZDoom-style MAPINFO support, with extensions. Free level
+ ordering, hubs á la Hexen.</li>
+ <li>Partial DECORATE support (Actors).</li>
+ <li>SNDINFO and SNDSEQ support, with extensions.</li>
+ <li>ANIMDEFS support.</li>
+ <li>Supported datafile formats: WAD, WAD2/3, PAK, ZIP/PK3.</li>
+ <li>Normal directories can be used as resource "files".</li>
+ <li>Essential DeHackEd and BEX support with extensions.</li>
+ <li>Cross-over games: Doom/Heretic/Hexen entities in the same level,
+  players playing Hellspawn instead of Marines...</li>
+ <li>Voodoo dolls finally work.</li>
+ <li>Internal BLOCKMAP builder enables ridiculously huge maps.</li>
+ <li><span class="s1">DLL modifiability</span>.</li>
+</ul>
+
+
+<h2>Other new features of interest (mainly for programmers)</h2>
+
+<ul>
+ <li>Zone Memory system replaced with malloc/free. No more fiddling with -mb.</li>
+ <li>Second level dedicated cache system for textures, sounds, sprites etc.</li>
+ <li>New game objects with custom AI are easy to make through inheritance.</li>
+ <li>New save/load system with zlib compression.</li>
+ <li>Damage system with different types of damage.</li>
+ <li>Beautiful Doxygen documentation of the source code.</li>
+</ul>
+
+
+</body>
+</html>

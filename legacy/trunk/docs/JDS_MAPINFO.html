@@ -1,0 +1,307 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="description" content="The JDS group MAPINFO specification draft" />
+<meta name="keywords" lang="en" content="JDS, Doom, MAPINFO, specification, draft" />
+<link rel="stylesheet" href="legacy.css" type="text/css" />
+<title>JDS group MAPINFO specification</title>
+</head>
+
+<!-- $Id: JDS_MAPINFO.html 843 2011-07-09 01:46:30Z smite-meister $ -->
+<body>
+<h1>Joint MAPINFO Standard</h1>
+<h3>Version 0.5 (draft), released 2006-07-20.</h3>
+
+<h2>Introduction</h2>
+
+<p>
+MAPINFO is a plaintext ASCII lump which is used for defining
+</p>
+<ul>
+<li>global map properties,</li>
+<li>map clusters and hubs,</li>
+<li>game entrypoints.</li>
+</ul>
+<p>
+Normally there's just one MAPINFO lump in a WAD file, named MAPINFO.
+</p>
+
+<h2>Basics</h2>
+<p>
+The MAPINFO lump consists of any number of map, cluster and episode
+definitions. Each definition begins with a specific keyword and ends
+when a new definition begins. The body of a definition consists of
+lines, each containing a single <span class="keyword">keyword</span>, possibly followed by
+data items separated by whitespace and ending in a newline (ASCII 0x0A).
+Carriage returns (ASCII 0x0D), spaces and tabs are treated as whitespace.
+</p>
+<ul>
+<li>There are three types of data items: <b>integers</b>, <b>floats</b> and <b>strings</b>.</li>
+<li>All data items (not keywords!) may (but are not required to) be
+quoted using double quotes.
+Quoted string-type data is to be interpreted as a C string literal. Most
+importantly, <b>\n</b> is the escape sequence for a newline and
+<b>\&quot;</b> the escape sequence for a double quote.
+An empty string is denoted as <b>""</b>.
+</li>
+<li>In this specification, required data items are denoted in angle
+brackets, optional data items in brackets:
+<span class="keyword">keyword</span> &lt;int required&gt; [int optional1] [int optional2] 
+</li>
+<li>In case of multiple definitions of any property, later definitions
+always override the earlier definitions.</li>
+<li>Comments start with a semicolon as the first character of the line
+and end after the next newline.</li>
+<li>Whenever textures (graphics) are referred to by name, they should be found
+using the Graphic lookup order as defined in the JDS
+<a href="http://glbsp.sourceforge.net/JointTextureSpec.txt">Joint Texture
+Standard</a>, unless specified otherwise.</li>
+</ul>
+
+<h2>Map definitions</h2>
+
+<p>
+A map definition begins with the keyword <span class="keyword">map</span>, followed by the
+map separator lumpname (e.g. MAP04, E3M1 etc.),
+a nice long name for the map (e.g. "The Nuclear Plant"),
+and the level number (a unique positive number used by the exit
+teleporters destined for this map):
+</p>
+<div class="code">map &lt;str lumpname&gt; &lt;str nicename&gt; [int levelnumber]</div>
+<!-- Hexen uses the syntax   map 3 "nicename" -->
+<p>
+If (and only if) the map lumpname is of the form MAPxx, the levelnumber may be omitted (and
+is taken to be xx).<br/>
+You can also use the keyword <span class="keyword">defaultmap</span> to
+start the definition for the default map properties:
+</p>
+<div class="code">defaultmap</div>
+<p>
+The keywords for defining map properties are:
+</p>
+<table class="def">
+<tr><th>Keyword</th><th>Default value(s)</th><th>Description</th></tr>
+<tr><td class="note" colspan="3">
+Basic map properties</td></tr>
+<tr><td>cluster &lt;int number &gt;</td><td>0</td><td>Number of the
+cluster in which the map belongs.</td></tr>
+<tr><td>nextlevel &lt;int next&gt;&nbsp;[int&nbsp;secretnext]</td><td>-1, -1</td><td>Defines level
+numbers of the exit destinations for Doom/Heretic-style exits. A value
+of -1 means that the game ends when the exit is activated.</td></tr>
+<tr><td>next &lt;str maplumpname&gt;</td><td>""</td><td>Alternative way
+of defining the Doom/Heretic exit destination.</td></tr>
+<tr><td>secretnext &lt;str maplumpname&gt;</td><td>""</td><td>
+Alternative way of defining the Doom/Heretic secret exit destination.</td></tr>
+<tr><td>author &lt;str name&gt;</td><td>""</td><td>Map author's name.</td></tr>
+<tr><td>version &lt;str versionstring&gt;</td><td>""</td><td>Version
+string for the map.</td></tr>
+<tr><td>description &lt;str descr&gt;</td><td>""</td><td>Map description.</td></tr>
+<tr><td>music &lt;str lumpname&gt;</td><td>""</td><td>Music to be
+played in the map.</td></tr>
+<tr><td>par &lt;int seconds&gt;</td><td>0</td><td>Map partime in seconds.</td></tr>
+<tr><td>gravity &lt;float acceleration&gt;</td><td>1.0</td><td>Map default
+gravity. Can be overridden by specific constructs inside the map.</td></tr>
+
+<tr><td class="note" colspan="3">
+Intermission-related options</td></tr>
+<tr><td>picname &lt;str texturename&gt;</td><td>""</td><td>The graphic to
+use instead of the map nice name in the intermission screens etc.</td></tr>
+<tr><td>interpic &lt;str texturename&gt;</td><td>""</td><td>Intermission
+background picture to show after the map is finished.</td></tr>
+<tr><td>intermusic&nbsp;&lt;str&nbsp;lumpname&gt;</td><td>""</td><td>Music for
+the intermission.</td></tr>
+
+<tr><td class="note" colspan="3">
+Additional stuff</td></tr>
+<tr><td>sky1&nbsp;&lt;str&nbsp;texturename&gt;&nbsp;&lt;float&nbsp;scrollspeed&gt;</td>
+<td>"", 0.0</td><td>Defines the sky texture and the speed it scrolls to the
+left. Use the Wall lookup order.
+</td></tr>
+<tr><td>sky2&nbsp;&lt;str&nbsp;texturename&gt;&nbsp;&lt;float&nbsp;scrollspeed&gt;</td>
+<td>"", 0.0</td><td>Defines the secondary sky texture. Use the Wall lookup order.
+</td></tr>
+<tr><td>doublesky</td><td></td><td>Specifies that both sky textures
+are drawn, with sky1 in front of sky2.<br/>
+Sky2 will show through wherever sky1 is color 0.</td></tr>
+<tr><td>lightning</td><td></td><td>Turns on the Hexen lightning
+effect in the map.</td></tr>
+</table>
+
+<h2>Cluster definitions</h2>
+
+<p>
+Clusters are used for grouping maps together. Each map belongs to
+a single cluster. If a map has no cluster keyword, it is assigned to
+special cluster 0, which is automatically generated.
+A cluster definition begins with the keyword <span class="keyword">clusterdef</span>,
+followed by a positive cluster number and a nice long name for the
+cluster (e.g. "Knee-deep in the Dead"):
+</p>
+<div class="code">clusterdef &lt;int number&gt; [str nicename]
+</div>
+<p>
+The keywords for defining cluster properties are:
+</p>
+<table class="def">
+<tr><th>Keyword</th><th>Default value(s)</th><th>Description</th></tr>
+<tr><td>entertext &lt;str text&gt;</td><td>""</td><td></td></tr>
+<tr><td>exittext &lt;str text&gt;</td><td>""</td><td></td></tr>
+<tr><td>music&nbsp;&lt;str&nbsp;lumpname&gt;</td><td>""</td><td>Music to be
+played during the enter- and exittext.</td></tr>
+<tr><td>flat &lt;str texturename&gt;</td><td>""</td><td>Background
+picture for the texts (will be tiled if smaller than 320*200). Use the Flat
+lookup order.</td></tr>
+<tr><td>hub</td><td></td><td>Indicates that the cluster
+is a hub. Inside a hub, the states of all maps are saved when they are
+exited, and loaded when they are re-entered.</td></tr>
+<tr><td>finale &lt;str finalescript&gt;</td><td>""</td><td>
+Which finale to show if the game ends in this cluster? Some script
+names are reserved, see the following table.
+</td></tr>
+</table>
+
+<p>
+This document does not attempt to define the finale scripts in any
+way. However, the following reserved finale script names should
+always produce the expected finales:
+</p>
+<table class="def">
+<tr><th>Script name</th><th>Description</th></tr>
+<tr><td>Doom1</td><td>Doom 1 finales (episode dependant)</td></tr>
+<tr><td>Doom2</td><td>Doom 2 cast presentation</td></tr>
+<tr><td>Heretic</td><td>Heretic finales (episode dependant)</td></tr>
+<tr><td>Hexen</td><td>Hexen chessboard scene</td></tr>
+</table>
+
+<h2>Episode definitions</h2>
+
+<p>
+Episodes are used for defining entry points to the game, visible in
+the game menu.
+The episodes should appear in the game menu in the same order they
+are defined.
+An episode definition begins with the keyword <span class="keyword">episode</span>,
+followed by the lumpname of the initial map, the name of the episode, 
+and possibly the in-map entrypoint (Hexen only):
+</p>
+<div class="code">episode &lt;str maplump&gt; &lt;str nicename&gt; [int entrypoint]</div>
+<p>
+The keywords for defining episode properties are:
+</p>
+<table class="def">
+<tr><th>Keyword</th><th>Default value(s)</th><th>Description</th></tr>
+<tr><td>picname &lt;str texturename&gt;</td><td>""</td><td>The graphic to
+use instead of the nice name in the menu.</td></tr>
+</table>
+
+<h2>Example</h2>
+
+<p>
+Here is a self-contained example MAPINFO lump, which defines a game
+consisting of two clusters, six maps and two entrypoints:
+</p>
+<div class="code">; the normal entrypoint
+episode MAP01 "The Mare Imbrium Fiasco"
+
+; an alternative entrypoint for beginners
+episode TRAINING "Basic Training"
+
+
+; First chapter
+clusterdef 1 "The Mare Imbrium Base"
+hub
+flat SLIME16
+music D_ULTIMA
+exittext "Un-frakking-believable! Another illegal UAC experiment gone bad, another dimension rift to fix.\nAnd guess who's the only one alive to do the job?"
+
+defaultmap
+cluster 1
+author "Smite-meister"
+sky1 SKY1 0
+interpic INTERPIC
+intermusic D_RUNNIN
+
+map MAP01 "Mission control"
+version "1.0"
+description "Lots of SP scripting, not suitable for DM."
+music D_COUNTD
+par 50
+nextlevel 2 3
+
+map MAP02 "Power core"
+version "1.2"
+description "Great DM map for 4-8 players!"
+music D_ROMERO
+par 80
+nextlevel 3 1
+
+map MAP03 "The Bianchini anomaly"
+version "1.1"
+description "Works also as a three team CTF map. Watch out for snipers."
+music "music/anomaly.ogg"
+par 100
+gravity 0.2
+nextlevel 10
+
+map TRAINING "The Marine Barracs" 99
+version "0.9"
+description "Training map, also good for 4 player DM."
+music "music/barracks.ogg"
+par 30
+nextlevel 1
+
+
+; Second chapter
+clusterdef 2 "Irem, the City of Pillars"
+flat FLOOR25
+music MUS_CPTD
+exittext "So much for the bat-demons. You just knew that someday your BA in Sumerian Linguistics would come in handy."
+finale "my_awesome_finale"
+
+defaultmap
+cluster 2
+sky1 SKY2 50
+interpic DESERT
+intermusic MUS_INTR
+
+map E1M2 "The Catacombs" 10
+author "unknown"
+description "Uncredited PD map I found somewhere."
+music MUS_E1M6
+par 130
+nextlevel 11
+
+map E8M5 "Temple of Marduk" 11
+author "me"
+version "0.97 alpha5"
+description "Huge SP map with a large central area perfect for team deathmatch."
+music MUS_E1M2
+par 210
+nextlevel -1
+;episode ends here
+</div>
+
+
+
+<h2>Comments</h2>
+
+<ul>
+<li>Should the hub keyword be given parameters? (keep items/keep
+weapons/keep keys etc...)</li>
+<li>Are the Hexen sky keywords sky2, doublesky and lightning too much?</li>
+<li>What fog model should we use (if any)?</li>
+<li>The episode construct... should we add a difficulty setting too?
+Should the keyword be changed to entrypoint or something similar?
+(episode is slightly misleading)</li>
+<li>Should ExMy-named maps automatically be given mapnumber 10*x+y or something
+like that? Maybe not.
+</li>
+
+</ul>
+
+</body>
+</html>

@@ -1,0 +1,21 @@
+smite-meister's log for Legacy 2
+
+Started: 2010-03-23
+
+
+*** vsprintf fixes (same as Legacy 1 commit 608)
+rev 616
+Replaced a number of unsafe uses of vsprintf with vsnprintf, fixing
+several console-related crashing bugs.
+Added this log.
+
+
+*** ENDOOM fixed (from legacy_one commit 688)
+rev 704
+Now the ENDOOM lump has current information in it.
+Also, updated compiling docs.
+
+
+
+TODO
+- when deleting global vars (caches, namely) after exit() has been called, texture_cache and material_cache have some unwanted interplay (default texture)

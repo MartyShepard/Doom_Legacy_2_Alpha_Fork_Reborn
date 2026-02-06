@@ -1,0 +1,97 @@
+// DECORATE file for Doom Legacy 2.0
+// Doom Legacy Team 2007
+
+// Hexen monsters
+
+actor Pig
+{
+  obituary "%s squealed like pig while being gored by one\n"
+}
+
+actor Ettin
+{
+  obituary "%s was clubbed by an Ettin\n"
+}
+
+actor FireDemon
+{
+  obituary "%s was scorched by an Afrit\n"
+}
+
+actor Demon1
+{
+  obituary "%s was burned by a Chaos Serpent\n"
+}
+
+actor Demon2
+{
+  obituary "%s was slimed by a Chaos Serpent\n"
+}
+
+actor Centaur
+{
+  obituary "%s was cut up by a Centaur\n"
+}
+
+actor CentaurLeader
+{
+  obituary "%s was singed by a Slaughtaur\n"
+  hitobituary "%s was slashed by a Slaughtaur\n"
+}
+
+actor IceGuy
+{
+  obituary "%s was frozen by a Wendigo\n"
+}
+
+actor Serpent
+{
+  obituary "%s was devoured by a Stalker\n"
+}
+
+actor SerpentLeader
+{
+  obituary "%s was devoured by a Stalker\n"
+  hitobituary "%s was dissolved by a Stalker\n"
+}
+
+actor Bishop
+{
+  obituary "%s could not resist the black arts of a Dark Bishop\n"
+}
+
+actor Wraith
+{
+  obituary "%s was seared by a Reiver\n"
+  hitobituary "%s's life was leeched away by a Reiver\n"
+}
+
+actor Dragon
+{
+  obituary "%s was torched by a Death Wyvern\n"
+}
+
+actor Heresiarch
+{
+  obituary "%s succumbed to the Heresiarch's evil sorcery\n"
+}
+
+actor FighterBoss
+{
+  obituary "%s's martial prowess was no match for Zedek\n"
+}
+
+actor ClericBoss
+{
+  obituary "%s's faith was not strong enough to overcome Traductus\n"
+}
+
+actor MageBoss
+{
+  obituary "%s's arcane powers were not enough to defeat Menelkir\n"
+}
+
+actor Korax
+{
+  obituary "%s was checkmated by Korax\n"
+}

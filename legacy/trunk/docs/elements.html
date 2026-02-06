@@ -1,0 +1,72 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="description" content="New, even better Doom Legacy" />
+<meta name="keywords" lang="en" content="doom, legacy, fps, heretic, hexen" />
+<link rel="stylesheet" href="legacy.css" type="text/css" />
+<title>Doom Legacy Subsystems</title>
+<style>
+td.u { color: #606060; }
+td.s { color: #F00000; }
+td.p { color: #C0C000; }
+td.w { color: #2060D0; }
+td.d { color: #00F000; }
+</style>
+</head>
+
+<!-- $Id: elements.html 541 2009-09-24 04:36:30Z smite-meister $ -->
+<body>
+
+<h1>Progress indicators for Doom Legacy subsystems</h1>
+(don't take these too seriously!)
+
+<table cellspacing="2">
+<tr><th>Progression:</th><td class="u">Unmodified</td><td class="s">Starting</td><td class="p">Partial</td><td class="w">Works</td><td class="d">Done</td>
+</tr>
+</table>
+
+<table cellspacing="2">
+<tr><th>Subsystem<th>Status<th>Location
+<tr><td><br />
+<tr><td><b>Fundamentals</b>
+<tr><td>Basic data classes<td class="w">Works<td>util/
+<tr><td>Event system<td class="w">Works<td>engine/
+<tr><td>Cache<td class="w">Works<td> util/
+<tr><td>Menu<td class="p">Partial<td>engine/menu/
+<tr><td>Console<td class="w">Works<td>util/
+<tr><td><br />
+<tr><td><b>Game simulation</b>
+<tr><td>World object class hierarchy<td class="w">Works<td>include/g_*.h
+<tr><td>Object serialization/persistence<td class="w">Works<td>engine/g_save.cpp
+<tr><td>World subdivision (bsp-tree, octree, lists)<td class="w">Works<td>engine/
+<tr><td>Physics engine<td class="p">Partial<td>engine/
+<tr><td>AI<td class="s">Starting<td>engine/
+<tr><td>Scripting<td class="w">Works<td>engine/scripting/
+<tr><td>Network code<td class="p">Partial<td>net/
+<tr><td>DLL interface<td class="s">Starting<td>
+<tr><td>Bots<td class="p">Partial<td>engine/bots/
+<tr><td><br />
+<tr><td><b>Extra stuff</b>
+<tr><td>HUD<td class="w">Works<td>engine/HUD/
+<tr><td>Automap<td class="p">Partial<td>engine/automap/
+<tr><td>Intermission/Finale<td class="w">Works<td>engine/animation/
+<tr><td>Cheating<td class="d">Done<td>engine/m_cheat.cpp
+<tr><td><br />
+<tr><td><b>Video</b>
+<tr><td>Texture class<td class="w">Works<td>include/r_data.h
+<tr><td>2D sprite/billboard/decal class<td class="w">Works<td>include/r_sprite.h
+<tr><td>3D model class<td class="p">Partial<td>include/r_sprite.h
+<tr><td>Software renderer<td class="w">Works<td>video/
+<tr><td>OpenGL renderer<td class="p">Partial<td>video/hardware/
+<tr><td><br />
+<tr><td><b>Audio</b>
+<tr><td>Sound renderer<td class="w">Works<td>audio/
+<tr><td>Music<td class="w">Works<td>audio/
+</table>
+
+</body>
+</html>

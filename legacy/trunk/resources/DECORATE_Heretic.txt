@@ -1,0 +1,97 @@
+// DECORATE file for Doom Legacy 2.0
+// Doom Legacy Team 2007
+
+// Heretic monsters
+
+actor Chicken
+{
+  obituary "%s was henpecked to submission\n"
+}
+
+actor HereticImp
+{
+  obituary "%s was gored by a Gargoyle\n"
+}
+
+actor HereticImpLeader
+{
+  obituary "%s was scorched by a Fire Gargoyle\n"
+  hitobituary "%s was gored by a Fire Gargoyle\n"
+}
+
+actor Mummy
+{
+  obituary "%s was beaten to a pulp by a Golem\n"
+}
+
+actor MummyLeader
+{
+  obituary "%s was incinerated by a Nitrogolem\n"
+}
+
+actor MummyGhost
+{
+  obituary "%s was beaten to a pulp by a Golem Ghost\n"
+}
+
+actor MummyLeaderGhost
+{
+  obituary "%s was incinerated by a Nitrogolem Ghost\n"
+}
+
+actor Clink
+{
+  obituary "%s was sliced up by a Sabreclaw\n"
+}
+
+actor Knight
+{
+  obituary "%s was vanquished by an Undead Knight\n"
+  hitobituary "%s was hacked apart by an Undead Knight\n"
+}
+
+actor KnightGhost
+{
+  obituary "%s was vanquished by an Undead Knight Ghost\n"
+  hitobituary "%s was hacked apart by an Undead Knight Ghost\n"
+}
+
+actor Beast
+{
+  obituary "%s was fried by a Weredragon\n"
+}
+
+actor Snake
+{
+  obituary "%s took a broadside from an Ophidian\n"
+}
+
+actor Wizard
+{
+  obituary "%s's life was drained away by a Disciple\n"
+  hitobituary "%s felt the chilling touch of a Disciple\n"
+}
+
+actor Ironlich
+{
+  obituary "%s was blasted by an Iron Lich\n"
+  hitobituary "%s got closer to an Iron Lich than was healthy\n"
+}
+
+actor Sorcerer1
+{
+  obituary "%s got burned by D'Sparil's Chaos Serpent\n"
+  hitobituary "%s was eaten by D'Sparil's Chaos Serpent\n"
+}
+
+actor Sorcerer2
+{
+  obituary "%s was no match for D'Sparil\n"
+  hitobituary "%s was beaten by D'Sparil\n"
+}
+
+actor Minotaur
+{
+  obituary "%s felt a Maulotaur's burning anger\n"
+  hitobituary "%s was pounded to rubble by a Maulotaur\n"
+}

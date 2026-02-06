@@ -1,0 +1,311 @@
+; MAPINFO file: original Doom map ordering
+; Doom Legacy Team 2003-2006
+
+episode E1M1 "Knee-Deep in the Dead"
+picname M_EPI1
+
+episode E2M1 "The Shores of Hell"
+picname M_EPI2
+
+episode E3M1 "Inferno"
+picname M_EPI3
+
+episode E4M1 "Thy Flesh Consumed"
+picname M_EPI4
+
+
+;------------------------------------------
+; Episode 1
+
+clusterdef 1 "Knee-deep in the Dead"
+finale 1
+music D_VICTOR
+flat FLOOR4_8
+exittext "Once you beat the big badasses and\nclean out the moon base you're supposed\nto win, aren't you? Aren't you? Where's\nyour fat reward and ticket home? What\nthe hell is this? It's not supposed to\nend this way!\n\nIt stinks like rotten meat, but looks\nlike the lost Deimos base.  Looks like\nyou're stuck on The Shores of Hell.\nThe only way out is through.\n\nTo continue the DOOM experience, play\nThe Shores of Hell and its amazing\nsequel, Inferno!\n"
+
+defaultmap
+cluster 1
+nextlevel -1 19
+sky1 SKY1 0
+interpic WIMAP0
+intermusic D_INTER
+
+map E1M1 "E1M1: Hangar" 11
+nextlevel 12
+par 30
+music D_E1M1
+picname WILV00
+
+map E1M2 "E1M2: Nuclear Plant" 12
+nextlevel 13
+par 75
+music D_E1M2
+picname WILV01
+
+map E1M3 "E1M3: Toxin Refinery" 13
+nextlevel 14
+par 120
+music D_E1M3
+picname WILV02
+
+map E1M4 "E1M4: Command Control" 14
+nextlevel 15
+par 90
+music D_E1M4
+picname WILV03
+
+map E1M5 "E1M5: Phobos Lab" 15
+nextlevel 16
+par 165
+music D_E1M5
+picname WILV04
+
+map E1M6 "E1M6: Central Processing" 16
+nextlevel 17
+par 180
+music D_E1M6
+picname WILV05
+
+map E1M7 "E1M7: Computer Station" 17
+nextlevel 18
+par 180
+music D_E1M7
+picname WILV06
+
+map E1M8 "E1M8: Phobos Anomaly" 18
+nextlevel -1
+par 30
+music D_E1M8
+; Barons of Hell
+bossdeath 1
+picname WILV07
+
+map E1M9 "E1M9: Military Base" 19
+nextlevel 14
+par 165
+music D_E1M9
+picname WILV08
+
+
+
+;------------------------------------------
+; Episode 2
+
+clusterdef 2 "The Shores of Hell"
+finale 2
+music D_VICTOR
+flat SFLR6_1
+exittext "You've done it! The hideous cyber-\ndemon lord that ruled the lost Deimos\nmoon base has been slain and you\nare triumphant! But ... where are\nyou? You clamber to the edge of the\nmoon and look down to see the awful\ntruth.\n\nDeimos floats above Hell itself!\nYou've never heard of anyone escaping\nfrom Hell, but you'll make the bastards\nsorry they ever heard of you! Quickly,\nyou rappel down to  the surface of\nHell.\n\nNow, it's on to the final chapter of\nDOOM! -- Inferno."
+
+defaultmap
+cluster 2
+nextlevel -1 29
+sky1 SKY2 0
+interpic WIMAP1
+intermusic D_INTER
+
+map E2M1 "E2M1: Deimos Anomaly" 21
+nextlevel 22
+par 90
+music D_E2M1
+picname WILV10
+
+map E2M2 "E2M2: Containment Area" 22
+nextlevel 23
+par 90
+music D_E2M2
+picname WILV11
+
+map E2M3 "E2M3: Refinery" 23
+nextlevel 24
+par 90
+music D_E2M3
+picname WILV12
+
+map E2M4 "E2M4: Deimos Lab" 24
+nextlevel 25
+par 120
+music D_E2M4
+picname WILV13
+
+map E2M5 "E2M5: Command Center" 25
+nextlevel 26
+par 90
+music D_E2M5
+picname WILV14
+
+map E2M6 "E2M6: Halls of the Damned" 26
+nextlevel 27
+par 360
+music D_E2M6
+picname WILV15
+
+map E2M7 "E2M7: Spawning Vats" 27
+nextlevel 28
+par 240
+music D_E2M7
+picname WILV16
+
+map E2M8 "E2M8: Tower of Babel" 28
+nextlevel -1
+par 30
+music D_E2M8
+; Cyberdemon
+bossdeath 2
+picname WILV17
+
+map E2M9 "E2M9: Fortress of Mystery" 29
+nextlevel 26
+par 170
+music D_E2M9
+picname WILV18
+
+
+
+;------------------------------------------
+; Episode 3
+
+clusterdef 3 "Inferno"
+finale 3
+music D_VICTOR
+flat MFLR8_4
+exittext "The loathsome spiderdemon that\nmasterminded the invasion of the moon\nbases and caused so much death has had\nits ass kicked for all time.\n\nA hidden doorway opens and you enter.\nYou've proven too tough for Hell to\ncontain, and now Hell at last plays\nfair -- for you emerge from the door\nto see the green fields of Earth!\nHome at last.\n\nYou wonder what's been happening on\nEarth while you were battling evil\nunleashed. It's good that no Hell-\nspawn could have come through that\ndoor with you ..."
+
+defaultmap
+cluster 3
+nextlevel -1 39
+sky1 SKY3 0
+interpic WIMAP2
+intermusic D_INTER
+
+map E3M1 "E3M1: Hell Keep" 31
+nextlevel 32
+par 90
+music D_E3M1
+picname WILV20
+
+map E3M2 "E3M2: Slough of Despair" 32
+nextlevel 33
+par 45
+music D_E3M2
+picname WILV21
+
+map E3M3 "E3M3: Pandemonium" 33
+nextlevel 34
+par 90
+music D_E3M3
+picname WILV22
+
+map E3M4 "E3M4: House of Pain" 34
+nextlevel 35
+par 150
+music D_E3M4
+picname WILV23
+
+map E3M5 "E3M5: Unholy Cathedral" 35
+nextlevel 36
+par 90
+music D_E3M5
+picname WILV24
+
+map E3M6 "E3M6: Mt. Erebus" 36
+nextlevel 37
+par 90
+music D_E3M6
+picname WILV25
+
+map E3M7 "E3M7: Limbo" 37
+nextlevel 38
+par 165
+music D_E3M7
+picname WILV26
+
+map E3M8 "E3M8: Dis" 38
+nextlevel -1
+par 30
+music D_E3M8
+; Spider Mastermind
+bossdeath 8
+picname WILV27
+
+map E3M9 "E3M9: Warrens" 39
+nextlevel 37
+par 135
+music D_E3M9
+picname WILV28
+
+
+
+;------------------------------------------
+; Episode 4
+
+clusterdef 4 "Thy Flesh Consumed"
+finale 4
+music D_VICTOR
+flat MFLR8_3
+exittext "The spider mastermind must have sent forth\nits legions of hellspawn before your\nfinal confrontation with that terrible\nbeast from Hell.  But you stepped forward\nand brought forth eternal damnation and\nsuffering upon the horde as a true hero\nwould in the face of something so evil.\n\nBesides, someone was gonna pay for what\nhappened to Daisy, your pet rabbit.\n\nBut now, you see spread before you more\npotential pain and gibbitude as a nation\nof demons run amok among our cities.\n\nNext stop, Hell on Earth!"
+
+defaultmap
+cluster 4
+nextlevel -1 49
+sky1 SKY4 0
+interpic WIMAP0
+intermusic D_INTER
+
+map E4M1 "E4M1: Hell Beneath" 41
+nextlevel 42
+par 0
+music D_E3M4
+picname WILV30
+
+map E4M2 "E4M2: Perfect Hatred" 42
+nextlevel 43
+par 0
+music D_E3M2
+picname WILV31
+
+map E4M3 "E4M3: Sever The Wicked" 43
+nextlevel 44
+par 0
+music D_E3M3
+picname WILV32
+
+map E4M4 "E4M4: Unruly Evil" 44
+nextlevel 45
+par 0
+music D_E1M5
+picname WILV33
+
+map E4M5 "E4M5: They Will Repent" 45
+nextlevel 46
+par 0
+music D_E2M7
+picname WILV34
+
+map E4M6 "E4M6: Against Thee Wickedly" 46
+nextlevel 47
+par 0
+music D_E2M4
+; Cyberdemon
+bossdeath 4
+picname WILV35
+
+map E4M7 "E4M7: And Hell Followed" 47
+nextlevel 48
+par 0
+music D_E2M6
+picname WILV36
+
+map E4M8 "E4M8: Unto The Cruel" 48
+nextlevel -1
+par 0
+music D_E2M5
+; Spider Mastermind
+bossdeath 16
+picname WILV37
+
+map E4M9 "E4M9: Fear" 49
+nextlevel 43
+par 0
+music D_E1M9
+picname WILV38

@@ -1,0 +1,89 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="description" content="New, even better Doom Legacy" />
+<meta name="keywords" lang="en" content="doom, legacy, fps, heretic, hexen" />
+<link rel="stylesheet" href="legacy.css" type="text/css" />
+<title>Doom Legacy TODO list</title>
+</head>
+
+<!-- $Id: TODO.html 541 2009-09-24 04:36:30Z smite-meister $ -->
+<body>
+
+<h1>Doom Legacy TODO list</h1>
+
+In order of decreasing importance:
+
+<ul>
+<li>Finish new network code, based on OpenTNL:
+ <ul>
+ <li>client input transmission (ticcmds)</li>
+ <li>client interpolation and extrapolation (makes the game smoother and more
+responsive, but is not strictly necessary)</li>
+ <li>file transfers</li>
+ <li>master server functionality</li>
+ </ul></li>
+
+<li>New legacy.wad contents:
+ <ul>
+ <li>a complete font (for console and menu)</li>
+ <li>simple menu graphics</li>
+ <li>a standard replacement music, sprite and model</li>
+ <li>"Legacy demo" map in case someone decides to use it as an iwad
+ + MAPINFO lump to handle it.</li>
+ </ul></li>
+
+<li>Limit CPU hogging by bot pathing.</li>
+
+<li>Add internal GL-node builder (just use glBSP).</li>
+
+<li>General team system, teamstarts etc.</li>
+
+<li>Give all attacks a relevant damage type.</li>
+
+<li>TrueType font system using SDL_ttf, UTF-8 -based console, UCS-4
+codes in keydown events.</li>
+
+<li>Game modifications using DLLs. <a href="ctf.html">Capture the Flag</a>,
+ <a href="doomfortress.html">Doom Fortress</a>...</li>
+
+<li>Rewrite the FS parser using flex and lemon, use pre-generated
+parsing trees to run FS code.</li>
+
+<li>Default parameters to FS functions, more FS functions, better FS documentation, FS arrays</li>
+
+<li>Bots implemented as DLLs.</li>
+
+<li>Fix color translations for Hexen and Heretic: automap etc.</li>
+
+<li>Other pawntypes besides Marine and Heretic
+ <ul>
+ <li>Natural attacks (and sounds) for each Pawntype (when Marines punch, Imps either
+claw or shoot fireballs)</li>
+ <li>Viewheight depending on pawn height</li>
+ </ul></li>
+
+<li>class Camera : public Actor could include chasecams,
+  fixed cameras, target-following cams, IR cams etc.</li>
+
+<li>Sprite skin support, skin sounds</li>
+
+<li>Replace software sound renderer+SDL_mixer with OpenAL+SDL_sound,
+with OpenAL doing the mixing.</li>
+
+<li>Replace titlescreen demo sequences with bots playing random maps.</li>
+
+<li>a 3D skeleton-animated model class</li>
+
+<li>Turn the Menu into a widget-based browser, including a levelgraph
+  editor etc. Maybe replace the launcher altogether?</li>
+
+<li>Run the cache system in a separate thread;)</li>
+</ul>
+
+</body>
+</html>

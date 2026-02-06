@@ -1,0 +1,84 @@
+/*
+  Doom Legacy Manual
+  Copyright (C) 1998-2006 by DooM Legacy Team.
+
+  $Id: manual.doxygen 347 2006-07-18 16:16:52Z smite-meister $
+*/
+
+
+/*!
+@mainpage Doom Legacy Manual
+
+Copyright &copy; 1998-2006 by DooM Legacy Team.
+
+
+@section introduction Introduction
+
+This is the main index page for <b>Doom Legacy</b> documentation.
+TODO finish this page
+
+@section contents Contents of this manual
+
+The Legacy documentation is divided into three chapters:
+
+@ref playing, information for players.
+
+@ref editing, information for map authors.
+
+@ref coding, information for developers and other interested parties.
+
+@see
+<a href="http://legacy.newdoom.com/">Doom Legacy</a> home page.
+ */
+
+
+
+/*! @page playing Playing Doom Legacy
+
+Just start playing, moron!
+
+<ul>
+<li><a href="../legacy.html">legacy.html</a> Legacy reference manual</li>
+<li><a href="../faq.html">faq.html</a> Frequently Asked Questions answered</li>
+<li><a href="../console.html">console.html</a> Console commands explained</li>
+<li><a href="../skins.html">skins.html</a> Legacy skin specifications</li>
+<li><a href="../history.html">history.html</a> History of Doom Legacy</li>
+</ul>
+
+ */
+
+
+
+/*! @page editing Editing
+
+Lots of features, such as new linedef types, 3d floors, scripting...
+
+<ul>
+<li><a href="../features.html">features.html</a> Summary of Doom Legacy features</li>
+<li><a href="../editing.html">editing.html</a> Legacy Map Author's reference manual</li>
+<li><a href="../boomref.html">boomref.html</a> Boom reference manual</li>
+<li><a href="../fsbasic.html">fsbasic.html</a> FraggleScript</li>
+<li><a href="../acs.html">acs.html</a> Action Code Script</li>
+</ul>
+
+ */
+
+
+
+/*! @page coding Coding
+
+Doom Legacy is free software, distributed under GPL, the GNU General Public License.
+The source can be found <a href="http://sourceforge.net/projects/doomlegacy/">here</a>.
+
+<ul>
+<li><a href="../compiling.html">compiling.html</a> Compiling instructions</li>
+<li><a href="../source.html">source.html</a> What you should know about the source</li>
+<li><a href="../elements.html">elements.html</a> Game subsystem definitions and progress indicators</li>
+<li><a href="../TODO.html">TODO.html</a> Todo list</li>
+<li><a href="../BUGS.html">BUGS.html</a> Bugs list</li>
+</ul>
+
+@note
+To get started, you should read the documentation on @ref g_central.
+The netcode is found within @ref GameInfo, @ref LNetInterface and @ref LConnection.
+ */

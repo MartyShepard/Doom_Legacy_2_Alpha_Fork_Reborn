@@ -1,0 +1,741 @@
+; Doom Legacy sound mappings
+; Doom Legacy Team 2003-2004
+; $Id: SNDINFO.txt 247 2005-05-29 12:22:43Z smite-meister $
+
+
+; Default attributes
+$multiplicity	0
+$priority	64
+$pitch		0
+
+; NOTE! If no explicit number is given, the sounds are numbered
+; in the order they appear in this file. These numbers are used
+; in some places inside the executable to refer to the sound.
+; Hence order matters. This system is somewhat fragile, but useful.
+
+
+;===================================================
+; Common sounds, introduced here for numbering
+;===================================================
+
+game/message		.
+menu/open		.
+menu/close		.
+menu/move		.
+menu/choose		.
+menu/fail		.
+menu/adjust		.
+
+player/jump		DSJUMP
+player/land		DSOUCH
+player/grunt		DSOUCH
+player/usefail		DSOUCH	m1
+player/itemup		.	m1
+player/keyup		.	m1
+player/weaponup		.	m1
+player/artiup		.	m1
+player/powerup		.	m1
+player/artiuse		.	m1
+player/frag		.	m1
+player/secret		.	m1
+
+world/splash		DSGLOOP
+world/enterwater	DSSPLASH
+world/exitwater		DSFLOUSH
+world/quake		.
+world/teleport		.
+world/itemrespawn	.
+world/gib		.
+
+door/start		.
+door/stop		.
+floor/move		.
+floor/stop		.
+ceil/move		.
+ceil/stop		.
+plat/start		.
+plat/move		.
+plat/stop		.
+switch/on		.
+switch/off		.
+
+;===================================================
+; Doom
+;===================================================
+
+$ifdoom
+; Doom replacements for the common sounds
+
+; Game sounds
+;game/message		DSRADIO
+game/message		DSTINK
+menu/open		DSSWTCHN
+menu/close		DSSWTCHX
+menu/move		DSPSTOP
+menu/choose		DSPISTOL
+menu/fail		DSOOF
+menu/adjust		DSSTNMOV
+
+; Player sounds
+player/grunt		DSOOF
+player/usefail		DSNOWAY
+player/itemup		DSITEMUP
+player/keyup		DSITEMUP
+player/weaponup		DSWPNUP
+player/powerup		DSGETPOW
+player/secret		DSTINK
+
+; World sounds
+world/teleport		DSTELEPT
+world/itemrespawn	DSITMBK
+world/gib		DSSLOP
+
+door/start		DSDOROPN
+door/stop		DSDORCLS
+floor/move		DSSTNMOV
+floor/stop		DSPSTOP
+ceil/move		DSSTNMOV
+ceil/stop		DSPSTOP
+plat/start		DSPSTART
+plat/move		DSSTNMOV
+plat/stop		DSPSTOP
+switch/on		DSSWTCHN
+switch/off		DSSWTCHX
+
+;DSSKLDTH is unused. same sound as DSNOWAY and DSOOF
+$endif
+
+door/normal/o		DSDOROPN
+door/normal/c		DSDORCLS
+door/blaze/o		DSBDOPN
+door/blaze/c		DSBDCLS
+
+world/explosion		DSBAREXP
+world/fireshot		DSFIRSHT  ; TODO make this a monster sound...
+world/shot_expl		DSFIRXPL  ; this too
+
+; Weapon sounds
+weapon/punch		DSPUNCH
+weapon/pistol		DSPISTOL
+weapon/shotgun		DSSHOTGN
+weapon/shotgun/load	DSSGCOCK
+weapon/shotgun2		DSDSHTGN
+weapon/shotgun2/open	DSDBOPN
+weapon/shotgun2/close	DSDBCLS
+weapon/shotgun2/load	DSDBLOAD
+weapon/chaingun		DSPISTOL	p+22
+weapon/rpg		DSRLAUNC
+;weapon/rpg/hit		DSBAREXP
+weapon/plasma		DSPLASMA
+weapon/bfg		DSBFG
+weapon/bfg/hit		DSRXPLOD
+weapon/saw		DSSAWFUL
+weapon/saw/up		DSSAWUP
+weapon/saw/idle		DSSAWIDL
+weapon/saw/hit		DSSAWHIT
+
+; Marine, our hero
+marine/pain		DSPLPAIN
+marine/death1		DSPLDETH
+marine/death2		DSPDIEHI
+
+; Possessed soldier, zombieman
+; Possessed sargeant, shotguy
+; Possessed chaingunner, heavy weapons dude
+grunt/sight1		DSPOSIT1
+grunt/sight2		DSPOSIT2
+grunt/sight3		DSPOSIT3
+grunt/act		DSPOSACT
+grunt/pain		DSPOPAIN
+grunt/death1		DSPODTH1
+grunt/death2		DSPODTH2
+grunt/death3		DSPODTH3
+
+; Imp, demon trooper
+imp/sight1		DSBGSIT1        
+imp/sight2		DSBGSIT2
+imp/act			DSBGACT
+imp/melee		DSCLAW
+;imp/pain		DSPOPAIN
+imp/death1		DSBGDTH1
+imp/death2		DSBGDTH2
+
+; Demon (sargeant), also spectre
+demon/sight		DSSGTSIT
+demon/act		DSDMACT
+demon/melee		DSSGTATK
+demon/pain		DSDMPAIN
+demon/death		DSSGTDTH
+
+; Cacodemon
+caco/sight		DSCACSIT
+;caco/act		DSDMACT
+;caco/pain		DSDMPAIN
+caco/death		DSCACDTH
+
+; Lost soul
+skull/attack		DSSKLATK
+;skull/act		DSDMACT
+;skull/pain		DSDMPAIN
+;skull/death		DSFIRXPL
+
+; Hell knight
+hellknight/sight	DSKNTSIT
+;hellknight/act		DSDMACT
+;hellknight/pain	DSDMPAIN
+hellknight/death	DSKNTDTH
+
+; Baron of Hell
+baron/sight		DSBRSSIT
+;baron/act		DSDMACT
+;baron/pain		DSDMPAIN
+baron/death		DSBRSDTH
+
+; Mancubus
+mancubus/sight		DSMANSIT
+;mancubus/act		DSPOSACT
+mancubus/attack		DSMANATK
+mancubus/pain		DSMNPAIN        
+mancubus/death		DSMANDTH
+
+; Pain elemental
+pain/sight		DSPESIT
+;pain/act		DSDMACT
+pain/pain		DSPEPAIN
+pain/death		DSPEDTH
+
+; Revenant
+revenant/sight		DSSKESIT
+revenant/act		DSSKEACT
+revenant/melee		DSSKEPCH
+revenant/swing		DSSKESWG
+revenant/attack		DSSKEATK
+;revenant/pain		DSPOPAIN
+revenant/death		DSSKEDTH
+
+; Arachnotron
+arachnotron/sight	DSBSPSIT
+arachnotron/act		DSBSPACT
+arachnotron/walk	DSBSPWLK
+;arachnotron/pain	DSDMPAIN
+arachnotron/death	DSBSPDTH
+
+; Arch-vile
+vile/sight		DSVILSIT
+vile/act		DSVILACT
+vile/attack		DSVILATK
+vile/pain		DSVIPAIN
+vile/death		DSVILDTH
+vile/firestart		DSFLAMST
+vile/fire		DSFLAME
+;vile/firestop		DSBAREXP
+
+; Cyberdemon
+cyber/sight		DSCYBSIT
+;cyber/act		DSDMACT
+cyber/walk		DSHOOF
+;cyber/pain		DSDMPAIN
+cyber/death		DSCYBDTH
+
+; Spider mastermind
+spider/sight		DSSPISIT
+;spider/act		DSDMACT
+spider/walk		DSMETAL
+;spider/pain		DSDMPAIN
+spider/death		DSSPIDTH
+
+; Wolfenstein SS trooper
+wolfss/sight		DSSSSIT
+;wolfss/act		DSPOSACT
+;wolfss/pain		DSPOPAIN
+wolfss/death		DSSSDTH
+
+; Commader Keen
+keen/pain		DSKEENPN
+keen/death		DSKEENDT
+
+; Boss brain
+bossbrain/sight		DSBOSSIT
+bossbrain/spit		DSBOSPIT
+bossbrain/cube		DSBOSCUB
+bossbrain/pain		DSBOSPN
+bossbrain/death		DSBOSDTH
+
+
+;===================================================
+; Heretic
+;===================================================
+
+$ifheretic
+; Heretic replacements for the common sounds
+
+; Game sounds
+game/message		CHAT
+menu/open		CHAT
+menu/close		DORCLS
+menu/move		SWITCH
+menu/choose		KEYUP
+menu/fail		PLROOF
+menu/adjust		STNMOV
+
+; Player sounds
+player/grunt		PLROOF
+player/itemup		ITEMUP
+player/keyup		KEYUP
+player/weaponup		WPNUP 
+player/artiup		ARTIUP
+player/powerup		WPNUP
+player/artiuse		ARTIUSE
+; player/frag		GFRAG  ; not present in heretic.wad!
+player/secret		CHAT
+
+; World sounds
+world/teleport		TELEPT
+world/itemrespawn	RESPAWN
+world/splash		GLOOP
+
+door/start		DOROPN
+door/stop		DORCLS
+floor/move		DORMOV
+floor/stop		PSTOP
+ceil/move		DORMOV
+ceil/stop		PSTOP
+plat/start		PSTART
+plat/move		STNMOV
+plat/stop		PSTOP
+switch/on		SWITCH
+switch/off		SWITCH
+;SPLASH	; unused, not present in heretic.wad
+
+$endif
+
+world/waterfall		WATERFL
+world/wind		WIND
+world/lavaburn		BURN
+
+; Weapon sounds
+weapon/staff		STFHIT
+weapon/staff2		STFPOW
+weapon/staff2/crackle	STFCRK
+weapon/goldwand		GLDHIT
+weapon/crossbow		BOWSHT
+weapon/blaster		BLSSHT
+weapon/blaster/hit	BLSHIT
+weapon/blaster/rip	RIPSLOP
+weapon/phoenix		PHOSHT
+weapon/phoenix/expl	PHOHIT
+weapon/phoenix2		PHOPOW
+weapon/hellstaff	HRNSHT
+weapon/hellstaff/hit	HRNHIT
+weapon/hellstaff2	HRNPOW
+weapon/hellstaff2/hit	RAMPHIT        
+weapon/hellstaff2/rain	RAMRAIN
+weapon/mace		LOBSHT
+weapon/mace/hit		LOBHIT
+weapon/mace/bounce	BOUNCE
+weapon/mace2		LOBPOW
+weapon/gauntlets	GNTFUL
+weapon/gauntlets/up	GNTACT
+weapon/gauntlets/use	GNTUSE
+weapon/gauntlets/hit	GNTHIT
+weapon/gauntlets2/hit	GNTPOW
+
+; Corvus the Heretic, our hero
+heretic/pain		PLRPAI
+heretic/death1		PLRWDTH
+heretic/death2		PLRDTH
+heretic/death3		PLRCDTH
+heretic/xdeath		GIBDTH
+
+; Gargoyle
+gargoyle/sight		IMPSIT
+gargoyle/act		IMPSIT
+gargoyle/melee1		IMPAT1
+gargoyle/melee2		IMPAT2
+gargoyle/pain		IMPPAI
+gargoyle/death		IMPDTH
+
+; Golem
+golem/sight		MUMSIT
+golem/act		MUMSIT
+golem/melee1		MUMAT1
+golem/melee2		MUMAT2
+golem/skull		MUMHED
+golem/pain		MUMPAI
+golem/death		MUMDTH
+
+; Beast / weredragon
+beast/sight		BSTSIT 
+beast/act		BSTACT
+beast/attack		BSTATK        
+beast/pain		BSTPAI
+beast/death		BSTDTH
+
+; Clink / sabreclaw
+clink/sight		CLKSIT
+clink/act		CLKACT
+clink/melee		CLKATK
+clink/pain		CLKPAI
+clink/death		CLKDTH
+
+; Ophidian
+ophidian/sight		SNKSIT
+ophidian/act		SNKACT
+ophidian/attack		SNKATK        
+ophidian/pain		SNKPAI
+ophidian/death		SNKDTH
+
+; Undead warrior / knight
+knight/sight		KGTSIT
+knight/act		KGTSIT
+knight/throw		KGTATK
+knight/hit		KGTAT2
+knight/pain		KGTPAI
+knight/death		KGTDTH
+
+; Disciple / wizard
+disciple/sight		WIZSIT
+disciple/act		WIZACT
+disciple/attack		WIZATK
+disciple/pain		WIZPAI
+disciple/death		WIZDTH
+
+; Maulotaur
+minotaur/sight		MINSIT
+minotaur/act		MINACT
+minotaur/attack1	MINAT1
+minotaur/attack2	MINAT2
+minotaur/attack3	MINAT3
+minotaur/pain		MINPAI
+minotaur/death		MINDTH
+
+; Ironlich
+ironlich/sight		HEDSIT
+ironlich/act		HEDACT
+ironlich/attack1	HEDAT1
+ironlich/attack2	HEDAT2
+ironlich/attack3	HEDAT3
+ironlich/pain		HEDPAI
+ironlich/death		HEDDTH
+
+; D'Sparil's chaos serpent
+chaosserpent/sight	BSTSIT
+chaosserpent/act	SBTACT
+chaosserpent/attack	BSTATK
+chaosserpent/pain	SBTPAI
+chaosserpent/death	SBTDTH
+
+; D'Sparil
+dsparil/zap		SORZAP
+dsparil/rise		SORRISE
+dsparil/sight		SORSIT
+dsparil/act		SORACT
+dsparil/attack		SORATK
+dsparil/pain		SORPAI
+dsparil/death		SORDSPH
+dsparil/expl		SORDEXP
+dsparil/bones		SORDBON
+
+; Chicken
+chicken/act		CHICACT
+chicken/melee		CHICATK
+chicken/peck1		CHICPK1
+chicken/peck2		CHICPK2
+chicken/peck3		CHICPK3
+chicken/pain		CHICPAI
+chicken/death		CHICDTH
+
+pod/new			NEWPOD
+pod/explode		PODEXP
+
+volcano/shoot		BSTATK
+volcano/hit		LOBHIT
+
+ambient/scream		AMB1
+ambient/squish		AMB2
+ambient/drops1		AMB3
+ambient/step1		AMB4
+ambient/heartbeat	AMB5
+ambient/bells		AMB6
+ambient/drops2		AMB7
+ambient/magic		AMB8
+ambient/laugh1		AMB9
+ambient/laugh2		AMB10
+ambient/step2		AMB11
+
+
+
+;===================================================
+; Hexen has a SNDINFO lump of its own, so we'll
+; just need some aliases and numbering entries.
+;===================================================
+
+$ifhexen
+
+game/message		= Chat
+menu/open		CHAT3
+menu/close		DORSTP1B
+menu/move		HAMWAL1
+menu/choose		DORSTP4
+menu/fail		FGTGRUNT
+menu/adjust		KEYS2A
+
+player/land		= PlayerLand		
+player/itemup		= PickupItem
+player/keyup		= PickupKey
+player/weaponup		= PickupWeapon
+player/artiup		= PickupArtifact
+player/powerup		= PickupPiece
+player/artiuse		= UseArtifact
+player/secret		= Chat
+
+world/splash		= WaterSplash
+world/quake		= Earthquake
+world/teleport		= Teleport
+world/itemrespawn	= Respawn
+world/gib		= PlayerFallingSplat
+
+switch/on		= Switch1
+switch/off		= Switch2
+
+$endif
+
+PlayerFighterNormalDeath	.
+PlayerFighterCrazyDeath		.
+PlayerFighterExtreme1Death	.
+PlayerFighterExtreme2Death	.
+PlayerFighterExtreme3Death	.
+PlayerFighterBurnDeath		.
+PlayerClericNormalDeath		.
+PlayerClericCrazyDeath		.
+PlayerClericExtreme1Death	.
+PlayerClericExtreme2Death	.
+PlayerClericExtreme3Death	.
+PlayerClericBurnDeath		.
+PlayerMageNormalDeath		.
+PlayerMageCrazyDeath		.
+PlayerMageExtreme1Death		.
+PlayerMageExtreme2Death		.
+PlayerMageExtreme3Death		.
+PlayerMageBurnDeath		.
+PlayerFighterPain		.
+PlayerClericPain		.
+PlayerMagePain			.
+PlayerFighterGrunt		.
+PlayerClericGrunt		.
+PlayerMageGrunt			.
+PlayerPoisonCough		.
+PlayerFighterFallingScream	.
+PlayerClericFallingScream	.
+PlayerMageFallingScream		.
+PlayerFighterFailedUse		.
+PlayerClericFailedUse		.
+PlayerMageFailedUse		.
+
+PlatformStart		.
+PlatformStartMetal	.
+PlatformStop		.
+StoneMove		.
+MetalMove		.
+DoorOpen		.
+DoorLocked		.
+DoorOpenMetal		.
+DoorCloseMetal		.
+DoorCloseLight		.
+DoorCloseHeavy		.
+DoorCreak		.
+WeaponBuild		.
+BlastRadius		.
+ThunderCrash		.
+
+FighterPunchMiss	.
+FighterPunchHitThing	.
+FighterPunchHitWall	.
+FighterGrunt		.
+FighterAxeHitThing	.
+FighterHammerMiss	.
+FighterHammerHitThing	.
+FighterHammerHitWall	.
+FighterHammerContinuous	.
+FighterHammerExplode	.
+FighterSwordFire	.
+FighterSwordExplode	.
+
+ClericCStaffFire	.
+ClericCStaffExplode	.
+ClericCStaffHitThing	.
+ClericFlameFire		.
+ClericFlameExplode	.
+ClericFlameCircle	.
+
+MageWandFire		.
+MageLightningFire	.
+MageLightningZap	.
+MageLightningContinuous	.
+MageLightningReady	.
+MageShardsFire		.
+MageShardsExplode	.
+MageStaffFire		.
+MageStaffExplode	.
+
+SerpentSight		.
+SerpentActive		.
+SerpentPain		.
+SerpentAttack		.
+SerpentMeleeHit		.
+SerpentDeath		.
+SerpentBirth		.
+SerpentFXContinuous	.
+SerpentFXHit		.
+PotteryExplode		.
+Drip			.
+CentaurSight		.
+CentaurActive		.
+CentaurPain		.
+CentaurAttack		.
+CentaurDeath		.
+CentaurLeaderAttack	.
+CentaurMissileExplode	.
+Wind			.
+BishopSight		.
+BishopActive		.
+BishopPain		.
+BishopAttack		.
+BishopDeath		.
+BishopMissileExplode	.
+BishopBlur		.
+DemonSight		.
+DemonActive		.
+DemonPain		.
+DemonAttack		.
+DemonMissileFire	.
+DemonMissileExplode	.
+DemonDeath		.
+WraithSight		.
+WraithActive		.
+WraithPain		.
+WraithAttack		.
+WraithMissileFire	.
+WraithMissileExplode	.
+WraithDeath		.
+PigActive1		.
+PigActive2		.
+PigPain			.
+PigAttack		.
+PigDeath		.
+MaulatorSight		.
+MaulatorActive		.
+MaulatorPain		.
+MaulatorHamSwing	.
+MaulatorHamHit		.
+MaulatorMissileHit	.
+MaulatorDeath		.
+FreezeDeath		.
+FreezeShatter		.
+EttinSight		.
+EttinActive		.
+EttinPain		.
+EttinAttack		.
+EttinDeath		.
+FireDemonSpawn		.
+FireDemonActive		.
+FireDemonPain		.
+FireDemonAttack		.
+FireDemonMissileHit	.
+FireDemonDeath		.
+IceGuySight		.
+IceGuyActive		.
+IceGuyAttack		.
+IceGuyMissileExplode	.
+
+SorcererSight		.
+SorcererActive		.
+SorcererPain		.
+SorcererSpellCast	.
+SorcererBallWoosh	.
+SorcererDeathScream	.
+SorcererBishopSpawn	.
+SorcererBallPop		.
+SorcererBallBounce	.
+SorcererBallExplode	.
+SorcererBigBallExplode	.
+SorcererHeadScream	.
+DragonSight		.
+DragonActive		.
+DragonWingflap		.
+DragonAttack		.
+DragonPain		.
+DragonDeath		.
+DragonFireballExplode	.
+KoraxSight		.
+KoraxActive		.
+KoraxPain		.
+KoraxAttack		.
+KoraxCommand		.
+KoraxDeath		.
+KoraxStep		.
+
+ThrustSpikeRaise	.
+ThrustSpikeLower	.
+GlassShatter		.
+FlechetteBounce		.
+FlechetteExplode	.
+LavaMove		.
+WaterMove		.
+IceStartMove		.
+EarthStartMove		.
+LavaSizzle		.
+SludgeGloop		.
+HolySymbolFire		.
+SpiritActive		.
+SpiritAttack		.
+SpiritDie		.
+
+ValveTurn		.
+RopePull		.
+FlyBuzz			.
+Ignite			.
+PuzzleSuccess		.
+PuzzleFailFighter	.
+PuzzleFailCleric	.
+PuzzleFailMage		.
+BellRing		.
+TreeBreak		.
+TreeExplode		.
+SuitofArmorBreak	.
+PoisonShroomPain	.
+PoisonShroomDeath	.
+
+Ambient1		.
+Ambient2		.
+Ambient3		.
+Ambient4		.
+Ambient5		.
+Ambient6		.
+Ambient7		.
+Ambient8		.
+Ambient9		.
+Ambient10		.
+Ambient11		.
+Ambient12		.
+Ambient13		.
+Ambient14		.
+Ambient15		.
+StartupTick		.
+SwitchOtherLevel	.
+KoraxVoiceGreetings	.
+KoraxVoiceReady		.
+KoraxVoiceBlood		.
+KoraxVoiceGame		.
+KoraxVoiceBoard		.
+KoraxVoiceWorship	.
+KoraxVoiceMaybe		.
+KoraxVoiceStrong	.
+KoraxVoiceFace		.
+BatScream		.
+
+MenuMove		.
+ClockTick		.
+Fireball		.
+PuppyBeat		.
+MysticIncant		.
