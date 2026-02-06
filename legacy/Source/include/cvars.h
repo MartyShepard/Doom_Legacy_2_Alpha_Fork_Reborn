@@ -136,7 +136,7 @@ extern consvar_t cv_scr_height;
 extern consvar_t cv_scr_depth;
 extern consvar_t cv_fullscreen;
 
-extern consvar_t cv_borderless; // Marty
+extern consvar_t cv_borderless; // Marty, screen.cpp, cl_main.cpp
 
 extern consvar_t cv_video_gamma;
 
@@ -144,6 +144,8 @@ extern consvar_t cv_viewsize;
 extern consvar_t cv_detaillevel;
 extern consvar_t cv_scalestatusbar;
 extern consvar_t cv_fov;
+
+extern consvar_t cv_fps_limit_sr; // Marty, screen.cpp, cl_main.cpp
 
 extern consvar_t cv_screenslink;
 extern consvar_t cv_translucency;

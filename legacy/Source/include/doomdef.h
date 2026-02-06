@@ -38,8 +38,11 @@ extern char LEGACY_VERSION_BANNER[];
 #define MAXSKINCOLORS           11
 
 /// Frame rate, original number of game tics / second.
-#define TICRATE 35
+    #define TICRATE 35
 
+  // Hardware 3DSound
+  // #define HW3SOUND
+     
 	// Add Borderless
      #define BORDERLESS_WIN32
      

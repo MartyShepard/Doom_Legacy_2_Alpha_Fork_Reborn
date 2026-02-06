@@ -234,6 +234,7 @@ void CL_Init()
   cv_fullscreen.Reg();
   cv_borderless.Reg(); // Marty  
   cv_video_gamma.Reg();
+  cv_fps_limit_sr.Reg(); //Marty
 
   cv_viewsize.Reg();
   cv_scalestatusbar.Reg();

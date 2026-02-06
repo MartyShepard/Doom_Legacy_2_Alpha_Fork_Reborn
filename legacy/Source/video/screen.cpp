@@ -60,6 +60,7 @@ void CV_video_gamma_OnChange();
 #ifdef BORDERLESS_WIN32
 void CV_Borderless_OnChange();
 #endif
+void CV_FPSLimitSR_OnChange();
 
 static CV_PossibleValue_t scr_depth_cons_t[]={{8,"8 bits"}, {16,"16 bits"}, {24,"24 bits"}, {32,"32 bits"}, {0,NULL}};
 
@@ -73,7 +74,7 @@ consvar_t   cv_borderless = {"borderless", "no", CV_SAVE | CV_CALL | CV_NOINIT,C
 #endif
 // Are invisible things translucent or fuzzy?
 consvar_t   cv_fuzzymode = {"fuzzymode", "Off", CV_SAVE | CV_CALL, CV_OnOff, CV_Fuzzymode_OnChange};
-
+consvar_t   cv_fps_limit_sr= {"fps_limit_sr", "60", CV_SAVE|CV_CALL, CV_Unsigned, CV_FPSLimitSR_OnChange};
 // gamma correction
 static CV_PossibleValue_t gamma_cons_t[] = {{0,"MIN"},{4,"MAX"},{0,NULL}};
 consvar_t  cv_video_gamma = {"gamma","0",CV_SAVE|CV_CALL,gamma_cons_t,CV_video_gamma_OnChange};
@@ -88,6 +89,11 @@ const byte *R_BuildGammaTable()
     gammatable[i] = round(255.0*pow((i+1)/256.0, gamma));
 
   return gammatable;
+}
+
+void CV_FPSLimitSR_OnChange(void)
+{
+  CONS_Printf("FPS-Limit auf %d gesetzt (Software-Modus)\n", cv_fps_limit_sr.value);
 }
 
 

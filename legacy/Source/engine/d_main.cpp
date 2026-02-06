@@ -22,6 +22,8 @@
 /// \brief Startup and initialization (D_DoomMain),
 /// game loop (D_DoomLoop), event system.
 
+#include <SDL.h>
+#include <SDL_timer.h>
 
 #include <unistd.h>
 #include <sys/stat.h>
@@ -68,7 +70,30 @@ const int  LEGACY_REVISION          = DOOMLEGACY2_MINOR; // for bugfix releases,
 const char LEGACY_VERSIONSTRING[]   = "Alpha (rev " STR(DOOMLEGACY2_PATCH) "." STR(DOOMLEGACY2_BUILD) " )";
 char       LEGACY_VERSION_BANNER[80];
 
+// game title
+// Reihenfolge muss mit gamemission_t übereinstimmen
+const char *Titles[] =
+{
+  "DOOM PreAlpha Startup",  
+  "DOOM Alpha Startup",
+  "DOOM Beta Startup",
+  "DOOM PresDemo Startup",   
+  "DOOM 1: Shareware Startup",
+  "DOOM 1: Registered Startup",
+  "DOOM 1: The Ultimate DOOM Startup",
+  "DOOM 2: Hell on Earth",
+  "DOOM 2: TNT - Evilution",
+  "DOOM 2: Plutonia Experiment",
+  "Heretic 1: Shadow of the Serpent Riders",
+  "Hexen 1: Beyond Heretic",
+  "HACX - Twich'n'KIll (IWAD release v1.2)",
+  "Strife",
+  "FreeDOOM: Phase 1 Startup",
+  "FreeDOOM: Phase 2 Startup"
+};
+
 // Suchreihenfolge der IWAD's
+// g_game.h: Title, gamemode_t und gamemission_t
 const iwad_info_t iwads[] = {
     {"doomalpha.wad", gm_doom1,   gmi_alpha},
     {"doombeta.wad",  gm_doom1,   gmi_beta},
@@ -169,23 +194,43 @@ void D_DoomLoop()
 {
   // timekeeping for the game
   tic_t rendertimeout = 0; // next time the screen MUST be updated
-  tic_t rendertic = 0;     // last rendered gametic
-  tic_t oldtics = I_GetTics(); // current time
+  tic_t rendertic     = 0;     // last rendered gametic
+  tic_t oldtics       = I_GetTics(); // current time
 
+  // === FPS-Limit für Software-Modus (Workaround für fehlenden VSync) ===
+  // SDL1
+  Uint32 last_frame_time      = SDL_GetTicks();
+  const Uint32 target_fps     = 60;                 // oder cv_fpslimit.value
+  Uint32 frame_delay_ms = cv_fps_limit_sr.value > 0 ? (1000 / cv_fps_limit_sr.value) : 0; // z. B. 16 ms für 60 FPS
+  
   // main game loop
   while (1)
-    {
+  {
+      // SDL1
+      Uint32 current_time = SDL_GetTicks();
+      Uint32 elapsed_ms   = current_time - last_frame_time;    
+      
+      // Begrenze FPS nur im Software-Modus
+      if (rendermode == render_soft && elapsed_ms < frame_delay_ms)
+      {
+        SDL_Delay(frame_delay_ms - elapsed_ms);
+        continue;  // Warte, bis Frame-Zeit erreicht ist
+      }
+    
+      last_frame_time = current_time;
+      // SDL1 End
+      
       // How much time has elapsed?
-      tic_t now = I_GetTics();
-      tic_t elapsed = now - oldtics;
-      oldtics = now;
+      tic_t now           = I_GetTics();
+      tic_t elapsed       = now - oldtics;
+      oldtics             = now;
         
       // give time to the OS
       if (elapsed == 0)
-	{
-	  I_Sleep(10);
-	  continue;
-	}
+      {
+        I_Sleep(10);
+        continue;
+      }
 
 #ifdef HW3SOUND
       HW3S_BeginFrameUpdate();
@@ -200,14 +245,11 @@ void D_DoomLoop()
         if (singletics || game.tic > rendertic)
         {
           // render if gametics have passed since last rendering
-          rendertic = game.tic;
+          rendertic     = game.tic;
           rendertimeout = now + TICRATE/17;
-
-          // move positional sounds, adjust volumes
-          S.UpdateSounds();
-         
-          // Update display, next frame, with current state.
-          game.Display();         
+          
+          S.UpdateSounds();         // move positional sounds, adjust volumes                   
+          game.Display();           // Update display, next frame, with current state.
         }
         else if (rendertimeout < now)
         {
@@ -218,11 +260,14 @@ void D_DoomLoop()
       }
       // check for media change, loop music..
       I_UpdateCD();
+      
 #ifdef HW3SOUND
       HW3S_EndFrameUpdate();
 #endif
-    }
-}
+
+  } // End while(1)
+    
+} // End D_DoomLoop()
 
 
 
@@ -276,81 +321,64 @@ static void D_IdentifyVersion()
   // Non-free files are just not offered for upload in network games.
   // The -iwad parameter just means that we MUST have this wad file
   // in order to continue. It is also loaded right after legacy.wad.
-
-/*
-#define NUM_IWADS 9
-  struct {
-    const char    *wadname;
-    gamemode_t     mode;
-    gamemission_t  mission;
-  } iwads[NUM_IWADS] = { // order of preference
-    {"doom2.wad",    gm_doom2, gmi_doom2},
-    {"doomu.wad",    gm_doom1, gmi_ultimate},
-    {"doom.wad",     gm_doom1, gmi_doom1},
-    {"heretic.wad",  gm_heretic, gmi_heretic},
-    {"hexen.wad",    gm_hexen, gmi_hexen},
-    {"tnt.wad",      gm_doom2, gmi_tnt},
-    {"plutonia.wad", gm_doom2, gmi_plut},
-    {"doom1.wad",    gm_doom1, gmi_shareware},
-    {"heretic1.wad", gm_heretic, gmi_heretic},   
-  };
-*/  
-  
-
   // default
+  
   game.mode = gm_doom2;
   mission   = gmi_doom2;
 
   if (M_CheckParm("-iwad"))
-    {
-      const char *s = M_GetNextParm();
+  {
+    const char *s = M_GetNextParm();
 
-      if (!fc.Access(s))
-	I_Error("IWAD %s not found!\n", s);
+    if (!fc.Access(s))
+      I_Error("IWAD %s not found!\n", s);
 
-      D_AddFile(s);
+    D_AddFile(s);
 
-      // point to start of filename only
-      s = FIL_StripPath(s);
+    // point to start of filename only
+    s = FIL_StripPath(s);
 
-      // try to find implied gamemode
-      for (int i=0; i<NUM_IWADS; i++)
-	if (!strcasecmp(s, iwads[i].wadname))
-	  {
-	    game.mode = iwads[i].mode;
-	    mission   = iwads[i].mission;
-	    break;
-	  }
+    // try to find implied gamemode
+    for (int i=0; i<NUM_IWADS; i++)
+      if (!strcasecmp(s, iwads[i].wadname))
+      {
+          game.mode = iwads[i].mode;
+          mission   = iwads[i].mission;
+          break;
+      }
 
-      // Ultimate doom or not?
-      if (mission == gmi_doom1)
-	mission = D_GetDoomType(s);
-    }
+    // Ultimate doom or not?
+    if (mission == gmi_doom1)
+        mission = D_GetDoomType(s);
+  }
   // TODO perhaps we should not try to find a wadfile here, rather
   // start the game without any preloaded wadfiles other than legacy.wad
   else // finally we'll try to find a wad file by ourselves
     {
       int i;
+      
       // try to find implied gamemode
       for (i=0; i<NUM_IWADS; i++)
-	if (fc.Access(iwads[i].wadname))
-	  {
-	    D_AddFile(iwads[i].wadname);
-	    game.mode = iwads[i].mode;
-	    mission   = iwads[i].mission;
-	    break;
-	  }
+        if (fc.Access(iwads[i].wadname))
+        {
+          D_AddFile(iwads[i].wadname);
+          
+          game.mode = iwads[i].mode;
+          mission   = iwads[i].mission;
+          break;
+        }
 
       if (i == NUM_IWADS)
-	{
-	  I_Error("Main IWAD file not found.\n"
-		  "You need either doom.wad, doom1.wad, doomu.wad, doom2.wad,\n"
-		  "tnt.wad, plutonia.wad, heretic.wad, heretic1.wad or hexen.wad\n"
-	          "from any shareware or commercial version of Doom, Heretic or Hexen!\n");
-	}
+      {
+        I_Error("Main IWAD file not found.\n"
+          "You need either doom.wad, doom1.wad, doomu.wad, doom2.wad,\n"
+          "tnt.wad, plutonia.wad, heretic.wad, heretic1.wad or hexen.wad\n"
+                "from any shareware or commercial version of Doom, Heretic or Hexen!\n");
+      }
     }
 
   // should we enable inventory?
+  // g_game.h gamemode_t
   game.inventory = (game.mode >= gm_heretic);
 }
 
@@ -445,11 +473,6 @@ void D_SetPaths()
     userhome = M_GetNextParm();
   else
     userhome = ProgrammPath()/*getenv("HOME")*/;
-
-#ifdef LINUX // user home directory
-  if (!userhome)
-    I_Error("Please set $HOME to your home directory\n");
-#endif
 
   string legacyhome = "";
 

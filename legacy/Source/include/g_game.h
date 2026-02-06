@@ -35,27 +35,7 @@ class LNetInterface;
 
 using namespace std;
 
-// game title
-// Reihenfolge muss mit gamemission_t übereinstimmen
-const char *Titles[] =
-{
-  "DOOM PreAlpha Startup",  
-  "DOOM Alpha Startup",
-  "DOOM Beta Startup",
-  "DOOM PresDemo Startup",   
-  "DOOM 1: Shareware Startup",
-  "DOOM 1: Registered Startup",
-  "DOOM 1: The Ultimate DOOM Startup",
-  "DOOM 2: Hell on Earth",
-  "DOOM 2: TNT - Evilution",
-  "DOOM 2: Plutonia Experiment",
-  "Heretic 1: Shadow of the Serpent Riders",
-  "Hexen 1: Beyond Heretic",
-  "HACX - Twich'n'KIll (IWAD release v1.2)",
-  "Strife",
-  "FreeDOOM: Phase 1 Startup",
-  "FreeDOOM: Phase 2 Startup"
-};
+
 
 /// Game mode. For game-specific rules, IWAD dependent animations etc.
 enum gamemode_t

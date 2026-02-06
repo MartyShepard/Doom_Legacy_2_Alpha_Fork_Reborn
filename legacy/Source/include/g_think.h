@@ -91,6 +91,14 @@ private:
   typedef class Thinker* (*thinker_factory_t)();
   static map<unsigned, TypeInfo*>& id_map(); ///< mapping from class ID numbers to TypeInfo instances
 
+/*
+ * TypeInfo-Klasse  
+ * type_id            : Eindeutige ID (unsigned) für jede Klasse/Thinker-Typ  
+ * name               : Klartext-Name (z. B. "Mobj", "Ceiling", "Door")  
+ * factory            : Factory-Funktion, die ein neues Objekt erzeugt (new cls())  
+ * parent             : Zeiger auf Parent-Klasse → echte Vererbungs-Kette  
+ * Statische id_map() : map<unsigned, TypeInfo*> – schnelles Lookup per ID
+*/
 public:
   unsigned           type_id; ///< class/type ID number
   const char        *name;    ///< a plaintext name for the class/type
@@ -185,6 +193,5 @@ public:
   void *operator new(size_t size);
   void  operator delete(void *mem);
 };
-
 
 #endif
