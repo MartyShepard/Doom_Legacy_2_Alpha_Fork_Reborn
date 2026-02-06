@@ -21,14 +21,19 @@
 /// \file
 /// \brief Manage OpenGL geometry
 
-#if defined(__MACOS__) || defined(__APPLE_CC__)
-#include <OpenGL/gl.h>
-#include <OpenGL/glext.h>
-#else
-#define GL_GLEXT_PROTOTYPES
-#include <GL/gl.h>
-#include <GL/glext.h>
-#endif
+/* OpenGL Init --------------------
+ * liegt in oglinit.h 
+	 #if defined(__MACOS__) || defined(__APPLE_CC__)
+	 #include <OpenGL/gl.h>
+	 #include <OpenGL/glext.h>
+	 #else
+	 #define GL_GLEXT_PROTOTYPES
+	 #include <GL/gl.h>
+	 #include <GL/glext.h> 
+   #endif
+ */
+#include "Hardware/ogl_init.h"
+/* OpenGL Init End ------------- */
 
 #include "hardware/hwr_geometry.h"
 #include "doomdef.h"

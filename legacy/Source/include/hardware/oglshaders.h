@@ -23,8 +23,13 @@
 #ifndef oglshaders_h
 #define oglshaders_h 1
 
-#define GL_GLEXT_PROTOTYPES 1
-#include <GL/gl.h>
+/* OpenGL Init --------------------
+ * liegt in oglinit.h
+	#define GL_GLEXT_PROTOTYPES 1
+	#include <GL/gl.h>
+ */
+#include "Hardware/ogl_init.h"
+/* OpenGL Init End ------------- */
 
 #include "z_cache.h"
 
@@ -32,7 +37,6 @@ struct shader_attribs_t
 {
   float tangent[3]; ///< surface tangent, points towards increasing s texture coord.
 };
-
 
 #if defined(GL_VERSION_2_0) && !defined(NO_SHADERS) // GLSL is introduced in OpenGL 2.0
 
@@ -73,6 +77,7 @@ protected:
   } loc;
 
 public:
+	
   ShaderProg(const char *name);
   ~ShaderProg();
 
@@ -111,6 +116,8 @@ public:
 };
 
 
+	
+	
 #endif // GL_VERSION_2_0
 
 

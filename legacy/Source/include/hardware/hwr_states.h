@@ -22,14 +22,19 @@
 #ifndef hwr_states_h
 #define hwr_states_h 1
 
-#define GL_GLEXT_PROTOTYPES
-#if defined(__MACOS__) || defined(__APPLE_CC__)
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
-#else
-#include <GL/gl.h>
-#include <GL/glu.h>
-#endif
+/* OpenGL Init --------------------
+ * liegt in oglinit.h 
+	 #define GL_GLEXT_PROTOTYPES
+	 #if defined(__MACOS__) || defined(__APPLE_CC__)
+		#include <OpenGL/gl.h>
+		#include <OpenGL/glu.h>
+	 #else
+		#include <GL/gl.h>
+		#include <GL/glu.h>		
+	 #endif
+ */
+#include "ogl_init.h"
+/* OpenGL Init End ------------- */
 
 // undef CG_SHADER if you don't want to compile Legacy with Cg
 //#define CG_SHADER

@@ -61,7 +61,7 @@ public:
   /// Constructors.
   /// Explicit constructors are only used when the call exactly matches them, i.e.
   /// the compliler never adds an implicit cast for the input arguments.
-  explicit inline fixed_t() {}
+  inline fixed_t() {}
   inline fixed_t(int a) { val = a << FBITS; }
   inline fixed_t(float f)
   {
@@ -148,16 +148,6 @@ public:
     return res;
   }
 
-  /// Division template.
-  /// Allow a non-fixed_t object on the right for efficiency (specialized fixed_t-fixed_t version follows!)
-  template<typename U>
-  inline friend fixed_t operator/(const fixed_t& a, const U& b)
-  {
-    fixed_t res;
-    res.val = value_t(a.val / b);
-    return res;
-  }
-
   /// Quite esoteric: modulus division for fixed-point numbers (used in automap)
   inline fixed_t operator%(const fixed_t& a)
   {
@@ -184,6 +174,33 @@ public:
     return res;
   }
 
+  /// Division template.
+  /// Allow a non-fixed_t object on the right for efficiency (specialized fixed_t-fixed_t version follows!)
+  template<typename U>
+  friend fixed_t operator/(const fixed_t& a, const U& b)
+  {
+    fixed_t res;
+    res.val = value_t(a.val / b);
+    return res;
+  }
+	
+	/*Marty*/
+	friend fixed_t operator/(const fixed_t& a, const fixed_t& b) {
+		fixed_t res;
+		if (b.val == 0) {
+			res.val = (a.val < 0) ? MININT : MAXINT;
+		} else if ((abs(a.val) >> 14) >= abs(b.val)) {
+			res.val = (a.val ^ b.val) < 0 ? MININT : MAXINT;
+		} else {
+			res.val = (large_t(a.val) << FBITS) / large_t(b.val);
+		}
+		return res;
+	}
+	/* Und dann Klappts auch mitn 'friend' und beide könne sich im Darkroom sehen...
+	 * ... wat da passiert interresiertm ich hauptdsache, die C++ strnge Regel
+	 * läuft...
+	 */
+			
   /// comparison operators
   inline friend bool operator==(const fixed_t& a, const fixed_t& b) { return a.val == b.val; }
   inline friend bool operator!=(const fixed_t& a, const fixed_t& b) { return a.val != b.val; }
@@ -260,6 +277,9 @@ inline fixed_t operator*(const fixed_t& a, const fixed_t& b)
 */
 
 /// specialization for dividing two fixed_t objects
+/// Marty ... nop... da macht die Strenge Regel nicht mit
+/// habe ich nach oben in die klasse verschoben
+/*
 template<>
 inline fixed_t operator/(const fixed_t& a, const fixed_t& b)
 {
@@ -272,7 +292,7 @@ inline fixed_t operator/(const fixed_t& a, const fixed_t& b)
   //res.val = int(double(a.val) / double(b.val) * 65536.0);
   return res;
 }
-
+*/
 
 
 /// smallest possible increment

@@ -90,6 +90,9 @@ extern consvar_t cv_automlook[2];
 extern consvar_t cv_mousemove[2];
 extern consvar_t cv_invertmouse[2];
 extern consvar_t cv_mouse2port;
+
+extern consvar_t cv_mouse_release;// Marty
+
 #ifdef LMOUSE2
  extern consvar_t cv_mouse2opt;
 #endif
@@ -132,6 +135,9 @@ extern consvar_t cv_scr_width;
 extern consvar_t cv_scr_height;
 extern consvar_t cv_scr_depth;
 extern consvar_t cv_fullscreen;
+
+extern consvar_t cv_borderless; // Marty
+
 extern consvar_t cv_video_gamma;
 
 extern consvar_t cv_viewsize;
@@ -171,4 +177,6 @@ extern consvar_t cv_grcorrecttricks;
 extern consvar_t cv_grnearclippingplane;
 extern consvar_t cv_grfarclippingplane;
 extern consvar_t cv_grfiltermode;
+
+extern consvar_t cv_graspectratio;
 #endif

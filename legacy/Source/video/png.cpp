@@ -179,7 +179,7 @@ bool PNGTexture::ReadData(bool read_image, bool sw_rend)
       if (color_type == PNG_COLOR_TYPE_PALETTE)
         png_set_palette_to_rgb(png_p);
       else if (color_type == PNG_COLOR_TYPE_GRAY && bit_depth < 8)
-        png_set_gray_1_2_4_to_8(png_p);
+        png_set_expand_gray_1_2_4_to_8(png_p);
 
       // grayscale to rgb
       if (color_type == PNG_COLOR_TYPE_GRAY ||

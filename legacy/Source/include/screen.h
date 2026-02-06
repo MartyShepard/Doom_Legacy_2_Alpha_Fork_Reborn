@@ -35,8 +35,8 @@
 // so all the small-enough tables based on screen size, are allocated once
 // and for all at the maximum size.
 
-#define MAXVIDWIDTH     1600 //dont set this too high because actually
-#define MAXVIDHEIGHT    1200 // lots of tables are allocated with the MAX size.
+#define MAXVIDWIDTH     7680 //dont set this too high because actually
+#define MAXVIDHEIGHT    4320 // lots of tables are allocated with the MAX size.
 #define BASEVIDWIDTH    320  //NEVER CHANGE THIS! this is the original
 #define BASEVIDHEIGHT   200  // resolution of the graphics.
 
@@ -108,6 +108,14 @@ public:
 
   /// Set the mode number which is saved in the config.
   void SetDefaultMode();
+  
+  /* Marty */
+  // Neu: öffentliche Methode zum Füllen
+  void FillScreen(byte color = 0);
+
+  // Optional: Fill mit Rechteck
+  void FillRect(int x, int y, int w, int h, byte color);
+  
 };
 
 

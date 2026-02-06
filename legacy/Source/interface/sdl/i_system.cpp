@@ -37,6 +37,10 @@
 # endif
 #endif
 
+#ifdef WIN32
+#include <windows.h>
+#endif
+
 #ifdef __APPLE_CC__
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -150,6 +154,81 @@ static int TranslateJoybutton(Uint8 which, Uint8 button)
   return KEY_JOY0BUT0 + JOYBUTTONS*which + button;
 }
 
+bool MiddleMouselock = 0; //Global variable
+#ifdef WIN32
+
+  // Global oder static – das HWND speichern
+  #include "SDL_syswm.h"
+  static HWND sdl_hwnd = NULL;
+
+  // Einmal am Start (nach SDL_SetVideoMode) das HWND holen
+  void GetSDLWindowHandle(void)
+  {
+    SDL_SysWMinfo info;
+    SDL_VERSION(&info.version);
+    if (SDL_GetWMInfo(&info))
+    {
+      sdl_hwnd = info.window;
+      if (sdl_hwnd)
+        printf("SDL-Fenster HWND gefunden: %p\n", sdl_hwnd);
+    }
+  }
+
+  bool isFullScreen_SDL1(void)
+  {
+    SDL_Surface *screen = SDL_GetVideoSurface();
+    if (screen)
+    {
+
+      bool is_fullscreen = (screen->flags & SDL_FULLSCREEN) != 0;
+      bool is_doublebuf  = (screen->flags & SDL_DOUBLEBUF) != 0;
+      bool is_opengl     = (screen->flags & SDL_OPENGL) != 0;      
+        
+      printf("[%s][%d] Fullscreen: %s, DoubleBuf: %s, OpengGL: %s\n",
+            __FILE__,__LINE__,
+            is_fullscreen ? "Ja" : "Nein",
+            is_doublebuf  ? "Ja" : "Nein",
+            is_opengl     ? "Ja" : "Nein");            
+                  
+      if (is_fullscreen)
+        return 1;
+    }
+    return 0;
+  }
+ 
+  #ifdef GRAB_MIDDLEMOUSE
+  void DL_CaptureMouse(void)
+  {
+    // Connsvar cv_mouse_release
+    if (!cv_mouse_release.value)
+      return;
+        
+    if (isFullScreen_SDL1() == 1)
+      return; 
+        
+    if (MiddleMouselock)
+    {
+      I_StartupMouse();
+      SDL_ShowCursor(SDL_DISABLE);
+      // GetSDLWindowHandle(); /* Wird erstmal nicht benötigt */
+      // Cursor-Clip auf den ganzen Bildschirm setzen (oder gar nicht clippen)
+      ReleaseCapture();
+      // Maus-Capture freigeben
+      ClipCursor(NULL);  // NULL = gesamter Desktop
+      MiddleMouselock = 0;
+    }
+    else
+    {
+      I_StartupMouse();
+      SDL_ShowCursor(SDL_ENABLE);
+      // Cursor-Clip auf den ganzen Bildschirm setzen (oder gar nicht clippen)  
+      ClipCursor(NULL);  // NULL = gesamter Desktop      
+      MiddleMouselock = 1;
+    }   
+    printf("[%s][%d] Middle Mouse Capture -> %s\n", __FILE__,__LINE__,(MiddleMouselock==0)?"Ja":"Nein");	
+  }
+  #endif
+#endif
 
 void I_GetEvent()
 {
@@ -193,7 +272,7 @@ void I_GetEvent()
 	  break;
 
         case SDL_MOUSEMOTION:
-	  if (cv_usemouse[0].value)
+	  if ((cv_usemouse[0].value) && (MiddleMouselock == 0)) 
             {
 	      // If the event is from warping the pointer back to middle
 	      // of the screen then ignore it.
@@ -219,19 +298,29 @@ void I_GetEvent()
 	      // Warp the pointer back to the middle of the window
 	      //  or we cannot move any further if it's at a border.
 	      if ((inputEvent.motion.x < (vid.width/2)-(vid.width/4)) || 
-		  (inputEvent.motion.y < (vid.height/2)-(vid.height/4)) || 
-		  (inputEvent.motion.x > (vid.width/2)+(vid.width/4)) || 
-		  (inputEvent.motion.y > (vid.height/2)+(vid.height/4)))
-                {
-		  if (warp_mouse)
-		    SDL_WarpMouse(vid.width/2, vid.height/2);
-                }
+            (inputEvent.motion.y < (vid.height/2)-(vid.height/4)) || 
+            (inputEvent.motion.x > (vid.width/2)+(vid.width/4)) || 
+            (inputEvent.motion.y > (vid.height/2)+(vid.height/4)))
+            {
+              //if (warp_mouse)
+                SDL_WarpMouse(vid.width/2, vid.height/2);
+             }
             }
-	  break;
+        break;
 
         case SDL_MOUSEBUTTONDOWN:
         case SDL_MOUSEBUTTONUP:
-	  if (cv_usemouse[0].value)
+#ifdef GRAB_MIDDLEMOUSE
+          if ((inputEvent.button.state == SDL_PRESSED)      &&
+              (inputEvent.button.button== SDL_BUTTON_MIDDLE))
+          {
+              DL_CaptureMouse();                           
+          }
+
+          else if(cv_usemouse[0].value)
+#else        
+          if(cv_usemouse[0].value)
+#endif        
             {
 	      if (inputEvent.type == SDL_MOUSEBUTTONDOWN)
 		event.type = ev_keydown;
@@ -277,51 +366,88 @@ void GrabInput_OnChange()
 
 consvar_t cv_grabinput = {"grabinput", "1", CV_SAVE | CV_CALL, CV_OnOff, GrabInput_OnChange};
 
-void I_GrabMouse()
+void I_GrabMouse(void)
 {
+  if( cv_grabinput.value && !devparm )
+  {
+      // Grab the mouse
+      // SDL 1.2	  
+    if(SDL_GRAB_OFF == SDL_WM_GrabInput(SDL_GRAB_QUERY))    
+       SDL_WM_GrabInput(SDL_GRAB_ON);
+    
+  }
+  /* Marty: old Code */
+  /*
   if (devparm)
     return; // we don't want to hog input when debugging
 
   if (cv_grabinput.value && SDL_WM_GrabInput(SDL_GRAB_QUERY) == SDL_GRAB_OFF)
-    SDL_WM_GrabInput(SDL_GRAB_ON);
+      SDL_WM_GrabInput(SDL_GRAB_ON);
 
   SDL_ShowCursor(SDL_DISABLE);
   warp_mouse = true;
+  */
+  
 }
 
-
-void I_UngrabMouse()
+void I_UngrabMouse(void)
 {
+  if(SDL_GRAB_ON == SDL_WM_GrabInput(SDL_GRAB_QUERY))
+      SDL_WM_GrabInput(SDL_GRAB_OFF);
+  
+  /* Marty: old Code */  
+  /*
   if (SDL_WM_GrabInput(SDL_GRAB_QUERY) == SDL_GRAB_ON)
     SDL_WM_GrabInput(SDL_GRAB_OFF);
 
   SDL_ShowCursor(SDL_ENABLE);
-  warp_mouse = false;
+  warp_mouse = false;  
+  */
 }
 
 
 void I_StartupMouse()
 {
-  SDL_Event inputEvent;
-    
-  // warp to center 
-  SDL_WarpMouse(vid.width/2, vid.height/2);
   lastmousex = vid.width/2;
   lastmousey = vid.height/2;
-  // remove the mouse event by reading the queue
-  SDL_PollEvent(&inputEvent);
+  if( cv_usemouse[0].value &&  MiddleMouselock == 0)
+  {
+    I_GrabMouse();
+    SDL_Event inputEvent;
+    
+    // warp to center 
+    SDL_WarpMouse(vid.width/2, vid.height/2);
+    // remove the mouse event by reading the queue
+    SDL_PollEvent(&inputEvent);
 
+  }
+  else
+  {
+    I_UngrabMouse();
+  }
   return;
 }
 
 
 
 void I_OutputMsg(const char *fmt, ...) 
-{
+{ 
   va_list     argptr;
 
   va_start (argptr,fmt);
   vfprintf (stdout, fmt, argptr);
+
+  // Jetzt der Trick: Wenn -console angegeben wurde → Konsole nachträglich öffnen
+  if (Console_Requested == 1)
+  {
+    freopen("CONOUT$", "w", stdout);
+    freopen("CONOUT$", "w", stderr);
+    freopen("CONIN$",  "r", stdin);   // optional
+
+    // Optional: Test-Ausgabe direkt sichtbar machen
+    //fflush(stdout);
+  }
+  
   va_end (argptr);
 }
 
@@ -510,7 +636,7 @@ void I_SysInit()
   CONS_Printf("Initializing SDL...\n");
 
   // Initialize Audio as well, otherwise DirectX can not use audio
-  if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0)
+  if (SDL_Init(/*SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_JOYSTICK*/SDL_INIT_EVERYTHING ) != 0)
     {
       CONS_Printf(" Couldn't initialize SDL: %s\n", SDL_GetError());
       I_Quit();
@@ -870,3 +996,4 @@ void I_GetDiskFreeSpace(Sint64 *freespace)
   *freespace = 1024*1024*1024;
 #endif
 }
+

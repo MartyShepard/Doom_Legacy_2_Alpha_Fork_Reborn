@@ -120,7 +120,7 @@ flag_mnemonic_t BEX_FlagMnemonics[] =
   {"ACTIVATEIMPACT", MF2_IMPACT,        2}, // Can activate SPAC_IMPACT
   {"CANPUSHWALLS",   MF2_PUSHWALL,      2}, // Can activate SPAC_PUSH
   {"ACTIVATEMCROSS", MF2_MCROSS,        2}, // Can activate SPAC_MCROSS
-  {"ACTIVATEPCROSS", MF2_PCROSS,        2}, // Can activate SPAC_PCROSS
+  {"ACTIVATEPCROSS", (mobjflag2_t)MF2_PCROSS,        2}, // Can activate SPAC_PCROSS ;Marty: C++ Strict rules
   {NULL, 0, 0} // terminator
 };
 

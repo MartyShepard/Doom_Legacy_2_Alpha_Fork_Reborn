@@ -26,6 +26,10 @@
 
 #include "SDL.h"
 
+#ifdef WIN32
+  #include <windows.h>
+#endif
+
 #include "doomdef.h"
 #include "command.h"
 
@@ -39,6 +43,7 @@
 
 #include "hardware/oglrenderer.hpp"
 #include "hardware/oglhelpers.hpp"
+
 
 
 extern consvar_t cv_fullscreen; // for fullscreen support
@@ -66,7 +71,7 @@ const static Uint32 surfaceFlags = SDL_SWSURFACE | SDL_HWPALETTE;
 
 // maximum number of windowed modes (see windowedModes[][])
 #if !defined(__MACOS__) && !defined(__APPLE_CC__)
-#define MAXWINMODES (9)
+#define MAXWINMODES (34)
 #else
 #define MAXWINMODES (12)
 #endif
@@ -97,7 +102,8 @@ static vidmode_t windowedModes[MAXWINMODES] =
   {400, 300},
   {320, 200}
 #else
-  {MAXVIDWIDTH /*1600*/, MAXVIDHEIGHT/*1200*/},
+  {MAXVIDWIDTH, MAXVIDHEIGHT},
+/*
   {1280, 1024}, // 1.25
   {1024, 768}, // 1.3_
   {800, 600}, // 1.3_
@@ -106,8 +112,62 @@ static vidmode_t windowedModes[MAXWINMODES] =
   {512, 384}, // 1.3_
   {400, 300}, // 1.3_
   {320, 200}  // original Doom resolution (pixel ar 1.6), meant for 1.3_ aspect ratio monitors (nonsquare pixels!)
-#endif
+*/
+    {5793, 3055},
+  /*{5461, 2880}, Macht Probleme */
+    {5016, 2645},
+  /*{4487, 2366}, Macht Probleme */
+    {4096, 2160},
+    {3840, 2160},
+    {2560, 1600},
+    {2560, 1440},
+    {2048, 1536},
+    {1600, 1440},
+    {1600, 1024},
+    {1920, 1440},
+    {1920, 1200},
+    {1920, 1080},
+    {1680, 1050},
+    {1600, 1200},
+    {1600, 1024},
+    {1600, 900},
+    {1440, 1080},
+    {1440, 900},
+    /*{1366, 768}, Macht Probleme */
+    {1360, 768},
+    {1280, 1080},
+    {1280, 1024},
+    {1280, 960},
+    {1280, 800},
+    {1280, 768},
+    {1280, 720},
+    {1176, 664},
+    {1152, 864},
+    {1024, 768},
+    {1024, 600}, 
+    {800, 600},
+    {640, 480},
+    /*{512, 384}, Macht Probleme */
+    {400, 300},
+    {320, 200}
 };
+#endif
+
+#ifdef WIN32
+
+  // Struktur für deine Modi-Liste (ähnlich SDL_Rect)
+  typedef struct {
+      Uint32 w, h;
+      Uint8 bpp;           // BitsPerPixel
+      Uint8 bpx;
+  } DisplayMode;
+  
+  // Liste aller gefundenen Modi (max. 32 sollte reichen)
+  #define MAX_MODES MAXWINMODES
+  static DisplayMode custom_modes[MAX_MODES];
+  static int num_modes = 0;  
+  void I_EnumWindowsDisplayModes(void);
+#endif
 
 
 //
@@ -192,7 +252,7 @@ void I_SetGamma(float r, float g, float b)
 int I_NumVideoModes()
 {
   if (cv_fullscreen.value)
-    return fullscrModes.size();
+    return MAXWINMODES/*fullscrModes.size()*/;
   else
     return MAXWINMODES;
 }
@@ -201,10 +261,10 @@ const char *I_GetVideoModeName(unsigned n)
 {
   if (cv_fullscreen.value)
     {
-      if (n >= fullscrModes.size())
+      if (n >= MAXWINMODES/*fullscrModes.size()*/)
         return NULL;
 
-      return fullscrModes[n].name;
+      return windowedModes/*fullscrModes*/[n].name;
     }
 
   // windowed modes
@@ -220,9 +280,9 @@ int I_GetVideoModeForSize(int w, int h)
 
   if (cv_fullscreen.value)
     {
-      for (unsigned i=0; i<fullscrModes.size(); i++)
+      for (unsigned i=0; i<MAXWINMODES/*fullscrModes.size()*/; i++)
         {
-          if (fullscrModes[i].w == w && fullscrModes[i].h == h)
+          if (windowedModes/*fullscrModes*/[i].w == w && windowedModes/*fullscrModes*/[i].h == h)
             {
               matchMode = i;
               break;
@@ -230,7 +290,7 @@ int I_GetVideoModeForSize(int w, int h)
         }
 
       if (matchMode == -1) // use smallest mode
-        matchMode = fullscrModes.size() - 1;
+        matchMode =  MAXWINMODES/*fullscrModes.size()*/ - 1;
     }
   else
     {
@@ -254,46 +314,78 @@ int I_GetVideoModeForSize(int w, int h)
 
 int I_SetVideoMode(int modeNum)
 {
+  printf("\n [%s][%d]I_SetVideoMode\n",__FILE__,__LINE__);	
+  
   Uint32 flags = surfaceFlags;
-  vid.modenum = modeNum;
-
+  vid.modenum  = modeNum;
+  
+  printf(" [%s][%d]I_SetVideoMode: Modus -> %d (BitsPerPixel = %dbit)\n",__FILE__,__LINE__,modeNum,vid.BitsPerPixel);	
+  
+	if (vid.BitsPerPixel == 0) // Marty Fallback
+  {
+     /* Klasse Video:: */
+		  vid.BitsPerPixel = 8;
+      printf(" [%s][%d]I_SetVideoMode: Fallback to %dbit)\n",__FILE__,__LINE__,vid.BitsPerPixel);
+  }
+	    
   if (cv_fullscreen.value)
-    {
-      vid.width = fullscrModes[modeNum].w;
-      vid.height = fullscrModes[modeNum].h;
+  {
+      vid.width = windowedModes/*fullscrModes*/[modeNum].w;
+      vid.height= windowedModes/*fullscrModes*/[modeNum].h;
       flags |= SDL_FULLSCREEN;
+      
+      if (flags & SDL_FULLSCREEN)
+      {
+        // So entfernt man ein Flag wieder (korrekt!)
+        flags &= ~SDL_FULLSCREEN;      
+        //cv_fullscreen.value = 0;
+      }
+      
 
       CONS_Printf ("I_SetVideoMode: fullscreen %d x %d (%d bpp)\n", vid.width, vid.height, vid.BitsPerPixel);
-    }
+  }
   else
-    { // !cv_fullscreen.value
+  { // !cv_fullscreen.value
       vid.width = windowedModes[modeNum].w;
       vid.height = windowedModes[modeNum].h;
-
+    
       CONS_Printf("I_SetVideoMode: windowed %d x %d (%d bpp)\n", vid.width, vid.height, vid.BitsPerPixel);
-    }
+  }
 
   if (rendermode == render_soft)
-    {
-      SDL_FreeSurface(vidSurface);
+  {
+    SDL_FreeSurface(vidSurface);
 
-      vidSurface = SDL_SetVideoMode(vid.width, vid.height, vid.BitsPerPixel, flags);
-      if (vidSurface == NULL)
-        I_Error("Could not set vidmode\n");
+		//flags |= SDL_SWSURFACE|SDL_HWPALETTE;
+  
+  	flags = SDL_HWSURFACE|
+            SDL_HWPALETTE|
+            SDL_DOUBLEBUF;                  
+			
+    vidSurface = SDL_SetVideoMode(vid.width, vid.height, vid.BitsPerPixel, flags);
+    
+    if (vidSurface == NULL)
+      I_Error("Could not set vidmode\n");
 
-      if (vidSurface->pixels == NULL)
-        I_Error("Didn't get a valid pixels pointer (SDL). Exiting.\n");
+    if (vidSurface->pixels == NULL)
+      I_Error("Didn't get a valid pixels pointer (SDL). Exiting.\n");
 
-      vid.direct = static_cast<byte*>(vidSurface->pixels);
-      // VB: FIXME this stops execution at the latest
-      vid.direct[0] = 1;
-    }
+    vid.direct = static_cast<byte*>(vidSurface->pixels);
+    // VB: FIXME this stops execution at the latest
+    vid.direct[0] = 1;
+      
+  }
   else
-    {
-      if (!oglrenderer->InitVideoMode(vid.width, vid.height, cv_fullscreen.value))
-	I_Error("Could not set OpenGL vidmode.\n");
-    }
+  {  
+    if (!oglrenderer->InitVideoMode(vid.width, vid.height, cv_fullscreen.value))			
+      I_Error("Could not set OpenGL vidmode.\n");
+  }
 
+  #ifdef BORDERLESS_WIN32 
+      ToggleBorderless();
+      CenterSDL1Window();      
+  #endif
+    
   I_StartupMouse(); // grabs mouse and keyboard input if necessary
   
   return 1;
@@ -301,59 +393,68 @@ int I_SetVideoMode(int modeNum)
 
 bool I_StartupGraphics()
 {
+  
+  // 1. SDL_Init (Video)
+  if (SDL_Init(SDL_INIT_VIDEO) < 0)
+  {
+      printf(" [%s][%d] SDL Init failed: %s\n",__FILE__,__LINE__,SDL_GetError());
+      return false;
+  }
+
   if (graphics_started)
     return true;
+	
+  Uint8 BitMode = 8;
+  
+  Uint8 p = M_CheckParm("-bpp");  // specific bit per pixel color
+  if( p )
+  {
+    BitMode = atoi(myargv[p + 1]);
+    printf(" [%s][%d] Bitmode Requestet: %d\n",__FILE__,__LINE__,BitMode);    
+  }
 
-  // Get video info for screen resolutions
   vidInfo = SDL_GetVideoInfo();
-  // now we _could_ do all kinds of cool tests to determine which
-  // video modes are available, but...
-  // vidInfo->vfmt is the pixelformat of the "best" video mode available
+  
+  I_EnumWindowsDisplayModes();  
 
-  //CONS_Printf("Bpp = %d, bpp = %d\n", vidInfo->vfmt->BytesPerPixel, vidInfo->vfmt->BitsPerPixel);
-
-  // list all available video modes corresponding to the "best" pixelformat
-  SDL_Rect **modeList = SDL_ListModes(NULL, SDL_FULLSCREEN | surfaceFlags);
-
-  if (modeList == NULL)
-    {
-      CONS_Printf(" No video modes present!\n");
-      return false;
-    }
-  else if (modeList == reinterpret_cast<SDL_Rect**>(-1))
-    {
-      CONS_Printf(" Unexpected: any video resolution is available in fullscreen mode.\n");
-      return false;
-    }
-
-  // copy suitable modes to our own list
   int n = 0;
-  while (modeList[n])
+  int x = 1;
+  fullscrModes.clear();  // vorher leeren, falls schon gefüllt
+  while (n < num_modes)  // num_modes aus deiner I_EnumWindowsDisplayModes()
+  {
+    DisplayMode &mode = custom_modes[n];
+    if ( mode.bpp == BitMode )
     {
-      if (modeList[n]->w <= MAXVIDWIDTH && modeList[n]->h <= MAXVIDHEIGHT)
-	{
-	  vidmode_t temp;
-	  temp.w = modeList[n]->w;
-	  temp.h = modeList[n]->h;
-	  sprintf(temp.name, "%dx%d", temp.w, temp.h);
 
-	  fullscrModes.push_back(temp);
-	  //CONS_Printf("  %s\n", temp.name);
-	}
-      n++;
+      if (mode.w <= MAXVIDWIDTH && mode.h <= MAXVIDHEIGHT)
+      {
+        vidmode_t temp;   
+        temp.w = mode.w;      
+        temp.h = mode.h;        
+        sprintf(temp.name, "%dx%d", temp.w, temp.h);
+        fullscrModes.push_back(temp);
+
+        // Optional: Ausgabe zum Debuggen
+        printf("   Mode:> [%2d] %10sx%dbit\n", x, temp.name, mode.bpp);
+        x++;
+      }
     }
+    n++;
+  }
 
   CONS_Printf(" Found %d video modes.\n", fullscrModes.size());
   if (fullscrModes.empty())
-    {
-      CONS_Printf(" No suitable video modes found!\n");
-      return false;
-    }
+  {
+    CONS_Printf(" No suitable video modes found!\n");
+    return false;
+  }
 
   // name the windowed modes
+  printf(" [%s][%d] I_StartupGraphics: Definiere und bennen Window Modes\n",__FILE__,__LINE__);
   for (n=0; n<MAXWINMODES; n++)
+  {
     sprintf(windowedModes[n].name, "win %dx%d", windowedModes[n].w, windowedModes[n].h);
-
+  }
 
   // even if I set vid.bpp and highscreen properly it does seem to
   // support only 8 bit  ...  strange
@@ -361,66 +462,65 @@ bool I_StartupGraphics()
   // TODO why not use hicolor in sw mode too? it must work...
 
 #if defined(__APPLE_CC__) || defined(__MACOS__)
+
   vid.BytesPerPixel	= vidInfo->vfmt->BytesPerPixel;
   vid.BitsPerPixel	= vidInfo->vfmt->BitsPerPixel;
-  if (!M_CheckParm("-opengl")) {
+  if (!M_CheckParm("-opengl"))
+  {
 	  // software mode
 	  vid.BytesPerPixel = 1;
 	  vid.BitsPerPixel = 8;
   }
+
 #else
-  vid.BytesPerPixel = 1;  //videoInfo->vfmt->BytesPerPixel
-  vid.BitsPerPixel = 8;
+  /* Klasse Video:: */
+  vid.BytesPerPixel = BitMode/8/*1*/;  //videoInfo->vfmt->BytesPerPixel
+  vid.BitsPerPixel  = BitMode  /*8*/;
 #endif
 
   // default resolution
-  vid.width = BASEVIDWIDTH;
+  vid.width  = BASEVIDWIDTH;
   vid.height = BASEVIDHEIGHT;
+  
+  printf(" [%s][%d] I_StartupGraphics           \n"
+         "          Set [vid.] Width        : %d\n"
+         "          Set [vid.] Height       : %d\n"
+         "          Set [vid.] BytesPerPixel: %d\n"
+         "          Set [vid.] BitsPerPixel : %d\n\n"                              
+                                      ,__FILE__,__LINE__,
+                                      vid.width,vid.height,
+                                      vid.BytesPerPixel,vid.BitsPerPixel);
+  
   if (M_CheckParm("-opengl"))
-    {
-      // OpenGL mode
-      rendermode = render_opengl;
-
-#if 0  //FIXME: Hurdler: for now we do not use that anymore (but it should probably be back some day
-#ifdef DYNAMIC_LINKAGE
-      // dynamic linkage
-      OGL_renderer.Open("r_opengl.dll");
-
-      if (OGL_renderer.api_version != R_OPENGL_INTERFACE_VERSION)
-        I_Error("r_opengl.dll interface version does not match with Legacy.exe!\n"
-                "You must use the r_opengl.dll that came in the same distribution as your Legacy.exe.");
-
-      hw_renderer_export_t *temp = (hw_renderer_export_t *)OGL_renderer.GetSymbol("r_export");
-      memcpy(&HWD, temp, sizeof(hw_renderer_export_t));
-      CONS_Printf("%s loaded.\n", OGL_renderer.name);
-#else
-      // static linkage
-      memcpy(&HWD, &r_export, sizeof(hw_renderer_export_t));
-#endif
-#endif
-      
-      oglrenderer = new OGLRenderer;
-    }
+  {
+    // OpenGL mode
+    printf(" [%s][%d] I_StartupGraphics: OpenGL Modus\n",__FILE__,__LINE__);
+    rendermode = render_opengl;
+    oglrenderer = new OGLRenderer;
+  }
   else
-    {
-      // software mode
-      rendermode = render_soft;
-      CONS_Printf("I_StartupGraphics: windowed %d x %d x %d bpp\n", vid.width, vid.height, vid.BitsPerPixel);
-      vidSurface = SDL_SetVideoMode(vid.width, vid.height, vid.BitsPerPixel, surfaceFlags);
+  {
+    // software mode
+    rendermode = render_soft;
+    printf(" [%s][%d] I_StartupGraphics: Software Modus\n",__FILE__,__LINE__);    
+    //CONS_Printf("I_StartupGraphics: Windowed %dx%dx%dbit\n", vid.width, vid.height, vid.BitsPerPixel);
+    vidSurface = SDL_SetVideoMode(vid.width, vid.height, vid.BitsPerPixel, surfaceFlags);
 
-      if (vidSurface == NULL)
-        {
-          CONS_Printf("Could not set video mode!\n");
-          return false;
-        }
-      vid.direct = static_cast<byte*>(vidSurface->pixels);
+    if (vidSurface == NULL)
+    {
+      CONS_Printf("Could not set video mode!\n");
+      return false;
     }
+    
+    vid.direct = static_cast<byte*>(vidSurface->pixels);
+  }
 
   SDL_ShowCursor(SDL_DISABLE);
   I_StartupMouse(); // grab mouse and keyboard input if needed
 
   graphics_started = true;
 
+  printf(" [%s][%d] I_StartupGraphics: Return -> True\n",__FILE__,__LINE__);
   return true;
 }
 
@@ -446,3 +546,216 @@ void I_ShutdownGraphics()
     }
   SDL_Quit();
 }
+#ifdef WIN32
+
+void I_EnumWindowsDisplayModes(void)
+{
+  DEVMODE dm = {0};
+  dm.dmSize = sizeof(DEVMODE);
+  dm.dmDriverExtra = 0;
+
+  num_modes = 0;
+
+  // 1. Aktuelle Desktop-Auflösung holen (ENUM_CURRENT_SETTINGS)
+  if (EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &dm))
+  {
+    custom_modes[num_modes].w   = dm.dmPelsWidth;
+    custom_modes[num_modes].h   = dm.dmPelsHeight;
+    custom_modes[num_modes].bpp = dm.dmBitsPerPel;
+    num_modes++;
+    printf(" Aktueller Desktop: %ldx%ld @ %ld bpp\n", dm.dmPelsWidth, dm.dmPelsHeight, dm.dmBitsPerPel);
+  }
+
+  // 2. Alle verfügbaren Modi durchlaufen (ENUM_REGISTRY_SETTINGS + dynamisch)
+  int i;
+  for ( i=0; EnumDisplaySettings(NULL, i, &dm); ++i )
+  {
+    // Nur sinnvolle Modi (≥ 640x480, 8/16/24/32 bpp)
+        
+    if (dm.dmPelsWidth  >= 320 && dm.dmPelsHeight >= 200 &&
+       (dm.dmBitsPerPel ==   8 || dm.dmBitsPerPel ==  16 ||
+        dm.dmBitsPerPel ==  24 || dm.dmBitsPerPel ==  32 ))   
+       /* 
+        printf(" Modus %d: %lux%lu @ %lu bpp\n", num_modes-1, dm.dmPelsWidth,
+                                                              dm.dmPelsHeight,
+                                                              dm.dmBitsPerPel);
+        */
+    {
+      // Duplikat vermeiden
+      int duplicate = 0;
+      for (int j = 0; j < num_modes; j++)
+      {
+        if (custom_modes[j].w   == dm.dmPelsWidth  &&
+            custom_modes[j].h   == dm.dmPelsHeight &&
+            custom_modes[j].bpp == dm.dmBitsPerPel &&
+            custom_modes[j].bpx == dm.dmBitsPerPel/8)
+            {
+                    duplicate = 1;
+                    break;
+            }
+      }
+       
+      if (!duplicate)
+      {
+        custom_modes[num_modes].w   = dm.dmPelsWidth;
+        custom_modes[num_modes].h   = dm.dmPelsHeight;
+        custom_modes[num_modes].bpp = dm.dmBitsPerPel;
+        custom_modes[num_modes].bpx = dm.dmBitsPerPel/8;                
+        num_modes++;
+                                
+        /* Zum debuggen */
+        /*
+          printf(" Modus %d: %lux%lu @ %lu bpp [Pixelformat = %lu]\n", num_modes-1,
+                                                                    dm.dmPelsWidth,
+                                                                    dm.dmPelsHeight,
+                                                                    dm.dmBitsPerPel,
+                                                                    dm.dmBitsPerPel/8);                                                                    
+        */
+      }
+    }
+  }
+
+  if (num_modes == 0)
+  {
+      printf("Keine Modi gefunden – Fallback auf Standard\n");
+      custom_modes[0].w   = 640;
+      custom_modes[0].h   = 480;
+      custom_modes[0].bpp = 32;
+      num_modes           = 1;
+      return;
+  }
+  
+}
+
+  #ifdef BORDERLESS_WIN32 
+  /*
+   * Borderless Mode mit SDL 1.2.16. Keine ahnung
+   * ob das auch  mit alten versionen funktioniert
+   * Ist ein bissel Tricky. Aber unter Windows geht.
+   * Sollte unter Linux eigentlich auch laufen?
+   * Junge. Das ist 2025 sowas von Standard
+   */
+  #include <SDL/SDL_syswm.h>
+
+  #define STYLE_DO_NORMAL (WS_OVERLAPPEDWINDOW | WS_VISIBLE)  // Standard: Rahmen, Titel, Min/Max/Close
+
+  #define STYLE_NO_BORDER (WS_POPUP | WS_VISIBLE)  
+        
+  void ToggleBorderless(void)        
+  {
+    static HWND sdl_hwnd = NULL;
+    
+    SDL_SysWMinfo info;
+    SDL_VERSION(&info.version);
+    if (SDL_GetWMInfo(&info))
+    {
+       sdl_hwnd = info.window;
+       if (!sdl_hwnd) return; // Kein Fenster Gefunden! Sollte nicht passieren.
+    }
+   
+    // Alte Auflösung vom SDL_Surface merken 
+    static int old_width = 0, old_height = 0;    
+    old_width = SDL_GetVideoSurface()->w;
+    old_height= SDL_GetVideoSurface()->h;   
+    
+    // Aktuellen Stil holen
+    LONG current_style = GetWindowLong(sdl_hwnd, GWL_STYLE);
+    LONG new_style;
+
+    if ((current_style & WS_CAPTION) && 
+        (cv_borderless.value == 1 ))      // Aktuell mit Rahmen ? zu borderless             
+       new_style = STYLE_NO_BORDER;
+       
+    else if ((current_style | WS_CAPTION) &&
+            (cv_borderless.value == 0  )) // Aktuell borderless ? zurück zu normal               
+        new_style = STYLE_DO_NORMAL;
+
+    if ( current_style != new_style )
+    {
+        // Stil ändern
+        SetWindowLong(sdl_hwnd, GWL_STYLE, new_style);       
+        
+        // Neu Zeichnen
+        SetWindowPos(sdl_hwnd, NULL, 0, 0, old_width, old_height, SWP_NOMOVE | SWP_NOZORDER | SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+        
+        // Fenster wieder Zentrieren
+        CenterSDL1Window();
+    }
+
+    /*
+     *printf("[%s][%d] Fensterstil geändert: %s\n",__FILE__,__LINE__,
+		 *						(new_style == STYLE_DO_NORMAL)?"mit Rahmen" : "borderless");
+     */
+     
+    return;  
+  }
+  #endif
+  /*
+   * Auto Zentrierung mit SDL 1.2.16. Geht! Also
+   * Linux User. Das müsste auch mit euerer API
+   * zu schaffen sein?
+   * Alter?. Sowas ist 2025 sowas von Standard
+   */    
+  void CenterSDL1Window(void)
+  {    
+      static HWND hwnd = NULL;
+    
+      SDL_SysWMinfo info;
+      SDL_VERSION(&info.version);
+      if (SDL_GetWMInfo(&info))
+      {
+        hwnd = info.window;
+        if (!hwnd) return; // Kein Fenster Gefunden! Sollte nicht passieren.
+      }
+    
+      // HWND des SDL-Fensters holen
+      if (hwnd)
+      {               
+          //printf(" [%s][%d] CenterSDL1Window(): SDL Surface eingefangen\n",__FILE__,__LINE__);  
+          #ifdef BORDERLESS_WIN32 
+          //  ToggleBorderless(hwnd);               
+          #endif
+          // 1. Bildschirmgröße holen
+          int Screen_W = GetSystemMetrics(SM_CXSCREEN);
+          int Screen_H = GetSystemMetrics(SM_CYSCREEN);
+
+          // 2. Client-Größe (der eigentliche Inhalt) holen – NICHT GetWindowRect!
+          RECT clientRect;
+          GetClientRect(hwnd, &clientRect);
+          int client_w = clientRect.right - clientRect.left;
+          int client_h = clientRect.bottom - clientRect.top;
+
+          // 3. Äußere Fenstergröße holen (für die Positionierung)
+          RECT windowRect;
+          GetWindowRect(hwnd, &windowRect);
+          int window_w = windowRect.right - windowRect.left;
+          int window_h = windowRect.bottom - windowRect.top;
+
+          // 4. Berechne die gewünschte obere linke Ecke des **gesamten Fensters**
+          // so dass die **Client-Area** genau in der Mitte liegt
+          int x = (Screen_W - client_w) / 2;
+          int y = (Screen_H - client_h) / 2;
+
+          // 5. Korrigiere um den Rahmen/Titelbalken (damit Client zentriert ist)
+          int border_offset_x = (window_w - client_w) / 2;
+          int border_offset_y = (window_h - client_h) - border_offset_x;  // Titelbalken ist meist oben dicker
+
+          x -= border_offset_x;
+          y -= border_offset_y;
+
+          // Sicherheitsgrenzen (damit Fenster nicht außerhalb des Bildschirms liegt)
+          if (x < 0) x = 0;
+          if (y < 0) y = 0;
+          
+          // 6. Fenster positionieren
+          SetWindowPos(hwnd, NULL, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
+          /*
+          printf(" [%s][%d] CenterSDL1Window(): Client %dx%d ? Position (%d, %d)\n", __FILE__,
+                                                                                    __LINE__,
+                                                                                    client_w,
+                                                                                    client_h,
+                                                                                     x, y   );*/
+                                                                                    
+      }
+  }
+  #endif

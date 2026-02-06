@@ -653,29 +653,49 @@ void PlayerPawn::DeathThink()
 void PlayerPawn::MorphThink()
 {
   if (game.mode == gm_heretic)
+  {
+    if (health > 0)
     {
-      if (health > 0)
-	// Handle beak movement
-	psprites[ps_weapon].sy = WEAPONTOP + fixed_t(attackphase) >> 1;
-
-      if (morphTics & 15)
-	return;
-
-      if ((vel.x == 0 && vel.y == 0) && P_Random() < 160)
-	{ // Twitch view angle
-	  yaw += P_SignedRandom() << 19;
-	}
-      if ((pos.z <= floorz) && (P_Random() < 32))
-	{ // Jump and noise
-	  vel.z += 1;
-	  pres->SetAnim(presentation_t::Pain);
-	  return;
-	}
-      if(P_Random() < 48)
-	{ // Just noise
-	  S_StartScreamSound(this, sfx_chicact);
-	}
+      // Handle beak movement
+      /*
+       * g_pawn.cpp: In member function 'void PlayerPawn::MorphThink()':
+       * g_pawn.cpp:659:37: warning: suggest parentheses around '+' inside '>>' [-Wparentheses]
+       * psprites[ps_weapon].sy = WEAPONTOP + fixed_t(attackphase) >> 1;
+       */
+      // psprites[ps_weapon].sy = WEAPONTOP + fixed_t(attackphase) >> 1;
+      /*
+       * Bei Weapon-Sprites (psprites[ps_weapon].sy) ist das eine klassische
+       * Bob-/Recoil-Animation:
+       * WEAPONTOP = Basis-Position der Waffe (meist ein negativer fixed_t-Wert,
+       * z.B. -32 oder -100, damit die Waffe oben am Screen ist)
+       * attackphase = Zähler während des Angriffs (z. B. 0 → 16 oder so)
+       * Man addiert erst einen Offset (attackphase), und teilt dann das Ergebnis
+       * durch 2 → sanfte Bewegung
+      */
+      fixed_t offset = fixed_t(attackphase);
+      psprites[ps_weapon].sy = WEAPONTOP + (offset >> 1);      
     }
+
+    if (morphTics & 15)
+      return;
+
+    if ((vel.x == 0 && vel.y == 0) && P_Random() < 160)
+    { // Twitch view angle
+      yaw += P_SignedRandom() << 19;
+    }
+    
+    if ((pos.z <= floorz) && (P_Random() < 32))
+    { // Jump and noise
+      vel.z += 1;
+      pres->SetAnim(presentation_t::Pain);
+      return;
+    }
+    
+    if(P_Random() < 48)
+    { // Just noise
+      S_StartScreamSound(this, sfx_chicact);
+    }
+  }
   else if (game.mode == gm_hexen)
     {
       if (morphTics & 15)

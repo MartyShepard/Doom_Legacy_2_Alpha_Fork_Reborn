@@ -224,6 +224,7 @@ void CL_Init()
       cv_invertmouse[i].Reg();
     }
 
+  cv_mouse_release.Reg();
   // client renderer
   cv_viewheight.Reg();
 
@@ -231,6 +232,7 @@ void CL_Init()
   cv_scr_height.Reg();
   cv_scr_depth.Reg();
   cv_fullscreen.Reg();
+  cv_borderless.Reg(); // Marty  
   cv_video_gamma.Reg();
 
   cv_viewsize.Reg();

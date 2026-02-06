@@ -122,6 +122,8 @@ public:
   /// draws the console
   void Drawer();
 
+  int IsActive(void);
+  
   /// wrapper
   friend void CONS_Printf(const char *fmt, ...);
 };

@@ -23,7 +23,23 @@
 #include <string.h>
 #include <math.h>
 
-#include <GL/gl.h>
+/* OpenGL Init --------------------
+ * liegt in oglinit.h 
+
+  //#include <GL/gl.h>
+ */
+#include "Hardware/ogl_init.h"
+/* OpenGL Init End ------------- */
+
+/* Marty - definiert vermisste BG */
+#ifndef GL_BGR
+	#define GL_BGR 0x80E0
+#endif
+
+#ifndef GL_BGRA
+	#define GL_BGRA 0x80E1
+#endif
+/* OpenGL Init End*/
 
 #include "doomtype.h"
 #include "g_actor.h"

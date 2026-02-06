@@ -1614,8 +1614,10 @@ bool Map::Setup(tic_t start, bool spawnthings)
 
   // If the map defines its music in MapInfo_t, use it.
   if (!info->musiclump.empty())
+  {
     S.StartMusic(info->musiclump.c_str(), true);
-  // I_PlayCD(info->mapnumber, true);  // FIXME cd music
+ // I_PlayCD(info->mapnumber, true);  // FIXME cd music
+  }
 
   // Set the gravity for the level
   if (cv_gravity.value != int(info->gravity * fixed_t::UNIT))

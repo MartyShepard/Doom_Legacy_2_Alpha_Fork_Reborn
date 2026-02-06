@@ -25,14 +25,17 @@
 shader_cache_t shaders;
 shaderprog_cache_t shaderprogs;
 
+/* OpenGL Init --------------------
+   liegt in oglinit.h
+	 #ifdef NO_SHADERS
+			# warning Shaders not included in the build.
+		#elif !defined(GL_VERSION_2_0) // GLSL is introduced in OpenGL 2.0
+			# warning Shaders require OpenGL 2.0!
+		#else
+   OpenGL Init End ------------- */
 
-#ifdef NO_SHADERS
-# warning Shaders not included in the build.
-#elif !defined(GL_VERSION_2_0) // GLSL is introduced in OpenGL 2.0
-# warning Shaders require OpenGL 2.0!
-#else
+#ifndef NO_SHADERS // Marty: Geändert
 
-#include <GL/glu.h>
 #include "doomdef.h"
 #include "g_map.h"
 #include "w_wad.h"
@@ -48,8 +51,6 @@ static void PrintError()
       err = glGetError();
     }
 }
-
-
 
 Shader::Shader(const char *n, bool vertex_shader)
   : cacheitem_t(n), shader_id(NOSHADER), ready(false)
@@ -76,24 +77,51 @@ Shader::Shader(const char *n, const char *code, bool vertex_shader)
 
 Shader::~Shader()
 {
+	#ifdef GL_USE_GLEXT
+		static PFNGLDELETESHADERPROC _GLDeleteShader = NULL;
+		_GLDeleteShader = (PFNGLDELETESHADERPROC) wglGetProcAddress("glDeleteShader");
+	#else
+		#define glDeleteShader     _GLDeleteShader
+	#endif
+	
+	if (_GLDeleteShader)
+			_GLDeleteShader(shader_id);		
+	
   if (shader_id != NOSHADER)
-    glDeleteShader(shader_id);
+    _GLDeleteShader/*glDeleteShader*/(shader_id);
 }
 
 
 void Shader::Compile(const char *code, int len)
 {
-  shader_id = glCreateShader(type);
+	#ifdef GL_USE_GLEXT	
+		static PFNGLCREATESHADERPROC  _GLCreateShader  = NULL;
+		static PFNGLSHADERSOURCEPROC  _GLShaderSource  = NULL;
+		static PFNGLCOMPILESHADERPROC _GLCompileShader = NULL;
+		static PFNGLGETSHADERIVPROC   _GLGetShaderiv   = NULL;
+			
+		_GLCreateShader = (PFNGLCREATESHADERPROC)  wglGetProcAddress("glCreateShader");
+		_GLShaderSource = (PFNGLSHADERSOURCEPROC)  wglGetProcAddress("glShaderSource");
+		_GLCompileShader= (PFNGLCOMPILESHADERPROC) wglGetProcAddress("glCompileShader");
+		_GLGetShaderiv  = (PFNGLGETSHADERIVPROC)   wglGetProcAddress("glGetShaderiv");
+	#else
+		#define glCreateShader     _GLCreateShader
+		#define glShaderSource     _GLShaderSource
+		#define glCompileShader    _GLCompileShader
+		#define glGetShaderiv      _GLGetShaderiv				
+	#endif	
+	
+  shader_id = _GLCreateShader/*glCreateShader*/(type);
   PrintError();
-  glShaderSource(shader_id, 1, &code, &len);
+  _GLShaderSource/*glShaderSource*/(shader_id, 1, &code, &len);
   PrintError();
-  glCompileShader(shader_id);
+  _GLCompileShader/*glCompileShader*/(shader_id);
   PrintError();
 
   PrintInfoLog();
 
   GLint status = 0;
-  glGetShaderiv(shader_id, GL_COMPILE_STATUS, &status);
+  _GLGetShaderiv/*glGetShaderiv*/(shader_id, GL_COMPILE_STATUS, &status);
   ready = (status == GL_TRUE);
   if (!ready)
     CONS_Printf("Shader '%s' would not compile.\n", name);
@@ -102,13 +130,24 @@ void Shader::Compile(const char *code, int len)
 void Shader::PrintInfoLog()
 {
   int len = 0;
-  glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, &len);
+	
+	#ifdef GL_USE_GLEXT		
+		static PFNGLGETSHADERIVPROC   		_GLGetShaderiv       = NULL;
+		static PFNGLGETSHADERINFOLOGPROC  _GLGetShaderInfoLog  = NULL;	
+		_GLGetShaderiv      = (PFNGLGETSHADERIVPROC)      wglGetProcAddress("glGetShaderiv");
+		_GLGetShaderInfoLog = (PFNGLGETSHADERINFOLOGPROC) wglGetProcAddress("glGetShaderInfoLog");
+	#else
+		#define glGetShaderInfoLog _GLGetShaderiv
+		#define glGetShaderiv      _GLGetShaderiv				
+	#endif
+	
+  _GLGetShaderiv/*glGetShaderiv*/(shader_id, GL_INFO_LOG_LENGTH, &len);
 
   if (len > 0)
     {
       char *log = static_cast<char*>(Z_Malloc(len, PU_DAVE, NULL));
       int chars = 0;
-      glGetShaderInfoLog(shader_id, len, &chars, log);
+      _GLGetShaderInfoLog/*glGetShaderInfoLog*/(shader_id, len, &chars, log);
       CONS_Printf("Shader '%s' InfoLog: %s\n", name, log);
       Z_Free(log);
     }
@@ -120,41 +159,88 @@ void Shader::PrintInfoLog()
 ShaderProg::ShaderProg(const char *n)
   : cacheitem_t(n)
 {
-  prog_id = glCreateProgram();
+	#ifdef GL_USE_GLEXT			
+		static PFNGLCREATEPROGRAMPROC _GLCreateProgram = NULL;
+		_GLCreateProgram    = (PFNGLCREATEPROGRAMPROC)   wglGetProcAddress("glCreateProgram");
+	#else
+		#define glCreateProgram _GLCreateProgram			
+	#endif	
+	
+  prog_id = _GLCreateProgram/*glCreateProgram*/();
   PrintError();
 }
 
 ShaderProg::~ShaderProg()
 {
-  glDeleteProgram(prog_id);
+	#ifdef GL_USE_GLEXT		
+		static PFNGLDELETEPROGRAMPROC _GLDeleteProgram = NULL;
+		_GLDeleteProgram    = (PFNGLDELETEPROGRAMPROC)   wglGetProcAddress("glDeleteProgram");
+	#else
+		#define glDeleteProgram _GLDeleteProgram			
+	#endif		
+  _GLDeleteProgram/*glDeleteProgram*/(prog_id);
 }
 
 void ShaderProg::DisableShaders()
 {
-  glUseProgram(0);
+	#ifdef GL_USE_GLEXT		
+		static PFNGLUSEPROGRAMPROC _GLUseProgram = NULL;
+		_GLUseProgram    = (PFNGLUSEPROGRAMPROC)   wglGetProcAddress("glUseProgram");
+	#else
+		#define glUseProgram _GLUseProgram			
+	#endif
+	
+  _GLUseProgram/*glUseProgram*/(0);
 }
 
 void ShaderProg::AttachShader(Shader *s)
 {
-  glAttachShader(prog_id, s->GetID());
+	#ifdef GL_USE_GLEXT	
+		static PFNGLATTACHSHADERPROC _GLAttachShader = NULL;
+		_GLAttachShader    = (PFNGLATTACHSHADERPROC)   wglGetProcAddress("glAttachShader");	
+	#else
+		#define glAttachShader _GLAttachShader			
+	#endif
+	
+	_GLAttachShader/*glAttachShader*/(prog_id, s->GetID());
   PrintError();
 }
 
 void ShaderProg::Link()
 {
-  glLinkProgram(prog_id);
+	#ifdef GL_USE_GLEXT	
+		static PFNGLLINKPROGRAMPROC 				_GLLinkProgram 			 = NULL;
+		static PFNGLVALIDATEPROGRAMPROC 		_GLValidateProgram 	 = NULL;	
+		static PFNGLGETPROGRAMIVPROC 				_GLGetProgramiv   	 = NULL;	
+		static PFNGLGETUNIFORMLOCATIONPROC 	_GLGetUniformLocation= NULL;	
+		static PFNGLGETATTRIBLOCATIONPROC 	_GLGetAttribLocation = NULL;	
+		
+		_GLLinkProgram    		= (PFNGLLINKPROGRAMPROC)   	 		wglGetProcAddress("glLinkProgram");
+		_GLValidateProgram		= (PFNGLVALIDATEPROGRAMPROC) 		wglGetProcAddress("glValidateProgram");	
+		_GLGetProgramiv				= (PFNGLGETPROGRAMIVPROC) 	 		wglGetProcAddress("glGetProgramiv");
+		_GLGetUniformLocation	= (PFNGLGETUNIFORMLOCATIONPROC) wglGetProcAddress("glGetUniformLocation");	
+		_GLGetAttribLocation	= (PFNGLGETATTRIBLOCATIONPROC)  wglGetProcAddress("glGetAttribLocation");	
+	#else
+		#define glLinkProgram 				_GLLinkProgram
+		#define glValidateProgram 		_GLValidateProgram
+		#define glGetProgramiv 				_GLGetProgramiv
+		#define glGetUniformLocation 	_GLGetUniformLocation
+		#define glGetAttribLocation 	_GLGetAttribLocation
+	#endif
+	
+  _GLLinkProgram/*glLinkProgram*/(prog_id);
   PrintError();
   if (true)
     {
       // for debugging shaders
-      glValidateProgram(prog_id);
+      _GLValidateProgram/*glValidateProgram*/(prog_id);
       PrintError();
       PrintInfoLog();
       PrintError();
     }
 
   GLint status = 0;
-  glGetProgramiv(prog_id, GL_LINK_STATUS, &status);
+  _GLGetProgramiv/*glGetProgramiv*/(prog_id, GL_LINK_STATUS, &status);
   if (status == GL_FALSE)
     CONS_Printf("Shader program '%s' could not be linked.\n", name);
 
@@ -178,44 +264,78 @@ void ShaderProg::Link()
 
   // find locations for shader variables
   for (int k=0; k<3; k++)
-    if ((*uniforms[k].location = glGetUniformLocation(prog_id, uniforms[k].name)) == -1)
+    if ((*uniforms[k].location = _GLGetUniformLocation/*glGetUniformLocation*/(prog_id, uniforms[k].name)) == -1)
       CONS_Printf("Uniform shader var '%s' not found!\n", uniforms[k].name);
 
   for (int k=0; k<1; k++)
-    if ((*attribs[k].location = glGetAttribLocation(prog_id, attribs[k].name)) == -1)
+    if ((*attribs[k].location = _GLGetAttribLocation/*glGetAttribLocation*/(prog_id, attribs[k].name)) == -1)
       CONS_Printf("Attribute shader var '%s' not found!\n", attribs[k].name);
 }
 
 void ShaderProg::Use()
 {
-  glUseProgram(prog_id);
+	#ifdef GL_USE_GLEXT	
+		static PFNGLUSEPROGRAMPROC _GLUseProgram = NULL;
+		_GLUseProgram    = (PFNGLUSEPROGRAMPROC)   wglGetProcAddress("glUseProgram");
+	#else
+		#define glUseProgram 				_GLUseProgram
+	#endif
+		
+  _GLUseProgram/*glUseProgram*/(prog_id);
 }
 
 void ShaderProg::SetUniforms()
 {
+	#ifdef GL_USE_GLEXT		
+		static PFNGLUNIFORM1IPROC	_GLUniform1i = NULL;
+		static PFNGLUNIFORM1FPROC _GLUniform1f = NULL;			
+		_GLUniform1i = (PFNGLUNIFORM1IPROC) wglGetProcAddress("glUniform1i");
+		_GLUniform1f = (PFNGLUNIFORM1FPROC) wglGetProcAddress("glUniform1f");		
+	#else
+		#define glUniform1i 				_GLUniform1i
+		#define glUniform1f 				_GLUniform1f	
+	#endif	
   // only call after linking!
   // set uniform vars (per-primitive vars, ie. only changed outside glBegin()..glEnd())
-  glUniform1i(loc.tex0, 0);
-  glUniform1i(loc.tex1, 1);
-  glUniform1f(loc.time, oglrenderer->mp->maptic/60.0);
+  _GLUniform1i/*glUniform1i*/(loc.tex0, 0);
+  _GLUniform1i/*glUniform1i*/(loc.tex1, 1);
+  _GLUniform1f/*glUniform1f*/(loc.time, oglrenderer->mp->maptic/60.0);
 }
 
 void ShaderProg::SetAttributes(shader_attribs_t *a)
 {
+	#ifdef GL_USE_GLEXT			
+		static PFNGLVERTEXATTRIB3FVPROC _GLVertexAttrib3fv = NULL;			
+		_GLVertexAttrib3fv = (PFNGLVERTEXATTRIB3FVPROC) wglGetProcAddress("glVertexAttrib3fv");
+	#else
+		#define glVertexAttrib3fv 				_GLVertexAttrib3fv
+	#endif			
+	
   // then vertex attribute vars (TODO vertex attribute arrays) (can be changed anywhere)
-  glVertexAttrib3fv(loc.tangent, a->tangent);
+  _GLVertexAttrib3fv/*glVertexAttrib3fv*/(loc.tangent, a->tangent);
 }
 
 void ShaderProg::PrintInfoLog()
 {
   int len = 0;
-  glGetProgramiv(prog_id, GL_INFO_LOG_LENGTH, &len);
+
+	#ifdef GL_USE_GLEXT			
+		static PFNGLGETPROGRAMIVPROC 			_GLGetProgramiv 		= NULL;
+		static PFNGLGETPROGRAMINFOLOGPROC _GLGetProgramInfoLog= NULL;				
+		_GLGetProgramiv 		 = (PFNGLGETPROGRAMIVPROC) 			wglGetProcAddress("glGetProgramiv");
+		_GLGetProgramInfoLog = (PFNGLGETPROGRAMINFOLOGPROC) wglGetProcAddress("glGetProgramInfoLog");
+	#else
+		#define glGetProgramiv 			_GLGetProgramiv
+		#define glGetProgramInfoLog _GLGetProgramInfoLog		
+	#endif	
+	
+  _GLGetProgramiv/*glGetProgramiv*/(prog_id, GL_INFO_LOG_LENGTH, &len);
 
   if (len > 0)
     {
       char *log = static_cast<char*>(Z_Malloc(len, PU_DAVE, NULL));
       int chars = 0;
-      glGetProgramInfoLog(prog_id, len, &chars, log);
+      _GLGetProgramInfoLog/*glGetProgramInfoLog*/(prog_id, len, &chars, log);
       CONS_Printf("Shader program '%s' InfoLog: %s\n", name, log);
       Z_Free(log);
     }

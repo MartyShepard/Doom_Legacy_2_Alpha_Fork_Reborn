@@ -823,17 +823,36 @@ bool PlayerPawn::Damage(Actor *inflictor, Actor *source, int damage, int dtype)
     {
       switch (d->type)
 	{
+    /* Marty
+     * p_inter.cpp:
+     * In member function 'virtual bool PlayerPawn::Damage(Actor*, Actor*, int, int)':
+     * p_inter.cpp:827:4: warning: this 'if' clause does not guard... [-Wmisleading-indentation]
+     * if (powers[pw_invulnerability
+     * 
+     * Das ist ein schwerer Bug:
+     * Invulnerability schützt korrekt (damage=0).
+     * Aber normale Spieler bekommen nie 10000 Schaden
+     * und können auch nie durch Chaos Device gerettet werden.
+     * Das break frisst den gesamten Fall
+     */
 	case MT_MACEFX4: // Death ball
-	  if (powers[pw_invulnerability])
+  {
+    if (powers[pw_invulnerability])
+    {
 	    // Can't hurt invulnerable players
 	    damage = 0;
 	    break;	  
+    }
 	  if (P_AutoUseChaosDevice(this))
+    {
 	    // Player was saved using chaos device
 	    return false;	
-	  damage = 10000; // Something's gonna die
+    }
+    
+    damage = 10000; // Something's gonna die
 	  break;
-        case MT_PHOENIXFX2: // Flame thrower
+  }
+  case MT_PHOENIXFX2: // Flame thrower
 	  if (P_Random() < 128)
             { // Freeze player for a bit
 	      reactiontime += 4;

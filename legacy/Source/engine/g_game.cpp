@@ -161,18 +161,19 @@ void D_PageDrawer(const char *lumpname)
   vid.scaledofs = 0;
 }
 
-
+// Forward-Deklaration für G_DeferedPlayDemo
+void G_DeferedPlayDemo(const char* name);
 /// This cycles through the demo sequences.
 void GameInfo::AdvanceIntro()
 {
   demosequence = (demosequence+1)%6;
 
   switch (demosequence)
-    {
+  {
     case 0:
       pagename = "TITLEPIC";
       switch (mode)
-        {
+      {
         case gm_hexen:
           pagetic = 280;
           pagename = "TITLE";
@@ -191,24 +192,58 @@ void GameInfo::AdvanceIntro()
           pagetic = 170;
           S_StartMusic(mus_intro);
           break;
-        }
+      }
       break;
+      /*
     case 1:
       //G_DeferedPlayDemo("DEMO1");
       pagetic = 9999999;
       break;
+      */
+    case 1:
+    {
+      if (fc.FindNumForName("DEMO1") != -1)
+      {
+        G_DeferedPlayDemo("DEMO1");
+        CONS_Printf("Starting internal DEMO1 playback\n");
+      }
+      else
+      {
+        //pagestate = 2;  // spring direkt zu Credits
+        pagetic = 200;
+        pagename = "CREDIT";
+      }
+    }
+    break;    
     case 2:
       pagetic = 200;
       pagename = "CREDIT";
       break;
-    case 3:
+      /*
+    case 3:    
       //G_DeferedPlayDemo("DEMO2");
       pagetic = 9999999;
       break;
+      */
+    case 3:
+    {
+      if (fc.FindNumForName("DEMO2") != -1)
+      {
+        G_DeferedPlayDemo("DEMO2");
+        CONS_Printf("Starting internal DEMO2 playback\n");
+      }
+      else
+      {
+        //pagestate = 2;  // spring direkt zu Credits
+        pagetic = 200;
+        pagename = "CREDIT";
+      }
+    }
+    break;        
     case 4:
       pagetic = 200;
       switch (mode)
-        {
+      {
         case gm_doom2:
           pagetic = TICRATE * 11;
           pagename = "TITLEPIC";
@@ -230,18 +265,52 @@ void GameInfo::AdvanceIntro()
 	  else
 	    pagename = "CREDIT";
           break;
-        }
+      }
       break;
+      /*
     case 5:
       //G_DeferedPlayDemo("DEMO3");
       pagetic = 9999999;
       break;
+      */
+    case 5:
+    {
+      if (fc.FindNumForName("DEMO3") != -1)
+      {
+        G_DeferedPlayDemo("DEMO3");
+        CONS_Printf("Starting internal DEMO3 playback\n");
+      }
+      else
+      {
+        //pagestate = 2;  // spring direkt zu Credits
+        pagetic = 200;
+        pagename = "CREDIT";
+      }
+    }
+    break;        
       // THE DEFINITIVE DOOM Special Edition demo
+      /*
     case 6:
       //G_DeferedPlayDemo("DEMO4");
       pagetic = 9999999;
       break;
+      */
+    case 6:
+    {
+      if (fc.FindNumForName("DEMO4") != -1)
+      {
+        G_DeferedPlayDemo("DEMO4");
+        CONS_Printf("Starting internal DEMO4 playback\n");
+      }
+      else
+      {
+        //pagestate = 2;  // spring direkt zu Credits
+        pagetic = 200;
+        pagename = "CREDIT";
+      }
     }
+    break;         
+  } // END Switch demosequence
 }
 
 
@@ -263,6 +332,7 @@ void GameInfo::SetState(gamestate_t s)
 
 void GameInfo::Display()
 {
+
   if (nodrawers)
     return;
 
@@ -270,133 +340,137 @@ void GameInfo::Display()
   // in SDL locks screen if necessary
   I_StartFrame();
 
+  //screenwipe = 0;  // immer deaktivieren
+ 
   if (screenwipe <= 1)
-    {
+  {
       // check for change of screen size (video mode)
       if (vid.setmodeneeded)
-	vid.SetMode();  // change video mode, set setsizeneeded
+      vid.SetMode();  // change video mode, set setsizeneeded
 
       // change the view size if needed
       if (setsizeneeded)
-	{
-	  R_ExecuteSetViewSize();
-	  refresh_viewborder = true;
-	}
+      {
+        R_ExecuteSetViewSize();
+        refresh_viewborder = true;
+      }
 
       if (vid.resetpaletteneeded)
-	vid.SetPalette(0);
+          vid.SetPalette(0);
 
-      if (screenwipe == 1)
-	{
-	}
-    }
+      if (screenwipe == 1){}
+  }
 
   // do buffered drawing
   switch (state)
-    {
+  {
     case GS_LEVEL:
       // draw either automap or game
       if (automap.active)
-	{
-	  automap.Drawer();
-	  if (ViewPlayers.size())
-	    {
-	      hud.RefreshStatusbar();
-	      hud.Draw(ViewPlayers[0], 0); // draw hud on top anyway
-	    }
-	}
-      else
+      {
+        automap.Drawer();
+        if (ViewPlayers.size())
         {
-	  if (Menu::active)
-	    hud.RefreshStatusbar();
-
-          // see if the border needs to be updated to the screen
-          if (viewwidth != vid.width)
-            {
-              // the menu may draw over parts out of the view window,
-              // which are refreshed only when needed
-	      if (refresh_viewborder || Menu::active)
-		{
-		  R_DrawViewBorder();
-		  refresh_viewborder = false;
-		}
-	      else
-		hud.HU_Erase();
-            }
-
-          Drawer(); // render 3D view
+          hud.RefreshStatusbar();
+          hud.Draw(ViewPlayers[0], 0); // draw hud on top anyway
         }
+      }
+      else
+      {
+        if (Menu::active)
+          hud.RefreshStatusbar();
+
+        // see if the border needs to be updated to the screen
+        if (viewwidth != vid.width)
+        {
+          // the menu may draw over parts out of the view window,
+          // which are refreshed only when needed
+          if (refresh_viewborder || Menu::active)
+          {
+            R_DrawViewBorder();
+            refresh_viewborder = false;
+          }
+          else
+            hud.HU_Erase();
+         }
+
+         Drawer(); // render 3D view
+      }
       hud.DrawCommon();
       break;
-
     case GS_INTERMISSION:
-      wi.Drawer();
+      wi.Drawer();     
       break;
-
     case GS_FINALE:
+    {    
       F_Drawer();
-      break;
-
-    case GS_INTRO:
-      D_PageDrawer(pagename);
-
+      //CONS_Printf("[%s][%d]::Display()\n",__FILE__,__LINE__); 
+    }
+    break;
+    case GS_INTRO:    
+        D_PageDrawer(pagename);     
     case GS_NULL:
     default:
-      break;
-    }
+        break;
+  }
 
   Menu::Drawer(); // menu (or console) is drawn on top of everything else
 
   switch (screenwipe)
-    {
-    case 0: // normal update
-      I_FinishUpdate();              // page flip or blit buffer
+  {
+    case 0: // normal update    
+      I_FinishUpdate();              // page flip or blit buffer   
       break;
-
     case 1: // start a wipe
+    {
       R_FillBackScreen(); // draw the view borders to screen 1 anyway (wipes only accompany game state changes)
       refresh_viewborder = true;
       hud.RefreshStatusbar();
       screenwipe = wipe_StartScreen() ? 2 : 0; // save "before" view, if not succesful, cancel wipe
-      break;
+    }
+    break;
 
-    default: // the "after" screen was just rendered
-      if (!wipe_EndScreen()) // save "after" view
-	{
-	  screenwipe = 0;
-	  return;
-	}
-
-      bool done;
-      tic_t wipestart = I_GetTics() - 1;
-      tic_t wipe_end  = wipestart + 2*TICRATE; // init a timeout
-      do
+  default: // the "after" screen was just rendered
         {
-          tic_t nowtime, tics;
+          if (!wipe_EndScreen()) // save "after" view
+          {
+            screenwipe = 0;
+            return;
+          }
 
+          bool done;
+          tic_t wipestart = I_GetTics() - 1;
+          tic_t wipe_end  = wipestart + 2*TICRATE; // init a timeout
           do
             {
-              I_Sleep(1);
-              nowtime = I_GetTics();
-              tics = nowtime - wipestart;
-              // wait until time has passed
+              tic_t nowtime, tics;
+
+              do
+                {
+                  I_Sleep(1);
+                  nowtime = I_GetTics();
+                  tics = nowtime - wipestart;
+                  // wait until time has passed
+                }
+                
+              while (!tics);
+                wipestart = nowtime;
+
+              if (nowtime < wipe_end)
+                done = wipe_ScreenWipe(tics); // we still have time for the wipe
+              else
+                done = wipe_ScreenWipe(-1);   // note the wipe algorithm that time's out.
+
+              I_OsPolling();
+              Menu::Drawer();                 // menu is drawn even on top of wipes
+              I_FinishUpdate();               // page flip or blit buffer
             }
-          while (!tics);
-          wipestart = nowtime;
-
-	  if (nowtime < wipe_end)
-	    done = wipe_ScreenWipe(tics); // we still have time for the wipe
-	  else
-	    done = wipe_ScreenWipe(-1); // note the wipe algorithm that time's out.
-
-          I_OsPolling();
-          Menu::Drawer();            // menu is drawn even on top of wipes
-          I_FinishUpdate();      // page flip or blit buffer
+          
+            while (!done);
+              screenwipe = 0;
         }
-      while (!done);
-      screenwipe = 0;
-      break;
-    }
+        break;
+  }
 }
 
 

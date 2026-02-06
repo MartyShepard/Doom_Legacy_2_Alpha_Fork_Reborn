@@ -23,15 +23,84 @@
 #include <sys/stat.h>
 #include <zlib.h>
 
+#include <unistd.h>
+#include <sys/stat.h>   // mkdir (Linux/MSYS) oder _mkdir (Windows)
+#include <direct.h>     // _mkdir Windows
+#include <dirent.h>
+
 #include "doomdef.h"
 
 #include "m_swap.h"
 #include "parser.h"
 #include "dehacked.h"
 
+
 #include "wad.h"
+#include "w_wad.h"
 #include "z_zone.h"
 
+// Hilfsfunktionen für Little-Endian (sicher auf allen Systemen)
+inline uint32_t read_le32(const void* ptr)
+{
+    const uint8_t* p = static_cast<const uint8_t*>(ptr);
+    return p[0] |
+          (p[1] << 8) |
+          (p[2] << 16)|
+          (p[3] << 24);
+}
+
+inline uint16_t read_le16(const void* ptr)
+{
+    const uint8_t* p = static_cast<const uint8_t*>(ptr);
+    return p[0] |
+          (p[1] << 8);
+}
+
+static char *ProgrammPath(void)
+{
+  static char dosroot[MAX_PATH] = {0}; 	
+  static char exepath[MAX_PATH] = {0};  // static = nur einmal initialisiert
+
+  if (exepath[0] == '\0')  // Nur einmal berechnen
+  {
+       GetModuleFileNameA(NULL, exepath, MAX_PATH);
+       char *last = strrchr(exepath, '\\');
+       if (last) *(last /*+ 1*/) = '\0';  // Nur Ordner und entferne '\' den auch.
+  }
+
+  if (dosroot[0] == '\0')  // Nur einmal berechnen  
+       getcwd(dosroot, MAX_PATH);
+
+  if (strcmp(exepath, dosroot ) == 0)
+  {
+  //    printf(, "ProgrammPath [exedir]:[getcwd] sind identisch\n");
+  }
+  else
+  {
+      printf("ProgrammPath [exedir]: %s\n", exepath);
+      printf("ProgrammPath [getcwd]: %s\n", dosroot);
+      printf("Main->Argv hat eine anderes Arbeitsverzeichnis bekommen...\n");  
+  }
+
+  return exepath; 
+}
+
+static byte DirectoryCheck_isPath(const char *path)
+{
+      byte Result = 1;
+      
+      DIR *dir = opendir(path);
+      if (!dir) // Kein Verzeichnis? Dann normale Datei?     
+          Result = 0;
+      
+      closedir(dir);
+/*
+      printf("[%s][%d] Directory Check: is Path = %s\n"
+             "        : %s\n",__FILE__,__LINE__,
+                      (Result==1)?"True":"False",path);
+*/                                    
+      return Result;
+}
 
 static bool TestPadding(char *name, int len)
 {
@@ -283,6 +352,341 @@ void Wad::LoadDehackedLumps()
 }
 
 
+// OpenFromMemory
+// Readin a wad from Memory from a Archive
+WadFromMemory::WadFromMemory()
+
+  : memory_data(nullptr), memory_size(0)
+{directory = NULL;}
+
+void WadFromMemory::Lump_Extract(int numitems, waddir_t *directory, const char* lump_ext, const char* destinationpath)
+{
+    
+      CONS_Printf("=== DEBUG: Extrahiere Lumps nach Maps in 'Lump_Extract' ===\n");
+
+    // Basis-Verzeichnis einmalig anlegen
+    const char* base_dir = "Lump_Extract";
+
+    #ifdef WIN32
+      _mkdir(base_dir);
+    #else
+      mkdir(base_dir, 0755);
+    #endif
+
+    bool in_map = false;
+    char current_map_dir[MAX_PATH] = "";
+
+    for (int i = 0; i < numitems; i++)
+    {
+      waddir_t *l = &directory[i];
+      //if (l->size == 0) continue;
+
+      char lump_name[9];
+      strncpy(lump_name, l->name, 8);
+      lump_name[8] = '\0';
+
+      // Ist das ein Map-Start-Lump? (MAPxx)
+      if (strncmp(lump_name, "MAP", 3) == 0 && 
+                      isdigit(lump_name[3]) &&
+                      isdigit(lump_name[4]) )
+                      //  lump_name[5] == ' ' &&
+                      //  lump_name[6] == ' ' &&
+                      //  lump_name[7] == ' '  )
+      {
+        // Neues Map-Verzeichnis beginnen
+        in_map = true;
+        snprintf(current_map_dir, sizeof(current_map_dir), "%s\\%s\\%s", destinationpath, base_dir, lump_name);
+
+        #ifdef WIN32
+          _mkdir(current_map_dir);
+        #else
+          mkdir(current_map_dir, 0755);
+        #endif
+
+        CONS_Printf("  Map-Verzeichnis angelegt: %s\n", current_map_dir);
+      }
+      else if (in_map)
+      {
+        // Lump in aktuelles Map-Verzeichnis speichern
+        char filepath[256];
+        snprintf(filepath, sizeof(filepath), "%s\\%s%s", current_map_dir, lump_name, lump_ext);
+
+        FILE *f = fopen(filepath, "wb");
+        if (f)
+        {
+          byte *buf = (byte*)Z_Malloc(l->size, PU_STATIC, NULL);
+          if (buf)
+          {
+            uint32_t read = Internal_ReadItem(i, buf, l->size, 0);
+            if (read == l->size)
+            {
+              fwrite(buf, 1, l->size, f);
+              CONS_Printf("    Extrahiert: %s (%d bytes)\n", filepath, l->size);
+            }
+            else
+            {
+              CONS_Printf("    FEHLER: %s – nur %d von %d Bytes gelesen\n", filepath, read, l->size);
+            }
+            Z_Free(buf);
+          }
+          fclose(f);
+        }
+        else
+        {
+          CONS_Printf("    Kann %s nicht schreiben\n", filepath);
+        }
+      }
+      else
+      {
+        // Lump außerhalb von Maps → direkt in Basis-Ordner
+        char filepath[256];
+        snprintf(filepath, sizeof(filepath), "%s\\%s\\%s%s", destinationpath, base_dir, lump_name, lump_ext);
+
+        FILE *f = fopen(filepath, "wb");
+        if (f)
+        {
+          byte *buf = (byte*)Z_Malloc(l->size, PU_STATIC, NULL);
+          if (buf)
+          {
+            uint32_t read = Internal_ReadItem(i, buf, l->size, 0);
+            if (read == l->size)
+            {
+              fwrite(buf, 1, l->size, f);
+              CONS_Printf("  Extrahiert (global): %s (%d bytes)\n", filepath, l->size);
+            }
+            Z_Free(buf);
+          }
+          fclose(f);
+        }
+      }
+    }
+
+    CONS_Printf("=== DEBUG: Extraktion fertig ===\n");
+}
+
+WadFromMemory::~WadFromMemory()
+{
+  if (directory)
+    Z_Free(directory);
+  
+  if (memory_data)
+    Z_Free(memory_data);
+  
+  memory_data = nullptr;
+}
+
+bool WadFromMemory::Open(byte* data, size_t datasize, const char* virtual_name)
+{
+  if (!data || datasize < 12)
+  {
+      return false;
+  }
+
+  filename = virtual_name ? virtual_name : "memory wad";
+  
+  // === DEEP COPY – das ist der Fix! ===
+  memory_data = (byte*)Z_Malloc(datasize, PU_STATIC, NULL);
+  if (!memory_data)
+  {
+      CONS_Printf("WadFromMemory::Open: Z_Malloc failed for %zu bytes in '%s'\n",
+                  datasize, filename.c_str());
+      return false;
+  }
+  
+  memcpy(memory_data, data, datasize);
+  memory_size = datasize;
+  
+  // Header prüfen
+  wadheader_t h;
+  memcpy(&h, data, sizeof(wadheader_t));
+   
+  Uint8 isIWAD = -1;
+  if (memcmp(h.magic, "IWAD", 4) == 0) isIWAD = 0;
+  if (memcmp(h.magic, "PWAD", 4) == 0) isIWAD = 1;
+
+  if (isIWAD == -1) {
+      Z_Free(memory_data);
+      memory_data = nullptr;
+      memory_size = 0;
+      CONS_Printf("'%s' is not a valid IWAD/PWAD\n", filename.c_str());
+      return false;
+  }
+    
+  numitems = LONG(h.numentries);
+  int diroffset = LONG(h.diroffset);
+
+  // Directory kopieren
+  waddir_file_t *temp = (waddir_file_t *)Z_Malloc(numitems * sizeof(waddir_file_t), PU_STATIC, NULL);
+  memcpy(temp, data + diroffset, numitems * sizeof(waddir_file_t));
+
+  directory = (waddir_t *)Z_Malloc(numitems * sizeof(waddir_t), PU_STATIC, NULL);
+  for (int i = 0; i < numitems; i++)
+  {
+    directory[i].offset   = read_le32(&temp[i].offset);
+    directory[i].size     = read_le32(&temp[i].size);
+    TestPadding(temp[i].name, 8);
+    strncpy(directory[i].name, temp[i].name, 8);
+    directory[i].name[8]  = '\0';
+    
+    // Union iname setzen (little-endian)
+    directory[i].iname[0] = (Uint32)directory[i].name[0] |
+                            ((Uint32)directory[i].name[1] << 8) |
+                            ((Uint32)directory[i].name[2] << 16) |
+                            ((Uint32)directory[i].name[3] << 24);
+
+    directory[i].iname[1] = (Uint32)directory[i].name[4] |
+                            ((Uint32)directory[i].name[5] << 8) |
+                            ((Uint32)directory[i].name[6] << 16) |
+                            ((Uint32)directory[i].name[7] << 24);
+
+    CONS_Printf(" Added Memory: [%-2d] Name: %-8s, Size = %-6d, Offset = %08X (iname[0]=%08X, iname[1]=%08X)\n",i,
+                                                                                                directory[i].name,
+                                                                                                directory[i].size,
+                                                                                                directory[i].offset,
+                                                                                                directory[i].iname[0],
+                                                                                                directory[i].iname[1]);
+  
+  }
+  Z_Free(temp);
+  
+  // 6. Cache allokieren
+  cache = (lumpcache_t*)Z_Malloc(numitems * sizeof(lumpcache_t), PU_STATIC, NULL);
+  if (cache)
+  {
+        memset(cache, 0, numitems * sizeof(lumpcache_t));
+  }
+ 
+  /* Lump_Extraction für den Vergleich ob der Deflate läuft und die CRC summe stimmt
+   * PS: Vergleich fand mit Total commander statt dem WAD PLugin
+   * Lump Endung. '""' Kann dann geändert werden
+   */
+  // Lump_Extract(numitems, directory, "", ProgrammPath());
+  
+  LoadDehackedLumps();
+  
+  CONS_Printf(" ZIP/PK3 Added %s file %s (%i lumps from memory)\n", ((isIWAD==0)?"IWAD":"PWAD"),filename.c_str(), numitems);  
+  return true;
+}
+
+int WadFromMemory::GetItemSize(int i)
+{
+  return directory[i].size;
+}
+
+const char *WadFromMemory::GetItemName(int i)
+{
+  return directory[i].name;
+}
+
+
+// Searches the wadfile for lump named 'name', returns the lump number
+// if not found, returns -1
+int WadFromMemory::FindNumForName(const char *name, int startlump)
+{
+  union
+  {
+    char s[9];
+    Uint32 x[2];
+  };
+
+  // make the name into two integers for easy compares
+  strncpy(s, name, 8);
+
+  // in case the name was 8 chars long
+  s[8] = 0;
+  // case insensitive TODO make it case sensitive if possible
+  strupr(s);
+
+  // FIXME doom.wad and doom2.wad PNAMES lumps have exactly ONE (1!) patch
+  // entry with a lowcase name: w94_1. Of course the actual lump is
+  // named W94_1, so it won't be found if we have case sensitive search! damn!
+  // heretic.wad and hexen.wad have no such problems.
+  // The right way to fix this is either to fix the WADs (yeah, right!) or handle
+  // this special case in the texture loading routine.
+
+  waddir_t *p = directory + startlump;
+
+  // a slower alternative could use strncasecmp()
+  for (int j = startlump; j < numitems; j++, p++)
+    if (p->iname[0] == x[0] && p->iname[1] == x[1])
+      return j;
+
+  // not found
+  return -1;
+}
+
+
+int WadFromMemory::FindPartialName(Uint32 iname, int startlump, const char **fullname)
+{
+  // checks only first 4 characters, returns full name
+  // a slower alternative could use strncasecmp()
+
+  waddir_t *p = directory + startlump;
+
+  for (int j = startlump; j < numitems; j++, p++)
+    if (p->iname[0] == iname)
+      {
+	*fullname = p->name;
+	return j;
+      }
+
+  // not found
+  return -1;
+}
+
+
+int WadFromMemory::Internal_ReadItem(int item, void *dest, unsigned size, unsigned offset)
+{
+  if (item < 0 || item >= numitems || !memory_data) 
+  {
+    CONS_Printf("WadFromMemory::Internal_ReadItem ERROR: item %d ungültig (numitems=%d)\n", item, numitems);
+    return 0;
+  }
+
+  waddir_t *l = &directory[item];
+
+  unsigned lump_start = l->offset;
+  unsigned lump_size = l->size;
+
+  if (offset >= lump_size) 
+  {
+    CONS_Printf("WadFromMemory::Internal_ReadItem WARN: offset %u >= size %u\n", offset, lump_size);
+    return 0;
+  }
+
+  unsigned read_size = size;
+  if (offset + read_size > lump_size) read_size = lump_size - offset;
+
+  memcpy(dest, memory_data + lump_start + offset, read_size);
+  return read_size;
+}
+
+void WadFromMemory::ListItems()
+{
+  waddir_t *p = directory;
+  for (int i = 0; i < numitems; i++, p++)
+    printf("%-8s\n", p->name);
+}
+
+// LoadDehackedLumps
+// search for DEHACKED lumps in a loaded wad and process them
+void WadFromMemory::LoadDehackedLumps()
+{
+  // just the lump number, nothing else
+  int clump = 0;
+
+  while (1)
+    { 
+      clump = FindNumForName("DEHACKED", clump);
+      if (clump == -1)
+	break;
+      CONS_Printf(" Loading DEHACKED lump %d from %s\n", clump, filename.c_str());
+
+      DEH.LoadDehackedLump(clump);
+      clump++;
+    }
+}
+
 
 
 //==============================
@@ -530,7 +934,7 @@ int Pak::Internal_ReadItem(int item, void *dest, unsigned size, unsigned offset)
 //  ZipFile class implementation
 //================================
 
-
+#pragma pack(push, 1)
 struct zip_central_directory_end_t
 {
   char   signature[4]; // 0x50, 0x4b, 0x05, 0x06
@@ -542,9 +946,10 @@ struct zip_central_directory_end_t
   Uint32 cd_offset;
   Uint16 comment_size;
   //char   comment[0]; // from here to end of file
-} __attribute__((packed));
+};
+#pragma pack(pop)
 
-
+#pragma pack(push, 1)
 struct zip_file_header_t
 {
   char   signature[4]; // 0x50, 0x4b, 0x01, 0x02
@@ -566,39 +971,42 @@ struct zip_file_header_t
   Uint32 local_header_offset;
   char   filename[0];
   // followed by filename and other variable-length fields
-} __attribute__((packed));
+};
+#pragma pack(pop)
+static_assert(sizeof(zip_file_header_t) == 46,"ZIP Central Directory Header muss genau 46 Bytes groß sein!");
 
-
-struct zip_local_header_t
-{
-  char   signature[4]; // 0x50, 0x4b, 0x03, 0x04
-  Uint16 version_needed;
-  Uint16 flags;
-  Uint16 compression_method;
-  Uint16 last_modified_time;
-  Uint16 last_modified_date;
-  Uint32 crc32;
-  Uint32 compressed_size;
-  Uint32 size;
-  Uint16 filename_size;
-  Uint16 extrafield_size;
-  // file name and other variable length info follows
-} __attribute__((packed));
+#pragma pack(push, 1)
+struct zip_local_header_t {
+    uint8_t  signature[4];          // PK\x03\x04 (0x50, 0x4b, 0x03, 0x04)
+    uint16_t version_needed;
+    uint16_t flags;
+    uint16_t compression_method;
+    uint16_t last_modified_time;
+    uint16_t last_modified_date;
+    uint32_t crc32;
+    uint32_t compressed_size;
+    uint32_t size;                //uncompressed_size
+    uint16_t filename_size;       //filename_length
+    uint16_t extrafield_size;     //extra_field_length
+    // Dateiname und Extra folgen danach
+};
+#pragma pack(pop)
+static_assert(sizeof(zip_local_header_t) == 30, "Local Header muss 30 Byte sein!");
 
 
 /// Runtime ZipFile directory entry.
+#define ZIP_NAME_LENGTH 64
+#pragma pack(push, 1)
 struct zipdir_t
 {
-  unsigned int offset;          ///< offset of the data from the beginning of the file
-  unsigned int compressed_size; ///< data lump size in file (compressed)
-  unsigned int size;            ///< data lump size in memory (uncompressed)
-  bool         deflated;        ///< either uncompressed or DEFLATE-compressed
-
-#define ZIP_NAME_LENGTH 64
-  char name[ZIP_NAME_LENGTH+1]; // name of the entry, NUL-terminated
+  uint32_t     offset;
+  uint32_t     compressed_size;
+  uint32_t     size;
+  char         name[ZIP_NAME_LENGTH + 1];
+  uint8_t      deflated;  // statt bool – 1 Byte garantiert
 };
-
-
+#pragma pack(pop)
+static_assert(sizeof(zipdir_t) == 4+4+4+65+1, "zipdir_t muss 78 Bytes sein!");
 
 ZipFile::ZipFile()
 {
@@ -608,68 +1016,212 @@ ZipFile::ZipFile()
 
 ZipFile::~ZipFile()
 {
+  
   if (directory)
     Z_Free(directory);
 }
 
 
+
+byte   ZIP_FlagCheck(int ZipFlags, const char *ZipFileName, char *LumpName, zip_file_header_t *ZipFileHeader)
+{
+  if (ZipFlags & 0x1)
+  {
+    CONS_Printf(" Lump '%s' in ZIP file '%s' is encrypted.\n", LumpName, ZipFileName);
+    return 1;
+  }
+
+  if (ZipFlags & 0x8)
+  {
+    CONS_Printf(" Lump '%s' in ZIP file '%s' has a data descriptor (unsupported).\n",LumpName, ZipFileName);
+    return 1;
+  }
+
+  if (ZipFileHeader->compression_method != 0 && read_le16(&ZipFileHeader->compression_method) != Z_DEFLATED)
+  {
+    CONS_Printf(" Lump '%s' in ZIP file '%s' uses an unsupported compression algorithm.\n",
+    LumpName, ZipFileName);
+    return 1;
+  }
+
+  if (ZipFileHeader->compression_method == 0 && ZipFileHeader->size != ZipFileHeader->compressed_size)
+  {
+    CONS_Printf(" Uncompressed lump '%s' in ZIP file '%s' has unequal compressed and uncompressed sizes.\n",
+    LumpName, ZipFileName);
+    return 1;
+  }
+  return 0;
+  
+}
+byte   ZIP_isCorrupted (Uint32 Central_Directoy_End, Uint32 DirSize, Uint32 DirOffset, const char *ZipFileName)
+{
+  if (Central_Directoy_End < DirOffset + DirSize)
+  {
+    // corrupt file
+    CONS_Printf(" ZIP ERROR: file \"%s\" is corrupted.\n", ZipFileName);
+    return 1;
+  }
+  return 0;
+}
+
+byte   ZIP_isMultiFiles(zip_central_directory_end_t Central_Directoy_End, const char *ZipFileName)
+{
+ 
+  // ZIP files are little endian, but zeros are zeros...
+  if (Central_Directoy_End.disk_number               != 0 ||
+      Central_Directoy_End.num_of_disk_with_cd_start != 0 ||
+      Central_Directoy_End.num_entries_on_this_disk  != Central_Directoy_End.total_num_entries)
+  {
+      // we do not support multi-file ZIPs
+      CONS_Printf(" ZIP file \"%s\" spans several disks, this is not supported.\n", ZipFileName);
+      //CONS_Printf(" ZIP Warn: file \"%s\" Erstreckt sich über mehrere Festplatten, dies wird nicht unterstützt.\n", ZipFileName);                
+      return 1;
+  }
+  
+  return 0;  
+}
+
+byte   ZIP_Get_Signature_PK12(zip_file_header_t *ZipFileHeader, const char *ZipFileName)
+{
+    if (ZipFileHeader->signature[0] != 'P' ||
+        ZipFileHeader->signature[1] != 'K' ||    
+        ZipFileHeader->signature[2] != '\1'||
+        ZipFileHeader->signature[3] != '\2' )
+    {
+      // corrupted directory
+      CONS_Printf(" ZIP ERROR: Central directory in ZIP file \"%s\" is corrupted.\n", ZipFileName);
+      return 1;
+    }
+ 
+    //CONS_Printf("\n");
+    //CONS_Printf(" [%s][%d] Zip Signature Search: ( PK\\01\\02 ) Gefunden\n",__FILE__,__LINE__);
+    
+    return 0;
+}
+
+byte   ZIP_Get_Signature_PK34(zip_local_header_t ZipLocalHeader, const char *ZipFileName, char *LumpName)
+{
+    if (ZipLocalHeader.signature[0] != 'P' ||
+        ZipLocalHeader.signature[1] != 'K' ||
+        ZipLocalHeader.signature[2] != '\3'||
+        ZipLocalHeader.signature[3] != '\4' )
+    {
+      
+      CONS_Printf(" ZIP ERROR: Could not find local header for lump \"%s\" in ZIP file \"%s\".\n",
+		  LumpName, ZipFileName);
+      return 1;
+    }
+    /* 
+    CONS_Printf("\n");
+    CONS_Printf(" [%s][%d] Zip Signature Search: ( PK\\01\\02 ) Gefunden\n",__FILE__,__LINE__);
+    CONS_Printf("         Local Header for Lump: \"%s\"\n",LumpName);
+    */
+    return 0;
+}   
+
+byte   ZIP_CentralDirectory_Match(zip_file_header_t *ZipFileHeader , zip_local_header_t ZipLocalHeader, const char *ZipFileName, char *LumpName)
+{
+    if (ZipLocalHeader.flags              != ZipFileHeader->flags ||
+        ZipLocalHeader.compression_method != ZipFileHeader->compression_method ||
+        ZipLocalHeader.compressed_size    != ZipFileHeader->compressed_size ||
+        ZipLocalHeader.size               != ZipFileHeader->size)
+    {
+      CONS_Printf(" ZIP ERROR: Local header for lump \"%s\" in ZIP file \"%s\" does not match the central directory.\n",
+		  LumpName, ZipFileName);
+      return 1;
+    }
+    
+    //CONS_Printf("\n");
+    //CONS_Printf(" [%s][%d] Central Directory Successfully Matched\n",__FILE__,__LINE__);
+    //CONS_Printf("          Local Header for Lump: \"%s\": OK\n",LumpName);
+    
+    return 0;
+}
+Uint32 ZIP_Get_CentralDirectoyEnd(byte *Buffer, Uint32 Central_Directoy_End, unsigned int size, int max_csize )
+{
+  int k;
+  
+  // Rückwärts suchen – vom Ende der eingelesenen Daten aus
+  for (k = max_csize - sizeof(zip_central_directory_end_t); k >= 0; k--)
+  {
+    if (Buffer[k]   ==  'P' &&
+        Buffer[k+1] ==  'K' &&
+        Buffer[k+2] == '\5' &&
+        Buffer[k+3] == '\6'  )
+    { 
+        Central_Directoy_End = size - max_csize + k;
+        /*
+        CONS_Printf("\n");
+        CONS_Printf(" [%s][%d] Zip Header Search   : ( PK\\05\\06 ) Gefunden\n"
+                    "        CentralDirectoy Offset: %d\n",
+                      __FILE__,__LINE__,Central_Directoy_End);
+        */                                  
+        break;
+    }
+   }
+
+  if (Central_Directoy_End == 0)
+  {
+    // could not find cd end
+    //CONS_Printf("\n");
+    //CONS_Printf(" [%s][%d] ZIP ERROR: Header Search ( PK0506 ): Not Found\n",__FILE__,__LINE__);
+  }
+  
+  Z_Free(Buffer);   
+  return Central_Directoy_End;   
+}
 bool ZipFile::Open(const char *fname)
 {
+
   // common to all files
   if (!VDataFile::Open(fname))
     return false;
 
+  CONS_Printf(" ZipFile -> Open: \"%s\"\n",fname);
+  CONS_Printf("------------------------------------------------------------\n"); 
   // Find and read the central directory end.
   // We have to go through this because of the stupidly-placed ZIP comment field...
-  int cd_end_pos = 0;
+  
+  Uint32 cd_end_pos = 0;
   {
-    int max_csize = min(size, 0xFFFF); // max. comment size is 0xFFFF
+    const int SEARCH_RANGE = 1024 * 256;
+    //int max_csize = min(size, 0xFFFF); // max. comment size is 0xFFFF    
+    int max_csize = (size > SEARCH_RANGE) ? SEARCH_RANGE : size;    
+        
     byte *buf = static_cast<byte*>(Z_Malloc(max_csize, PU_STATIC, NULL));
-
+    if (!buf) return false;    
+    
     fseek(stream, size - max_csize, SEEK_SET);
-    fread(buf, max_csize, 1, stream);
-
-    for (int k = max_csize - sizeof(zip_central_directory_end_t); k >= 0; k--)
-      if (buf[k] == 'P' && buf[k+1] == 'K' && buf[k+2] == '\5' && buf[k+3] == '\6')
-	{
-	  cd_end_pos = size - max_csize + k;
-	  break;
-	}
-
-    Z_Free(buf);
+    if (fread(buf, max_csize, 1, stream) != 1)
+    {
+       Z_Free(buf);
+       return false;
+    } 
+    
+    cd_end_pos = ZIP_Get_CentralDirectoyEnd(buf, cd_end_pos, size, max_csize);
+    if (buf) Z_Free(buf);     
   }
 
   if (cd_end_pos == 0)
-    {
-      // could not find cd end
-      CONS_Printf("Could not find central directory in ZIP file '%s'.\n", fname);
-      return false;
-    }
+    return false;
 
   zip_central_directory_end_t cd_end;
+  
   fseek(stream, cd_end_pos, SEEK_SET);
   fread(&cd_end, sizeof(zip_central_directory_end_t), 1, stream);
+ 
+  if (ZIP_isMultiFiles(cd_end, fname) != 0)
+    return false;
+    
+  // Dann bei cd_end lesen:
+  numitems   = read_le16(&cd_end.total_num_entries);
+  Uint32 dir_size   = read_le32(&cd_end.cd_size);
+  Uint32 dir_offset = read_le32(&cd_end.cd_offset);
 
-  // ZIP files are little endian, but zeros are zeros...
-  if (cd_end.disk_number != 0 ||
-      cd_end.num_of_disk_with_cd_start != 0 ||
-      cd_end.num_entries_on_this_disk != cd_end.total_num_entries)
-    {
-      // we do not support multi-file ZIPs
-      CONS_Printf("ZIP file '%s' spans several disks, this is not supported.\n", fname);
-      return false;
-    }
+  bool WadFile = false; 
+  if (ZIP_isCorrupted (cd_end_pos, dir_size, dir_offset, fname) != 0)
+    return false;  
 
-  numitems = SHORT(cd_end.total_num_entries);
-  int dir_size   = LONG(cd_end.cd_size);
-  int dir_offset = LONG(cd_end.cd_offset);
-
-  if (cd_end_pos < dir_offset + dir_size)
-    {
-      // corrupt file
-      CONS_Printf("ZIP file '%s' is corrupted.\n", fname);
-      return false;
-    }
 
   // read central directory
   directory = static_cast<zipdir_t*>(Z_Malloc(numitems * sizeof(zipdir_t), PU_STATIC, NULL));
@@ -680,141 +1232,250 @@ bool ZipFile::Open(const char *fname)
 
   byte *p = tempdir;
   int item = 0; // since items may be ignored
+ 
+  // Schleife =============================================================================
   for (int k=0; k<numitems; k++)
+  {
+    zip_file_header_t *fh = reinterpret_cast<zip_file_header_t*>(p);
+
+    /* Get Singnature PK \1 \2 */
+    if (ZIP_Get_Signature_PK12(fh, fname) != 0)
+      return false;     
+
+    // go to next record
+    int n_size = read_le16(&fh->filename_size);
+    p += sizeof(zip_file_header_t) + n_size + read_le16(&fh->extrafield_size) + read_le16(&fh->comment_size);
+
+    if (p > tempdir + dir_size)
     {
-      zip_file_header_t *fh = reinterpret_cast<zip_file_header_t*>(p);
-      if (fh->signature[0] != 'P' || fh->signature[1] != 'K' ||
-	  fh->signature[2] != '\1' || fh->signature[3] != '\2')
-	{
-	  // corrupted directory
-	  CONS_Printf("Central directory in ZIP file '%s' is corrupted.\n", fname);
-	  return false;
-	}
-
-      // go to next record
-      int n_size = SHORT(fh->filename_size);
-      p += sizeof(zip_file_header_t) + n_size + SHORT(fh->extrafield_size) + SHORT(fh->comment_size);
-
-      if (p > tempdir + dir_size)
-	{
-	  CONS_Printf("Central directory in ZIP file '%s' is too long.\n", fname);
-	  break;
-	}
-
-      if (fh->filename[n_size-1] == '/')
-	continue; // ignore directories
-
-      // copy the lump name
-      n_size = min(n_size, ZIP_NAME_LENGTH);
-      strncpy(directory[item].name, fh->filename, n_size);
-      directory[item].name[n_size] = '\0'; // NUL-termination
-
-      int flags = SHORT(fh->flags);
-      if (flags & 0x1)
-	{
-	  CONS_Printf("Lump '%s' in ZIP file '%s' is encrypted.\n", directory[item].name, fname);
-	  continue;
-	}
-
-      if (flags & 0x8)
-	{
-	  CONS_Printf("Lump '%s' in ZIP file '%s' has a data descriptor (unsupported).\n", directory[item].name, fname);
-	  continue;
-	}
-
-      if (fh->compression_method != 0 && SHORT(fh->compression_method) != Z_DEFLATED)
-	{
-	  CONS_Printf("Lump '%s' in ZIP file '%s' uses an unsupported compression algorithm.\n",
-		      directory[item].name, fname);
-	  continue;
-	}
-
-      if (fh->compression_method == 0 && fh->size != fh->compressed_size)
-	{
-	  CONS_Printf("Uncompressed lump '%s' in ZIP file '%s' has unequal compressed and uncompressed sizes.\n",
-		      directory[item].name, fname);
-	  continue;
-	}
-
-      // copy relevant fields to our directory
-      directory[item].offset = LONG(fh->local_header_offset);
-      directory[item].size   = LONG(fh->size);
-      directory[item].compressed_size = LONG(fh->compressed_size);
-      directory[item].deflated = fh->compression_method; // boolean
-
-      // check if the local file header matches the central directory entry
-      zip_local_header_t lh;
-      fseek(stream, directory[item].offset, SEEK_SET);
-      fread(&lh, sizeof(zip_local_header_t), 1, stream);
-
-      if (lh.signature[0] != 'P' || lh.signature[1] != 'K' ||
-	  lh.signature[2] != '\3' || lh.signature[3] != '\4')
-	{
-	  CONS_Printf("Could not find local header for lump '%s' in ZIP file '%s'.\n",
-		      directory[item].name, fname);
-	  continue;
-	}
-
-      if (lh.flags              != fh->flags ||
-	  lh.compression_method != fh->compression_method ||
-	  lh.compressed_size    != fh->compressed_size ||
-	  lh.size               != fh->size)
-	{
-	  CONS_Printf("Local header for lump '%s' in ZIP file '%s' does not match the central directory.\n",
-		      directory[item].name, fname);
-	  continue;
-	}
-
-      // make offset point directly to the data
-      directory[item].offset += sizeof(zip_local_header_t) + SHORT(lh.filename_size) + SHORT(lh.extrafield_size);
-
-      // accepted
-      imap.insert(pair<const char *, int>(directory[item].name, item)); // fill the name map
-      item++;
+      CONS_Printf(" Central directory in ZIP file \"%s\" is too long.\n", fname);
+      break;
     }
+
+    if (fh->filename[n_size-1] == '/')
+      continue; // ignore directories
+
+    // copy the lump name
+    n_size = min(n_size, ZIP_NAME_LENGTH);
+    strncpy(directory[item].name, fh->filename, n_size);
+    directory[item].name[n_size] = '\0'; // NUL-termination
+
+
+    int flags = read_le16(&fh->flags);
+    if (ZIP_FlagCheck(flags, fname,  directory[item].name, fh) != 0)
+      continue;
+    
+    // copy relevant fields to our directory - Alles ok – Felder kopieren
+    directory[item].offset          = read_le32(&fh->local_header_offset);
+    directory[item].size            = read_le32(&fh->size);
+    directory[item].compressed_size = read_le32(&fh->compressed_size);
+    directory[item].deflated        = (SHORT(fh->compression_method) == Z_DEFLATED); // boolean
+    
+    // check if the local file header matches the central directory entry
+    zip_local_header_t lh;
+    fseek(stream, directory[item].offset, SEEK_SET);
+    fread(&lh, sizeof(zip_local_header_t), 1, stream);
+
+    /* Get Singnature PK \3 \4 */
+    if (ZIP_Get_Signature_PK34(lh, fname, directory[item].name ) != 0)
+      continue;
+
+    /* Central Directory Match */
+    if (ZIP_CentralDirectory_Match(fh, lh, fname, directory[item].name)!=0)
+      continue;
+
+    // make offset point directly to the data
+    directory[item].offset += sizeof(zip_local_header_t) + SHORT(lh.filename_size) + SHORT(lh.extrafield_size);
+         
+    if (item < 10)
+    {
+      CONS_Printf(" [%s][%d] Contains\n",__FILE__,__LINE__);
+      CONS_Printf("   Filename             :\"%s\"\n",               directory[item].name);
+      CONS_Printf("   Local-Header-Offset  : 0x%08X (%u decimal)\n", directory[item].offset,
+                                                                     directory[item].offset);
+      CONS_Printf("   File Size Compressed : %8d Bytes\n",           directory[item].compressed_size);                                                            
+      CONS_Printf("   File Size Original   : %8d Bytes\n",           directory[item].size);
+      CONS_Printf("   Compression Methode  : %s\n", (fh->compression_method==Z_DEFLATED)?"Deflate":"Stored");
+    }
+    
+    const char *ext = strrchr(directory[item].name, '.');
+    
+    ext++; // Nach dem Punkt
+    if (strcasecmp(ext, "wad") == 0)
+    {
+      WadFile = true;
+    }
+    
+    imap.insert(pair<const char *, int>(directory[item].name, item)); // fill the name map
+    
+    item++;
+    CONS_Printf("------------------------------------------------------------\n");      
+  }   
+
   // NOTE: If lumps are ignored, there will be a few empty records at the end of directory. Let them be.
-  numitems = item;
+  numitems =item;
+  
   Z_Free(tempdir);
 
-  // set up caching
+  // set up caching (Cache allokieren (nur für akzeptierte Items) )
   cache = (lumpcache_t *)Z_Malloc(numitems * sizeof(lumpcache_t), PU_STATIC, NULL);
   memset(cache, 0, numitems * sizeof(lumpcache_t));
-    
-  CONS_Printf(" Added ZIP file %s (%i lumps)\n", filename.c_str(), numitems);
+  
+  // CONS_Printf(" Added ZIP file %s (%i lumps)\n", filename.c_str(), numitems); 
+  CONS_Printf(" ZIP/PK3 Added from \"%s\" = %i File%s)\n", 
+              filename.c_str(), numitems, numitems==1?"":"s");
+              
+  if (WadFile)
+  {
+    int nAdded = GetItemListFromMemory();
+
+
+  }
+  
   return true;
+}
+
+
+/* Marty */
+
+
+int ZipFile::GetItemListFromMemory()
+{
+  //CONS_Printf(" ZIP/PK3 Get Item List From Memory\n");
+  
+  ListItems();
+  
+  Uint16 Added = -1;
+  Uint8 isIWAD = -1; 
+  if (directory == NULL || numitems <= 0)
+  {
+    CONS_Printf("  [%s][%d]Error::GetItemListFromMemory:  -> Kein Verzeichnis oder keine Items (numitems = %d)\n", numitems);
+    return Added;
+  }
+      
+    for (int i = 0; i < numitems; i++)
+    {
+       
+      zipdir_t *l = &directory[i];
+      if (l->size < 12) continue; // zu klein für WAD-Header
+
+      const char *ext = strrchr(l->name, '.');
+      if (!ext) continue;
+    
+      ext++; // Nach dem Punkt
+      if ((strcasecmp(ext, "wad") == 0) ||  // Dateinamen Prüfung
+         (strcasecmp(ext, "gwa") == 0)) 
+      { 
+    
+        // Temporär laden
+        byte* wad_data = (byte*)Z_Malloc(l->size, PU_STATIC, NULL);
+        if (!wad_data) continue;
+
+        uint32_t read = Internal_ReadItem(i, wad_data, l->size, 0);
+        if (read != l->size)
+        {
+          Z_Free(wad_data); continue;
+        }
+
+        // Magic prüfen
+        if (memcmp(wad_data, "IWAD", 4) == 0)
+            isIWAD = 0;
+
+        if (memcmp(wad_data, "PWAD", 4) == 0)
+            isIWAD = 1;    
+        
+        if (isIWAD >= 0)
+        {  
+          //CONS_Printf(" ZIP/PK3 \"%s\" Magic Header = %s\n", l->name, (isIWAD==0)?"IWAD":"PWAD");
+          // Neue Wad-Instanz erstellen und direkt parsen
+          WadFromMemory* inner_wad = new WadFromMemory();
+          if (inner_wad->Open(wad_data, l->size, l->name))
+          {
+              fc.CacheArchiveFile(inner_wad);
+              //CONS_Printf(" ZIP/PK3 \"%s\" Added to vFiles (%d Lumps)\n", l->name,
+              //                                           inner_wad->GetNumItems());
+              Added++; 
+          }
+          else
+          {
+            delete inner_wad;
+          }
+          //fc.CacheArchiveFile_Remove(inner_wad);          
+        }
+        if (wad_data)
+          Z_Free(wad_data);
+        
+        
+      } // Ende - for (int i = 0; i < numitems; i++)
+        
+    } // Ende - // Dateinamen Prüfung
+
+  
+    
+  return Added;
 }
 
 
 int ZipFile::GetItemSize(int i)
 {
+  //CONS_Printf("\n ZipFile::GetItemSize\n");  
   return directory[i].size;
 }
 
 
 const char *ZipFile::GetItemName(int i)
 {
+  //CONS_Printf("\n ZipFile::GetItemName\n");
   return directory[i].name;
 }
 
 
 void ZipFile::ListItems()
 {
+ 
+  CONS_Printf("\n ZipFile -> List Directory\n");
+  CONS_Printf("------------------------------------------------------------\n"); 
+  if (directory == NULL || numitems <= 0)
+  {
+    CONS_Printf("  -> Kein Verzeichnis oder keine Items (numitems = %d)\n", numitems);
+    return;
+  }
   zipdir_t *p = directory;
+    
   for (int i = 0; i < numitems; i++, p++)
-    printf("%-64s\n", p->name);
+  { 
+    //printf("%-64s\n", p->name);
+    CONS_Printf("  [%2d] %-12s | size=%-10u bytes | offset=0x%08X\n", 
+            i, p->name, p->size, p->offset);    
+  }
+  //cache = (lumpcache_t *)Z_Malloc(numitems * sizeof(lumpcache_t), PU_STATIC, NULL);
+  //memset(cache, 0, numitems * sizeof(lumpcache_t));  
 }
 
-
-int ZipFile::Internal_ReadItem(int item, void *dest, unsigned size, unsigned offset)
+int ZipFile::Internal_ReadItem(int item, void *dest, uint32_t size, uint32_t offset)
 {
   zipdir_t *l = directory + item;
+  CONS_Printf("\n-------------------------------------------------ZIP EXTRACT\n"); 
+  if (item >= numitems || item < 0)
+  {
+      CONS_Printf("ERROR: Ungültiger ZIP-Item %d\n", item);
+      return 0;
+  }
 
+  if (l->size == 0)
+  {
+      CONS_Printf("WARN: ZIP-Item %d hat Größe 0\n", item);
+      return 0;
+  }
+    
   if (!l->deflated)
-    {
+  {
       fseek(stream, l->offset + offset, SEEK_SET); // skip to correct offset within the uncompressed lump
       return fread(dest, 1, size, stream); // uncompressed lump
-    }
+  }
 
+  //CONS_Printf(" Debug - [%s][%d]::Internal_ReadItem %s\n",__FILE__,__LINE__,l->name);
+    
   // DEFLATEd lump, uncompress it
 
   // NOTE: inflating compressed lumps can be expensive, so we transparently cache them at first use.
@@ -836,16 +1497,16 @@ int ZipFile::Internal_ReadItem(int item, void *dest, unsigned size, unsigned off
   int chunksize = min(max(unpack_size, 256u), 8192u); // guesstimate
   byte in[chunksize];
 
-  zs.zalloc = Z_NULL;
-  zs.zfree = Z_NULL;
-  zs.opaque = Z_NULL;
+  zs.zalloc   = Z_NULL;
+  zs.zfree    = Z_NULL;
+  zs.opaque   = Z_NULL;
   zs.avail_in = 0;
-  zs.next_in = Z_NULL;
+  zs.next_in  = Z_NULL;
 
   // TODO more informative error messages
   int ret = inflateInit2(&zs, -MAX_WBITS); // tell zlib not to expect any headers
   if (ret != Z_OK)
-    I_Error("Fatal zlib error.\n");
+    I_Error(" [%s][%d]::Internal_ReadItem: Fatal zlib error.\n",__FILE__,__LINE__);
 
   // decompress until deflate stream ends or we have enough data
   do
@@ -854,10 +1515,10 @@ int ZipFile::Internal_ReadItem(int item, void *dest, unsigned size, unsigned off
       // NOTE: we may fread past the end of the lump, but that should not be harmful.
       zs.avail_in = fread(in, 1, chunksize, stream);
       if (ferror(stream) || zs.avail_in == 0)
-	{
-	  inflateEnd(&zs);
-	  I_Error("Error decompressing a ZIP lump!\n");
-	}
+      {
+        inflateEnd(&zs);
+          I_Error(" [%s][%d]::Internal_ReadItem: Error decompressing a ZIP lump!\n",__FILE__,__LINE__);
+      }
 
       zs.next_in = in;
 
@@ -868,13 +1529,14 @@ int ZipFile::Internal_ReadItem(int item, void *dest, unsigned size, unsigned off
   inflateEnd(&zs);
 
   switch (ret)
-    {
+  {
     case Z_STREAM_END:
+    {
       // ran out of input
       if (zs.avail_out != 0)
-	I_Error("DEFLATE stream ended prematurely.\n");
-
-      // fallthru
+        I_Error(" [%s][%d]::Internal_ReadItem: DEFLATE stream ended prematurely.\n",__FILE__,__LINE__);
+    }
+    // fallthru
     case Z_OK:
       break;
 
@@ -884,12 +1546,27 @@ int ZipFile::Internal_ReadItem(int item, void *dest, unsigned size, unsigned off
     case Z_MEM_ERROR:
     case Z_BUF_ERROR:
     default:
-      I_Error("Error while decompressing a ZIP lump!\n");
+      I_Error("Error while decompressing a ZIP lump!\n",__FILE__,__LINE__);
       break;
     }
   // successful
-
-  // now the lump is uncompressed and cached
+  // Magic prüfen
+  Uint8 isIWAD = -1;
+  
+  if (memcmp(cache[item], "IWAD", 4)     == 0)
+    isIWAD = 0;
+  else if (memcmp(cache[item], "PWAD", 4) == 0)
+  {
+    isIWAD = 1;   
+  }
+  else 
+  {
+    CONS_Printf(" ZIP/PK3 Successful. Item Extracted but not a IWAD or PWAD\n"/*,cache[item]*/); 
+    return 0;
+  }
+  
+  CONS_Printf(" ZIP/PK3 Successful. Lump is Uncompressed & Cached as %s\n\n", (isIWAD==0)?"IWAD":"PWAD");  
+  //// now the lump is uncompressed and cached
   memcpy(dest, static_cast<byte*>(cache[item]) + offset, size);
   return size;
 }

@@ -715,67 +715,82 @@ consvar_t *consvar_t::FindNetVar(unsigned short netid)
 // set value to the variable, no checking, only for internal use
 //
 bool consvar_t::Setvalue(const char *s)
-{
+{   
   if (PossibleValue)
+  {
+    char *tail;
+    int v = strtol(s, &tail, 0);
+      
+    if (!strcmp(PossibleValue[0].strvalue, "MIN"))
     {
-      char *tail;
-      int v = strtol(s, &tail, 0);
+     
+      // bounded cvar
+      if (v < PossibleValue[0].value)
+        v = PossibleValue[0].value;
+      else if (v > PossibleValue[1].value)
+        v = PossibleValue[1].value;
 
-      if (!strcmp(PossibleValue[0].strvalue, "MIN"))
-	{
-	  // bounded cvar
-	  if (v < PossibleValue[0].value)
-	    v = PossibleValue[0].value;
-	  else if (v > PossibleValue[1].value)
-	    v = PossibleValue[1].value;
-
-	  value = v;
-	  sprintf(str, "%d", v);
-	}
-      else
-	{
-	  // array of value/name pairs
-	  int i;
-	  if (tail == s)
-	    {
-	      // no succesful number conversion, so it's a string
-	      for (i=0; PossibleValue[i].strvalue; i++)
-		if (!strcasecmp(PossibleValue[i].strvalue, s))
-		  break;
-	    }
-	  else
-	    {
-	      // int value then
-	      for (i=0; PossibleValue[i].strvalue; i++)
-		if (v == PossibleValue[i].value)
-		  break;
-	    }
-
-	  if (!PossibleValue[i].strvalue)
-	    {
-	      CONS_Printf("\"%s\" is not a possible value for \"%s\"\n", s, name);
-	      return false;
-	    }
-
-	  value = PossibleValue[i].value;
-	  strncpy(str, PossibleValue[i].strvalue, CV_STRLEN);
-	}
+      value = v;
+      sprintf(str, "%d", v);
     }
+    else
+    {
+      // array of value/name pairs
+      int i;
+
+      /* Marty, "StringHandle"
+       * Dies Asunhame gilt für String in dem sich das zeichen ':'
+       * befindet wie 4:3,5:4.
+       */      
+      byte StringHandle = 0;
+      const char *szColon = strrchr(s, ':');
+      if (szColon != NULL)    
+        StringHandle =1;  
+  
+      if ((tail == s) || (StringHandle == 1))
+      {
+        // no succesful number conversion, so it's a string
+        for (i=0; PossibleValue[i].strvalue; i++)
+        {
+          if (!strcasecmp(PossibleValue[i].strvalue, s))
+            break;
+        }
+      }
+      else
+      {     
+        // int value then
+        for (i=0; PossibleValue[i].strvalue; i++)
+        {
+          if (v == PossibleValue[i].value)
+            break;
+        }
+      }
+
+      if (!PossibleValue[i].strvalue)
+      {
+          CONS_Printf("\"%s\" is not a possible value for \"%s\"\n", s, name);
+          return false;
+      }
+
+      value = PossibleValue[i].value;
+      strncpy(str, PossibleValue[i].strvalue, CV_STRLEN);
+    }
+  }
   else
-    {
-      strncpy(str, s, CV_STRLEN);
+  {
+    strncpy(str, s, CV_STRLEN);
 
-      if (flags & CV_FLOAT)
-	value = int(atof(str) * fixed_t::UNIT); // 16.16 fixed point
-      else
-	value = atoi(str);
-    }
+    if (flags & CV_FLOAT)
+      value = int(atof(str) * fixed_t::UNIT); // 16.16 fixed point
+    else
+      value = atoi(str);
+  }
 
   if (flags & CV_ANNOUNCE_ONCE || flags & CV_ANNOUNCE)
-    {
-      CONS_Printf("%s set to %s\n", name, str);
+  {
+    CONS_Printf("%s set to %s\n", name, str);
       flags &= ~CV_ANNOUNCE_ONCE;
-    }
+  }
 
   flags |= CV_MODIFIED;
   // raise 'on change' code
@@ -844,16 +859,16 @@ bool consvar_t::Reg()
   // check possible values list
   // It must either be NULL, a terminated array of value/name combinations, or a MIN/MAX pair.
   if (PossibleValue)
+  {
+    if (!strcmp(PossibleValue[0].strvalue, "MIN"))
     {
-      if (!strcmp(PossibleValue[0].strvalue, "MIN"))
-	{
-	  // MIN/MAX pair
-	  if (strcmp(PossibleValue[1].strvalue, "MAX"))
-            I_Error("Bounded cvar \"%s\" without maximum!", name);
-	  if (PossibleValue[0].value >= PossibleValue[1].value)
-	    I_Error("Bounded cvar \"%s\" has no proper range!", name);
-        }
+      // MIN/MAX pair
+      if (strcmp(PossibleValue[1].strvalue, "MAX"))
+        I_Error("Bounded cvar \"%s\" without maximum!", name);
+      if (PossibleValue[0].value >= PossibleValue[1].value)
+        I_Error("Bounded cvar \"%s\" has no proper range!", name);
     }
+  }
 
   if (flags & CV_NOINIT)
     flags &= ~CV_CALL;

@@ -25,6 +25,7 @@
 
 #include "doomtype.h"
 #include "keys.h"
+#include "cvars.h"
 
 enum gamecontrols_e
 {
@@ -112,5 +113,8 @@ void  Command_Setcontrol_f();
 void  G_Controldefault();
 void  G_CheckDoubleUsage(int keynum);
 
-
+// Marty
+  //#ifdef GRAB_MIDDLEMOUSE
+  //  extern consvar_t	cv_mouse_release;
+  //#endif
 #endif

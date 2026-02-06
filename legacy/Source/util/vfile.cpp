@@ -76,7 +76,7 @@ int VFile::FindNumForName(const char* name, int startitem)
   return -1;
 }
 
-
+/* Marty: Code änderung am Ende des Source
 void *VFile::CacheItem(int item, int tag)
 {
   if (!cache[item])
@@ -91,16 +91,15 @@ void *VFile::CacheItem(int item, int tag)
     }
   else
     {
-      //CONS_Printf("cache hit on lump %i\n",lump);
-      /*
-      if (Z_GetTag(cache[item]) != tag)
+      //CONS_Printf("cache hit on lump %i\n",lump);      
+      //if (Z_GetTag(cache[item]) != tag)
 	CONS_Printf("Memtag type changed on item %d!\n", item);
-      */
+      
     }
 
   return cache[item];
 }
-
+*/
 
 // size clamping, cache check, then call virtualized Read
 int VFile::ReadItem(int item, void *dest, unsigned size, unsigned offset)
@@ -310,3 +309,46 @@ bool VDataFile::GetNetworkInfo(int *s, unsigned char *md5)
 
   return true; // TODO some IWADs should not be transferred
 }
+
+//====================================
+//    All VFiles
+//====================================
+
+/* Marty */
+void *VFile::CacheItem(int item, int tag)
+{
+  if (!cache[item])
+  {
+    int size = GetItemSize(item);
+    if (size == 0)
+    {
+      CONS_Printf("WARN: Item %d hat Größe 0 – kein Cache\n", item);
+      return NULL;
+    }
+
+    void* ptr = Z_Malloc(size, tag, &cache[item]);
+    if (!ptr)
+    {
+      CONS_Printf("ERROR: Z_Malloc fehlgeschlagen für item %d\n", item);
+      return NULL;
+    }
+
+    int read = Internal_ReadItem(item, ptr, size, 0);
+    if (read != size)
+    {
+      CONS_Printf("ERROR: Internal_ReadItem lieferte nur %d von %d Bytes\n", read, size);
+      Z_Free(cache[item]);
+      cache[item] = NULL;
+      return NULL;
+    }
+
+    //CONS_Printf("Cache miss für item %d – erfolgreich geladen\n", item);
+  }
+  else
+  {
+    //CONS_Printf("Cache hit für item %d\n", item);
+  }
+
+  return cache[item];
+}
+

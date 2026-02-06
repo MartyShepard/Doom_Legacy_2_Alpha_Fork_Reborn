@@ -1,0 +1,12 @@
+parser_driver.o: parser_driver.cpp ../include/w_wad.h \
+ ../include/doomtype.h \
+ D:/System-Coding/MSYS2_DoomLegacy/mingw32/include/SDL/SDL_types.h \
+ D:/System-Coding/MSYS2_DoomLegacy/mingw32/include/SDL/SDL_stdinc.h \
+ D:/System-Coding/MSYS2_DoomLegacy/mingw32/include/SDL/SDL_config.h \
+ D:/System-Coding/MSYS2_DoomLegacy/mingw32/include/SDL/SDL_platform.h \
+ D:/System-Coding/MSYS2_DoomLegacy/mingw32/include/SDL/begin_code.h \
+ D:/System-Coding/MSYS2_DoomLegacy/mingw32/include/SDL/close_code.h \
+ ../include/z_zone.h parser_driver.h ../include/doomdef.h \
+ ../include/r_data.h ../include/m_fixed.h ../include/z_cache.h \
+ ../include/doomdef.h ../include/dictionary.h ../include/functors.h \
+ ../include/hardware/oglshaders.h ../include/z_cache.h

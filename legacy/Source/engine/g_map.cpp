@@ -699,7 +699,14 @@ void Map::QueueBody(Actor *p)
   bodyqueue.push_back(p);
 
   // flush an old corpse if needed
-  while (bodyqueue.size() > cv_bodyqueue_size.value)
+    /*
+     * g_map.cpp: In member function 'void Map::QueueBody(Actor*)':
+     * g_map.cpp:702:27: warning: comparison between signed and
+     * unsigned integer expressions [-Wsign-compare]
+     * while (bodyqueue.size() > cv_bodyqueue_size.value)
+     */  
+//while (bodyqueue.size() > cv_bodyqueue_size.value)    
+  while (bodyqueue.size() > static_cast<size_t>(cv_bodyqueue_size.value))
     {
       bodyqueue.front()->Remove();
       bodyqueue.pop_front();

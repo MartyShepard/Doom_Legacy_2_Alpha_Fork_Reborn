@@ -91,6 +91,9 @@ public:
   void *CacheItem(int item, int tag);
   /// Tries to write size bytes of data item item into dest, returns the number of bytes actually written.
   int ReadItem(int item, void *dest, unsigned size, unsigned offset = 0);
+  
+  virtual int GetItemListFromMemory() const { return numitems; }
+
 };
 
 
@@ -142,6 +145,7 @@ public:
   virtual const char *GetItemName(int i) = 0;
   virtual int  GetItemSize(int i) = 0;
   virtual void ListItems() = 0;
+
 };
 
 

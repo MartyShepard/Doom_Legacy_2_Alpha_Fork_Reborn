@@ -345,7 +345,7 @@ void GameInfo::BeginRecording()
 // G_PlayDemo
 //
 
-void G_DeferedPlayDemo (char* name)
+void G_DeferedPlayDemo (const char* name)
 {
   COM.AppendText("playdemo \"");
   COM.AppendText(name);

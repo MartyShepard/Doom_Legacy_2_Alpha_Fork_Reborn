@@ -101,6 +101,10 @@ public:
   inline int ReadLump(int lump, void *dest) { return ReadLumpHeader(lump, dest, 0); };
   /// Shorthand for caching lumps by name.
   inline void *CacheLumpName(const char* name, int tag) { return CacheLumpNum(GetNumForName(name), tag); };
+  
+  void CacheArchiveFile(VFile* vf);
+  Uint16 CacheArchiveFile_Remove();
+  Uint8 CacheListIndex(void);
 };
 
 

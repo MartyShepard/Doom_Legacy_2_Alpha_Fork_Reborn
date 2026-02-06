@@ -24,6 +24,8 @@
 #include <string>
 #include <ctype.h>
 
+#include <SDL.h>
+
 #include "dstrings.h"
 #include "d_event.h"
 #include "g_game.h"
@@ -136,19 +138,27 @@ void F_StartFinale(const MapCluster *cd, bool enter, bool end)
   switch (game.mode)
     {
     case gm_hexen:
-      finalestage = Hexen;
+      {
+        finalestage = Hexen;       
+      }
       break;
-
+   
     case gm_heretic:
-      finalestage = Heretic;
+      {
+        finalestage = Heretic;    
+      }
       break;
 
     case gm_doom2:
-      finalestage = Doom2;
+      {                     
+        finalestage = Doom2;   
+      }      
       break;
 
     default:
-      finalestage = Doom;
+      {     
+        finalestage = Doom;       
+      }      
       break;
     }
 
@@ -156,7 +166,8 @@ void F_StartFinale(const MapCluster *cd, bool enter, bool end)
   finalewait = finalestage->wait;
 
   if (finalestage->init)
-    (finalestage->init)(finalestage->stage);
+     (finalestage->init)(finalestage->stage);
+
 }
 
 
@@ -228,7 +239,7 @@ void F_TextTicker()
 }
 
 
-
+/* Marty: Fixed Routine am Ende des Codes
 void F_Drawer()
 {
   if (finalestage->drawer)
@@ -240,14 +251,14 @@ void F_Drawer()
   // else assume text
   F_TextWrite(finalestage->wait, finalestage->stage);
 }
-
+*/
 
 void F_TextInit(int dummy)
 {
   finalewait = finaletext.length()*TEXTSPEED + TEXTWAIT;
 }
 
-
+/* Marty: Fixed Routine am Ende des Codes
 void F_TextWrite(int sx, int sy)
 {
   // erase the entire screen to a tiled background (or raw picture)
@@ -270,6 +281,7 @@ void F_TextWrite(int sx, int sy)
   hud_font->DrawString(sx, sy, finaletext.c_str(), V_SCALE);
   finaletext[count] = c;
 }
+*/
 
 //
 // Final DOOM 2 animation
@@ -679,4 +691,89 @@ void F_HexenDrawer(int stage)
       else
         materials.GetLumpnum(base + i)->Draw(60,0,V_SCALE);
     }
+}
+
+/* Fixed Routines */
+void F_Drawer()
+{  
+    if (!finalestage)
+    {
+        CONS_Printf("CRASH-GEFahr: finalestage ist NULL!\n");
+        return;
+    }
+    //CONS_Printf("F_Drawer: finalestage gültig, drawer = %p, stage = %d\n",
+    //            (void*)finalestage->drawer, finalestage->stage);
+
+    if (finalestage->drawer)
+    {
+        //CONS_Printf("Rufe drawer-Funktion auf...\n");
+        (finalestage->drawer)(finalestage->stage);
+        return;
+    }
+    //CONS_Printf("Fallback zu Text\n");
+    F_TextWrite(finalestage->wait, finalestage->stage);
+}
+
+void F_TextWrite(int sx, int sy)
+{
+  /*
+  CONS_Printf("[%s][%d]::F_TextWrite()\n"
+              "                        sx  = %d\n"
+              "                        sy  = %d\n"
+              "                 vid.width  = %d\n"
+              "                 vid.height = %d\n",__FILE__,__LINE__, sx, sy, vid.width,vid.height);  
+  */
+  
+  /*
+  SDL_Surface* s = SDL_GetVideoSurface();
+  if (s)
+  {
+      int bpp = s->format->BitsPerPixel;
+      int expected = vid.width * (bpp / 8);
+      CONS_Printf("Pitch-Check in F_TextWrite: width=%d, bpp=%d, expected_pitch=%d, real_pitch=%d\n",
+                  vid.width, bpp, expected, s->pitch);
+
+      if (s->pitch != expected)
+          CONS_Printf("!!! PITCH MISMATCH !!! Das ist höchstwahrscheinlich der Crash-Grund\n");
+  }  
+  */
+  // erase the entire screen to a tiled background (or raw picture)   
+  if (finalepic)
+    finalepic->Draw(0, 0, V_SCALE);
+  else if (finaleflat)
+  {
+     //finaleflat->DrawFill(0,0,vid.width,vid.height);  
+      /* Marty: Fixed Final Middle Stage Screen.
+      * finaleflat->DrawFill(0,0,vid.width,vid.height) ohne Skalierung → bei
+      * höheren Auflösungen (z. B. 800×600 statt 320×200) schreibt es mehr Pixel,
+      * als der Buffer hergibt → Overflow → Crash
+      * Mit /vid.dupx und /vid.dupy wird die Fill-Größe auf die Original-Skalierung
+      * zurückgerechnet → passt wieder in den Buffer
+      */
+      memcpy(vid.screens[0], vid.screens[1], vid.width * vid.height * (vid.BytesPerPixel));
+      finaleflat->DrawFill(0, 0, vid.width/vid.dupx, vid.height/vid.dupy);
+      
+  }
+  else
+  {
+      vid.FillScreen(0);  // Schwarz als Fallback
+      CONS_Printf("WARN: Kein Finale-Hintergrund – schwarzer Fallback\n");
+  }
+
+  // draw some of the text onto the screen
+  int count = (finalecount - 10)/TEXTSPEED;
+  if (count < 0)
+    return;
+ 
+  if (count > int(finaletext.length()))
+    count = finaletext.length();
+
+  // small hack
+  char c = finaletext[count];
+  
+  finaletext[count] = '\0';
+  
+  hud_font->DrawString(sx, sy, finaletext.c_str(), V_SCALE);
+   
+  finaletext[count] = c;
 }

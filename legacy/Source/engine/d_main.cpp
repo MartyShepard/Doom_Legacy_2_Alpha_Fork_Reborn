@@ -25,6 +25,7 @@
 
 #include <unistd.h>
 #include <sys/stat.h>
+#include <dirent.h>
 
 #include "command.h"
 #include "console.h"
@@ -52,7 +53,10 @@ void GenerateTables();
 void SV_Init();
 void CL_Init();
 void PrepareGameData();
-
+// Marty
+static char *ProgrammPath(void);
+static byte DirectoryCheck_isPath(const char *path);
+static void Help( void );
 
 #ifndef SVN_REV
 #define SVN_REV "none"
@@ -185,7 +189,7 @@ void D_DoomLoop()
       // give time to the OS
       if (elapsed == 0)
 	{
-	  I_Sleep(1);
+	  I_Sleep(10);
 	  continue;
 	}
 
@@ -196,30 +200,30 @@ void D_DoomLoop()
       // run tickers, advance game state
       game.TryRunTics(elapsed);
 
+
       if (!game.dedicated)
-	{
-	  if (singletics || game.tic > rendertic)
-	    {
-	      // render if gametics have passed since last rendering
-	      rendertic = game.tic;
-	      rendertimeout = now + TICRATE/17;
+      {
+        if (singletics || game.tic > rendertic)
+        {
+          // render if gametics have passed since last rendering
+          rendertic = game.tic;
+          rendertimeout = now + TICRATE/17;
 
-	      // move positional sounds, adjust volumes
-	      S.UpdateSounds();
-	      // Update display, next frame, with current state.
-	      game.Display();
-	    }
-	  else if (rendertimeout < now)
-	    {
-	      // otherwise render if enough real time has elapsed since last rendering
-	      // in case the server hang or netsplit
-	      game.Display();
-	    }
-	}
-
+          // move positional sounds, adjust volumes
+          S.UpdateSounds();
+         
+          // Update display, next frame, with current state.
+          game.Display();         
+        }
+        else if (rendertimeout < now)
+        {
+          // otherwise render if enough real time has elapsed since last rendering
+          // in case the server hang or netsplit
+          game.Display();
+        }
+      }
       // check for media change, loop music..
       I_UpdateCD();
-
 #ifdef HW3SOUND
       HW3S_EndFrameUpdate();
 #endif
@@ -293,7 +297,7 @@ static void D_IdentifyVersion()
     {"tnt.wad",      gm_doom2, gmi_tnt},
     {"plutonia.wad", gm_doom2, gmi_plut},
     {"doom1.wad",    gm_doom1, gmi_shareware},
-    {"heretic1.wad", gm_heretic, gmi_heretic},
+    {"heretic1.wad", gm_heretic, gmi_heretic},   
   };
 
   // default
@@ -443,21 +447,23 @@ void D_SetPaths()
   if (M_CheckParm("-home") && M_IsNextParm())
     userhome = M_GetNextParm();
   else
-    userhome = getenv("HOME");
+    userhome = ProgrammPath()/*getenv("HOME")*/;
 
 #ifdef LINUX // user home directory
   if (!userhome)
     I_Error("Please set $HOME to your home directory\n");
 #endif
 
-  string legacyhome = ".";
+  string legacyhome = "";
 
   if (userhome)
     {
       // use user specific config files and saves
       legacyhome = string(userhome);
+			/*
       legacyhome += DEFAULTDIR; // config files, saves here
       I_mkdir(legacyhome.c_str(), S_IRWXU);
+			*/
     }
 
   // check for a custom config file
@@ -471,14 +477,33 @@ void D_SetPaths()
       // little hack to allow a different config file for opengl
       // may be a problem if opengl cannot really be started
       if (M_CheckParm("-opengl"))
-	sprintf(configfile, "%s/gl"CONFIGFILENAME, legacyhome.c_str());
+			{
+				sprintf(configfile, "%s\\GL_" CONFIGFILENAME , legacyhome.c_str());
+				CONS_Printf("Load (OpenGL) Config File: '%s'\n", configfile);				
+			}
       else
-	sprintf(configfile, "%s/"CONFIGFILENAME, legacyhome.c_str());
+			{			
+				sprintf(configfile, "%s\\"    CONFIGFILENAME, legacyhome.c_str());
+				CONS_Printf("Load Config File: '%s'\n", configfile);					
+			}
     }
 
-  // savegame name templates
-  sprintf(savegamename, "%s/%s", legacyhome.c_str(), "savegame_%d.sav");
-  sprintf(hubsavename, "%s/%s", legacyhome.c_str(), "hubsave_%02d.sav");
+		// savegame name templates
+		char MyHomy[MAX_PATH];
+		strncpy(MyHomy, ProgrammPath(), sizeof(MyHomy));
+					
+		// Sicherheit: Falls kein Backslash da ist, anhängen
+		size_t len = strlen(MyHomy);
+		if (len > 0 && MyHomy[len-1] != '\\')
+			strcat(MyHomy, "\\");              
+    
+		strcat(MyHomy, "Saves\\");    
+		
+		if (DirectoryCheck_isPath(MyHomy) == 0)        
+				mkdir(MyHomy);        
+                              
+		sprintf(savegamename, "%s\\Saves\\%s", legacyhome.c_str(), "savegame_%d.sav");
+		sprintf(hubsavename , "%s\\Saves\\%s", legacyhome.c_str(), "hubsave_%02d.sav");
 }
 
 
@@ -500,16 +525,21 @@ bool D_DoomMain()
   // TODO: Better commandline help
   if (M_CheckParm("--help") || M_CheckParm("-h"))
     {
+      
       printf("%s\n", D_MakeTitleString(LEGACY_VERSION_BANNER));
-      printf("Usage: legacy [-opengl] [-iwad xxx.wad] [-file pwad.wad stuff.zip ...]\n");
+      printf("Usage: legacy [-opengl] [-iwad xxx.wad] [-file pwad.wad stuff.zip ...]\n"); 
+      Help();
       return false;
     }
-
+  
   // we need to check for dedicated before initialization of some subsystems
   game.dedicated = M_CheckParm("-dedicated");
 
-  // keep error messages until the final flush(stderr)
-  //if (setvbuf(stderr,NULL,_IOFBF,1000)) CONS_Printf("setvbuf didnt work\n");
+    //added:18-02-98:keep error messages until the final flush(stderr)
+    // if (setvbuf(stderr, NULL, _IOFBF, 1000))
+     //   printf("setvbuf didnt work\n");
+      
+   //setbuf(stdout, NULL);       // non-buffered output
   if (!game.dedicated)
     {
 	  //FIXME: these files should be placed in ~/Library/Logs/ as Legacy_%s.log
@@ -519,7 +549,7 @@ bool D_DoomMain()
 #endif
     }
 
-  setbuf(stdout, NULL);      // non-buffered output
+  //setbuf(stdout, NULL);      // non-buffered output
 
   // start console output by the banner line
   CONS_Printf("%s\n", D_MakeTitleString(LEGACY_VERSION_BANNER));
@@ -614,7 +644,7 @@ bool D_DoomMain()
       // set user default mode or mode set at cmdline
       vid.CheckDefaultMode();
     }
-
+ 
   // ------------- starting the game ----------------
 
   const char *m;
@@ -683,6 +713,134 @@ bool D_DoomMain()
 
   // end of loading screen: CONS_Printf() will no more call FinishUpdate()
   con.refresh = false;
+  
   vid.SetMode(); // change video mode if needed, recalculate...
+  
+  if (cv_precachesound.value == 1) /* Marty: Temporary*/
+  {
+    S_ClearSounds();
+    S_PrecacheSounds();
+  }   
+
+    /*
+    
+    
+    int lump = fc.GetNumForName("000emg.wad", false);
+    if (lump != -1)
+    {
+      CONS_Printf("ZIP-Lump '000EMG' gefunden: combined index %08X\n", lump);
+      void* data = fc.CacheLumpNum(lump, PU_STATIC, false);
+      if (data)
+        CONS_Printf("ZIP-Lump geladen – Größe %d Bytes\n", fc.LumpLength(lump));
+      else
+        CONS_Printf("ZIP-Lump konnte nicht gecached werden\n");
+    }
+    else
+      CONS_Printf("ZIP-Lump '000EMG' nicht gefunden\n");    
+    
+    int lump_map01 = fc.GetNumForName("MAP01", false);
+    if (lump_map01 != -1)
+    {
+      CONS_Printf("ZIP-Lump 'MAP01' gefunden: index %08X\n", lump_map01);
+      void* data = fc.CacheLumpNum(lump_map01, PU_STATIC, false);
+      if (data)
+        CONS_Printf("MAP01 aus ZIP geladen – Größe %d Bytes\n", fc.LumpLength(lump_map01));
+    }
+        
+    
+    */
   return true;
 }
+
+
+
+
+static char *ProgrammPath(void)
+{
+  static char dosroot[MAX_PATH] = {0}; 	
+  static char exepath[MAX_PATH] = {0};  // static = nur einmal initialisiert
+
+  if (exepath[0] == '\0')  // Nur einmal berechnen
+  {
+       GetModuleFileNameA(NULL, exepath, MAX_PATH);
+       char *last = strrchr(exepath, '\\');
+       if (last) *(last /*+ 1*/) = '\0';  // Nur Ordner und entferne '\' den auch.
+  }
+
+  if (dosroot[0] == '\0')  // Nur einmal berechnen  
+       getcwd(dosroot, MAX_PATH);
+
+  if (strcmp(exepath, dosroot ) == 0)
+  {
+  //    printf(, "ProgrammPath [exedir]:[getcwd] sind identisch\n");
+  }
+  else
+  {
+      printf("ProgrammPath [exedir]: %s\n", exepath);
+      printf("ProgrammPath [getcwd]: %s\n", dosroot);
+      printf("Main->Argv hat eine anderes Arbeitsverzeichnis bekommen...\n");  
+  }
+
+  return exepath; 
+}
+
+static byte DirectoryCheck_isPath(const char *path)
+{
+      byte Result = 1;
+      
+      DIR *dir = opendir(path);
+      if (!dir) // Kein Verzeichnis? Dann normale Datei?     
+          Result = 0;
+      
+      closedir(dir);
+
+      printf("[%s][%d] Directory Check: is Path = %s\n"
+             "        : %s\n",__FILE__,__LINE__,
+                      (Result==1)?"True":"False",path);
+                                      
+      return Result;
+}
+
+static void Help( void )
+{
+ printf
+   ("\n"
+    "--version       Print Doom Legacy version\n"
+    "-h /-help       Help\n"
+    "-iwad file      The game wad\n"
+    "-file file      Load PWAD and DEH files (one or more)\n"
+    "                Format Support: wad, wad2, wad3, pak, zip\n"
+    "                (zip and pak does'nt work.)\n"
+    "-loadgame num   Load savegame num\n"
+    "-episode <n>    Goto episode <nr>, level 1\n"
+    "-skill <>       Skill 1 to 5\n"
+    "-nomonsters     No monsters\n"
+    "-noendtxt       Don't print Endtext\n"
+    "-blockmap       ?\n"        
+    "-v              Verbose\n"  
+     "-console        Use console output"
+    "-config file    Config file\n"
+    "-opengl         OpenGL hardware renderer\n"
+    "-nosound        No sound effects\n"
+    "-nocd           No CD music\n"
+    "-nomusic        No music\n"
+    "-precachesound  Preload sound effects\n"
+    "-mb num         Pre-allocate num MiB of memory\n"
+    "-width num      Video mode width\n"
+    "-height num     Video mode height\n"
+    "-bpp num        Video mode in (8,15,16,24,32) bpp\n"
+    "-noversioncheck Ignore legacy.wad version\n"
+    "-server         Start as game server\n"
+    "-dedicated      Dedicated server, no player\n"
+    "-connect name   Connect to server name\n"
+    "-nodownload     No download from server\n"
+    "-ipx            Use IPX\n"
+    "-port x         Use port x for server (and client)\n"
+    "-maxdemo num    Limit record demo size, in KiB\n"
+    "-devparm        Develop mode\n"
+    "-nodraw         Timedemo without draw\n"
+    );
+    return;
+//      "-home name      Config and savegame directory\n"    
+}
+ 

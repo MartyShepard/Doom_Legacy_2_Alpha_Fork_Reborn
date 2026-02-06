@@ -24,9 +24,12 @@
 /// Original Doom required this to keep network games synchronized.
 
 #include <stdlib.h>
+#include <random>
 #include "doomdef.h"
 #include "doomtype.h"
 #include "m_random.h"
+
+static std::mt19937 rng(std::random_device{}()); // Marty
 
 //
 // M_Random
@@ -119,12 +122,19 @@ void P_SetRandIndex(byte rindex)
 
 float RandomUniform()
 {
-  return drand48(); // Could be something else as well, this function is from SVID.
+    //return drand48(); // Could be something else as well, this function is from SVID.
+		/*Marty*/
+    static std::uniform_real_distribution<float> dist(0.0f, 1.0f);
+    return dist(rng);	
 }
 
 float RandomS()
 {
-  return drand48() -drand48();
+	  //return drand48() -drand48();
+		/*Marty*/
+	  static std::uniform_real_distribution<float> dist(-0.5f, 0.5f);
+    return dist(rng);
+
 }
 
 float RandomGauss()

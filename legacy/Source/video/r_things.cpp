@@ -687,7 +687,19 @@ void Rend::R_AddSprites(sector_t* sec, int lightlevel)
 
 
 
-
+static const fixed_t PSpriteSY[NUMWEAPONS] =
+{
+    fixed_t(0),             // staff
+    fixed_t(5),             // goldwand
+    fixed_t(15),            // crossbow
+    fixed_t(15),            // blaster
+    fixed_t(15),            // skullrod
+    fixed_t(15),            // phoenix rod
+    fixed_t(15),            // mace
+    fixed_t(15),            // gauntlets
+    fixed_t(15)             // beak
+};
+/*
 const fixed_t PSpriteSY[NUMWEAPONS] =
 {
      0,             // staff
@@ -700,6 +712,17 @@ const fixed_t PSpriteSY[NUMWEAPONS] =
     15,    // gauntlets
     15     // beak
 };
+
+cc -c -g -O0 -Wl,--subsystem,console -std=gnu++11 -Wall -D__WIN32__ -DSDL -I/mingw32/include/SDL -D_GNU_SOURCE=1    -I../include r_things.cpp -o ../objs/r_things.o
+r_things.cpp: In member function 'virtual void spritepres_t::Project(Actor*)':
+r_things.cpp:394:50: warning: array subscript has type 'char' [-Wchar-subscripts]
+     vis->translationmap = translationtables[color];
+                                                  ^
+r_things.cpp: At global scope:
+r_things.cpp:702:1: error: converting to 'fixed_t' from initializer list would use explicit constructor 'fixed_t::fixed_t()'
+
+Jetzt knall er hier wieder ...
+*/
 /*
 // TODO Hexen weaponsprite y adjustments...
 int PSpriteSY[NUMCLASSES][NUMWEAPONS] =

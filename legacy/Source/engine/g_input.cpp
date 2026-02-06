@@ -68,7 +68,9 @@ consvar_t cv_mousemove[NUM_MICE]   = {{"mousemove",  "1",   CV_SAVE, CV_OnOff},
 consvar_t cv_invertmouse[NUM_MICE] = {{"invertmouse",  "0", CV_SAVE, CV_OnOff},
 				      {"invertmouse2", "0", CV_SAVE, CV_OnOff}};
 
-
+#ifdef GRAB_MIDDLEMOUSE
+consvar_t  cv_mouse_release = {"middle_mouse_button_release","1", CV_SAVE, CV_OnOff };
+#endif
 //========================================================================
 //   Input status
 //========================================================================
@@ -760,23 +762,26 @@ int G_KeyStringtoNum(const char *keystr)
 void G_Controldefault()
 {
   short (*gc)[2] = gamecontrol[0];
-  gc[gc_forward    ][0]=KEY_UPARROW;
+  gc[gc_forward    ][0]='w'/*KEY_UPARROW*/;
   gc[gc_forward    ][1]=KEY_MOUSE1+2;
-  gc[gc_backward   ][0]=KEY_DOWNARROW;
-  gc[gc_strafe     ][0]=KEY_RALT;
-  gc[gc_strafe     ][1]=KEY_MOUSE1+1;
-  gc[gc_straferight][0]='.';
-  gc[gc_strafeleft ][0]=',';
+  gc[gc_backward   ][0]='s'/*KEY_DOWNARROW*/;
+  //gc[gc_strafe     ][0]=KEY_RALT;
+  //gc[gc_strafe     ][1]=KEY_MOUSE1+1;
+  gc[gc_straferight][0]='d';
+  gc[gc_straferight][1]='.';  
+  gc[gc_strafeleft ][0]='a';
+  gc[gc_strafeleft ][1]=',';  
   gc[gc_speed      ][0]=KEY_RSHIFT;
-  gc[gc_turnleft   ][0]=KEY_LEFTARROW;
-  gc[gc_turnright  ][0]=KEY_RIGHTARROW;
-  gc[gc_fire       ][0]=KEY_RCTRL;
-  gc[gc_fire       ][1]=KEY_MOUSE1;
-  gc[gc_use        ][0]=KEY_SPACE;
-  gc[gc_lookup     ][0]=KEY_PGUP;
-  gc[gc_lookdown   ][0]=KEY_PGDN;
-  gc[gc_centerview ][0]=KEY_END;
-  gc[gc_mouseaiming][0]='s';
+  //gc[gc_turnleft   ][0]=KEY_LEFTARROW;
+  //gc[gc_turnright  ][0]=KEY_RIGHTARROW;
+  gc[gc_fire       ][0]=KEY_MOUSE1;
+  gc[gc_fire       ][1]=KEY_RCTRL;  
+  gc[gc_use        ][0]=KEY_HOME/*KEY_SPACE*/;
+  gc[gc_use        ][1]='f';  
+  //gc[gc_lookup     ][0]=KEY_PGUP;
+  //gc[gc_lookdown   ][0]=KEY_PGDN;
+  //gc[gc_centerview ][0]=KEY_END;
+  //gc[gc_mouseaiming][0]='s';
   gc[gc_weapon1    ][0]='1';
   gc[gc_weapon2    ][0]='2';
   gc[gc_weapon3    ][0]='3';
@@ -785,22 +790,24 @@ void G_Controldefault()
   gc[gc_weapon6    ][0]='6';
   gc[gc_weapon7    ][0]='7';
   gc[gc_weapon8    ][0]='8';
-  gc[gc_jump       ][0]='/';
+  gc[gc_jump       ][0]=KEY_SPACE/*'/'*/;
   //gc[gc_nextweapon ][1]=KEY_JOY0BUT4;
   //gc[gc_prevweapon ][1]=KEY_JOY0BUT5;
-  gc[gc_invnext    ][0] = ']';
-  gc[gc_invprev    ][0] = '[';
+  gc[gc_invnext    ][0] = KEY_RIGHTARROW;
+  gc[gc_invnext    ][1] = KEY_PGUP/*']'*/;
+  gc[gc_invprev    ][0] = KEY_LEFTARROW;
+  gc[gc_invprev    ][0] = KEY_PGDN/*'['*/;  
   gc[gc_invuse     ][0] = KEY_ENTER;
-  gc[gc_jump       ][0] = KEY_INS;
+  //gc[gc_jump       ][0] = KEY_INS;
   gc[gc_flydown    ][0] = KEY_KPADPERIOD;
 
-  //gc[gc_nextweapon ][0]=']';
+  gc[gc_nextweapon ][0]=KEY_TAB/*']'*/;
   //gc[gc_prevweapon ][0]='[';
 
   // common game keys
   commoncontrols[gk_talk][0]    = 't';
   commoncontrols[gk_console][0] = KEY_CONSOLE;   // This works out-of-the-box in US keyboads, not in others.
-  commoncontrols[gk_console][1] = KEY_BACKSPACE; // Hence this.
+  //commoncontrols[gk_console][1] = KEY_BACKSPACE; // Hence this... Backspace .. echt jetzt
   commoncontrols[gk_scores][0]  = 'f';
 }
 

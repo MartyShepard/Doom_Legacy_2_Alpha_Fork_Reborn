@@ -52,7 +52,7 @@
 
 
 #define MIDBUFFERSIZE   128*1024
-#define SAMPLERATE      22050   // Hz
+#define SAMPLERATE      22050*2   // Hz //Marty
 #define SAMPLECOUNT     1024 // requested audio buffer size (512 means about 46 ms at 11 kHz)
 
 
@@ -425,15 +425,18 @@ void I_StartupSound()
 // initializes both sound and music
 void I_InitMusic()
 {
+	//printf(" [%s][%d] I_InitMusic(): (nosound arg = %s\n",__FILE__,__LINE__,(nosound==true)?"Ja":"Nein");
   if (nosound)
     {
-      nomusic = true;
-      return;
+      nomusic = false;
+      //return;
     }
 
 #ifdef NO_MIXER
-  nomusic = true;
+  printf(" [%s][%d] I_InitMusic(): Keine Music. SDL Mixer wurde nicht mit kompiliert\n",__FILE__,__LINE__); 
+  nomusic = true; 
 #else
+
   // because we use SDL_mixer, audio is opened here.
   if (Mix_OpenAudio(audio.freq, audio.format, audio.channels, audio.samples) < 0)
     {
@@ -451,18 +454,35 @@ void I_InitMusic()
     }
 
   Mix_SetPostMix(audio.callback, NULL);  // after mixing music, add sound effects
+  
   CONS_Printf(" Audio device initialized: %d Hz, %d samples/slice.\n", audio.freq, audio.samples);
+  
   Mix_Resume(-1); // start all sound channels (although they are not used)
 
   soundStarted = true;
+
 
   if (nomusic)
     return;
 
   Mix_ResumeMusic();  // start music playback
+	
   mus2mid_buffer = (byte *)Z_Malloc(MIDBUFFERSIZE, PU_MUSIC, NULL); // FIXME: catch return value
-  CONS_Printf(" Music initialized.\n");
+
   musicStarted = true;
+	
+  CONS_Printf(" [%s][%d] I_InitMusic(): var - nomusic      = %s\n"
+         "                         var - soundStarted = %s\n"
+         "                         var - musicStarted = %s\n"
+         "                         aud - frequenz(hz) = %d\n"
+         "                         aud - samples/slice= %d\n"       
+                                  ,__FILE__,__LINE__,
+                                  (nomusic     ==true)?"Ja":"Nein",
+                                  (soundStarted==true)?"Ja":"Nein",
+                                  (musicStarted==true)?"Ja":"Nein",
+                                  audio.freq, audio.samples);
+  
+  CONS_Printf(" Music initialized.\n");    
 #endif
 }
 
@@ -475,7 +495,7 @@ void I_ShutdownSound()
     return;
     
   CONS_Printf("I_ShutdownSound: ");
-
+    
 #ifdef NO_MIXER
   SDL_CloseAudio();
 #else
@@ -491,6 +511,7 @@ void I_ShutdownSound()
   Z_Free(mus2mid_buffer);
   CONS_Printf("I_ShutdownMusic: shut down\n");
   musicStarted = false;  
+   
 }
 
 

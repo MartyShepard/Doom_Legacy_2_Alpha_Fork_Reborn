@@ -40,6 +40,8 @@ extern char LEGACY_VERSION_BANNER[];
 /// Frame rate, original number of game tics / second.
 #define TICRATE 35
 
+#define BORDERLESS_WIN32 // Marty
+#define GRAB_MIDDLEMOUSE // Marty
 
 /// Max. numbers of local players (human and bot) on a client.
 enum
@@ -62,4 +64,50 @@ char *va(const char *format, ...);
 char *Z_StrDup(const char *in);
 int   I_GetKey();
 
+#define STR_HELPER(x) #x
+#define STR(x) STR_HELPER(x)
+
+// Latest Original Code Branch Sourceforge
+#define SVN_REVISION_ORG 705
+#ifndef SVN_REV
+#define SVN_REV STR(SVN_REVISION_ORG)
+#endif
+
+// Versioning: Fork Versioning
+#define DOOMLEGACY2_MAJOR  2
+#define DOOMLEGACY2_MINOR  0
+#define DOOMLEGACY2_PATCH  1
+#define DOOMLEGACY2_BUILD  01
+
+#ifndef DOOMLEGACY2_VERSION
+#define DOOMLEGACY2_VERSION STR(DOOMLEGACY2_MAJOR) "." STR(DOOMLEGACY2_MINOR) "." STR(DOOMLEGACY2_PATCH) "." STR(DOOMLEGACY2_BUILD)
+#endif
+
+#define BUILD_DATE __DATE__ 
+#define BUILD_TIME __TIME__
+
+#define FILEDESC "Doom Legacy 2.0 Alpha: Reborn " STR(DOOMLEGACY2_PATCH) "." STR(DOOMLEGACY2_BUILD) " (32Bit/SDL1)"
+
+/* 
+ * Weiterletung and die RC datei. 
+ * 
+*/
+
+		#define VALUE_COMMENT          "DOOM LEGACY 2.0 ALPHA BACK FROM THE GRAVE LAWLESS DAJORMAS RULEZ FOREVER WHO READS THIS SHIT ANYWAY? BALDUR'S GATE IS FOR NERDS FRAG.COM/DOOMLEGACY OR GTFO"
+		#define VALUE_COMPANY          "Intel Outside" 
+		#define VALUE_FILEDESCRIPTION  FILEDESC
+// Fork Versioning
+		#define VALUE_VERSION_COMMA     DOOMLEGACY2_MAJOR,DOOMLEGACY2_MINOR,DOOMLEGACY2_PATCH,DOOMLEGACY2_BUILD
+		#define VALUE_VERSION_STRING    STR(DOOMLEGACY2_MAJOR) ", " STR(DOOMLEGACY2_MINOR) ", " STR(DOOMLEGACY2_PATCH) ", " STR(DOOMLEGACY2_BUILD)
+    
+		#define VALUE_INTERNAL_NAME    "DoomLegacy2"
+		#define VALUE_LEGALCOPYRIGHT   "Copyright (C) 1998-2024 by DooM Legacy Team"
+		#define VALUE_LEGALTRADEMARKS  "Compiled from Marty (" __DATE__ ")"
+		#define VALUE_ORIGINALFILENAME "DoomLegacy2.exe"
+		#define VALUE_PRODUCTNAME      "Doom Legacy 2 Forked: Based on svn705"
+		#define VALUE_PRIVATEBUILD     ""
+		#define VALUE_SPECIALBUILD     ""
+// Latest Original Code Branch Sourceforge    
+		#define VALUE_PRODUCT_COMMA   DOOMLEGACY2_MAJOR,DOOMLEGACY2_MINOR,DOOMLEGACY2_MINOR,SVN_REVISION_ORG
+		#define VALUE_PRODUCTVSTRING   STR(DOOMLEGACY2_MAJOR) ", " STR(DOOMLEGACY2_MINOR) ", " STR(DL_VER_REV)    
 #endif

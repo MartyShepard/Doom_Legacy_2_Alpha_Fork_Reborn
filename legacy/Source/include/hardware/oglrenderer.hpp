@@ -24,8 +24,12 @@
 #define oglrenderer_hpp_
 
 #include<SDL/SDL.h>
-#include<GL/gl.h>
-#include<GL/glu.h>
+/* OpenGL Init --------------------
+	 #include<GL/gl.h>
+	 #include<GL/glu.h>
+ */
+#include "Hardware/ogl_init.h"
+/* OpenGL Init End ------------- */
 
 #include"vect.h"
 #include"r_defs.h"
@@ -99,7 +103,7 @@ private:
 public:
   OGLRenderer();
   ~OGLRenderer();
-  bool InitVideoMode(const int w, const int h, const bool fullscreen);
+  bool InitVideoMode(const int w, const int h, /*const*/ bool fullscreen);
 
   void InitGLState();
   void StartFrame();
@@ -148,4 +152,8 @@ public:
 
 extern OGLRenderer *oglrenderer;
 
+/* Marty */
+	void CenterSDL1Window(void); // oglrenderer.cpp, i_video.h, 
+  void ToggleBorderless(void); // oglrenderer.cpp, i_video.h, 
+	
 #endif

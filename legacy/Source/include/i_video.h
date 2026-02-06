@@ -26,6 +26,7 @@
 #define i_video_h 1
 
 #include "doomtype.h"
+#include "cvars.h"
 
 enum rendermode_t
 {
@@ -34,7 +35,7 @@ enum rendermode_t
 };
 
 extern rendermode_t rendermode;
-
+//extern consvar_t cv_borderless; // Marty
 
 bool I_StartupGraphics();
 void I_ShutdownGraphics();
@@ -48,5 +49,8 @@ const char *I_GetVideoModeName(unsigned modenum);
 int  I_GetVideoModeForSize(int w, int h);
 
 void I_FinishUpdate();
+
+void CenterSDL1Window(void); // oglrenderer.cpp, i_video.h, 
+void ToggleBorderless(void); // oglrenderer.cpp, i_video.h, 
 
 #endif

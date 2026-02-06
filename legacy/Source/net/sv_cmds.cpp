@@ -583,6 +583,10 @@ void Command_Map_f()
   int ep = atoi(COM.Argv(2));
 
   CONS_Printf("Warping to %s (%s)...\n", m->nicename.c_str(), m->lumpname.c_str());
+  
+  if (con.IsActive() > 0)
+    con.Toggle(true);
+  
   game.currentcluster->Finish(m->mapnumber, ep);
 }
 

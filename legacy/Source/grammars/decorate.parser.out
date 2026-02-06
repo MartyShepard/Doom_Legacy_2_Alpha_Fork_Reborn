@@ -1,0 +1,619 @@
+ State 0:
+          start ::= * definitions
+      (1) definitions ::= *
+          definitions ::= * definitions actor
+
+                         start accept
+                   definitions shift  3
+                     {default} reduce 1
+
+State 1:
+          state_labeled_seq ::= state_label state_defs * state_jump NL
+          state_defs ::= state_defs * state_def NL
+          state_def ::= * str str int
+          state_def ::= * str str int str
+          state_jump ::= * LOOP
+          state_jump ::= * STOP
+          state_jump ::= * GOTO str
+          state_jump ::= * GOTO str PLUS int
+          str ::= * STR
+
+                          LOOP shift  74
+                          STOP shift  75
+                          GOTO shift  27
+                           STR shift  57
+                           str shift  11
+                    state_jump shift  40
+                     state_def shift  39
+
+State 2:
+          actor_property ::= STATES NL L_BRACE NL state_seqs * R_BRACE
+          state_seqs ::= state_seqs * state_labeled_seq
+          state_labeled_seq ::= * state_label state_defs state_jump NL
+          state_label ::= * str COLON NL
+          str ::= * STR
+
+                       R_BRACE shift  62
+                           STR shift  57
+                           str shift  37
+             state_labeled_seq shift  63
+                   state_label shift  33
+
+State 3:
+      (0) start ::= definitions *
+          definitions ::= definitions * actor
+          actor ::= * actor_init construction doomednum NL L_BRACE NL actor_properties R_BRACE NL
+          actor ::= * NL
+          actor ::= * SEMICOLON
+          actor_init ::= * ACTOR
+
+                            NL shift  87
+                     SEMICOLON shift  88
+                         ACTOR shift  89
+                         actor shift  78
+                    actor_init shift  4
+                     {default} reduce 0
+
+State 4:
+          actor ::= actor_init * construction doomednum NL L_BRACE NL actor_properties R_BRACE NL
+          construction ::= * str
+          construction ::= * str COLON str
+          str ::= * STR
+
+                           STR shift  57
+                           str shift  45
+                  construction shift  5
+
+State 5:
+          actor ::= actor_init construction * doomednum NL L_BRACE NL actor_properties R_BRACE NL
+      (9) doomednum ::= *
+          doomednum ::= * int
+          int ::= * INT
+
+                           INT shift  66
+                           int shift  83
+                     doomednum shift  35
+                     {default} reduce 9
+
+State 6:
+          actor ::= actor_init construction doomednum NL L_BRACE NL actor_properties * R_BRACE NL
+          actor_properties ::= actor_properties * actor_property NL
+     (13) actor_property ::= *
+          actor_property ::= * OBITUARY str
+          actor_property ::= * HITOBITUARY str
+          actor_property ::= * MODEL str
+          actor_property ::= * HEALTH int
+          actor_property ::= * REACTIONTIME int
+          actor_property ::= * PAINCHANCE int
+          actor_property ::= * SPEED num
+          actor_property ::= * DAMAGE int
+          actor_property ::= * RADIUS num
+          actor_property ::= * HEIGHT num
+          actor_property ::= * MASS num
+          actor_property ::= * SEESOUND str
+          actor_property ::= * ATTACKSOUND str
+          actor_property ::= * PAINSOUND str
+          actor_property ::= * DEATHSOUND str
+          actor_property ::= * ACTIVESOUND str
+          actor_property ::= * CLEARFLAGS
+          actor_property ::= * MONSTER
+          actor_property ::= * PROJECTILE
+          actor_property ::= * PLUS str
+          actor_property ::= * MINUS str
+          actor_property ::= * STATES NL L_BRACE NL state_seqs R_BRACE
+
+                       R_BRACE shift  41
+                      OBITUARY shift  14
+                   HITOBITUARY shift  17
+                         MODEL shift  19
+                        HEALTH shift  21
+                  REACTIONTIME shift  24
+                    PAINCHANCE shift  26
+                         SPEED shift  7
+                        DAMAGE shift  30
+                        RADIUS shift  8
+                        HEIGHT shift  10
+                          MASS shift  9
+                      SEESOUND shift  23
+                   ATTACKSOUND shift  22
+                     PAINSOUND shift  18
+                    DEATHSOUND shift  16
+                   ACTIVESOUND shift  29
+                    CLEARFLAGS shift  50
+                       MONSTER shift  51
+                    PROJECTILE shift  52
+                          PLUS shift  13
+                         MINUS shift  12
+                        STATES shift  46
+                actor_property shift  47
+                     {default} reduce 13
+
+State 7:
+          actor_property ::= SPEED * num
+          num ::= * FLOAT
+          num ::= * INT
+
+                           INT shift  84
+                         FLOAT shift  81
+                           num shift  77
+
+State 8:
+          actor_property ::= RADIUS * num
+          num ::= * FLOAT
+          num ::= * INT
+
+                           INT shift  84
+                         FLOAT shift  81
+                           num shift  76
+
+State 9:
+          actor_property ::= MASS * num
+          num ::= * FLOAT
+          num ::= * INT
+
+                           INT shift  84
+                         FLOAT shift  81
+                           num shift  68
+
+State 10:
+          actor_property ::= HEIGHT * num
+          num ::= * FLOAT
+          num ::= * INT
+
+                           INT shift  84
+                         FLOAT shift  81
+                           num shift  71
+
+State 11:
+          state_def ::= str * str int
+          state_def ::= str * str int str
+          str ::= * STR
+
+                           STR shift  57
+                           str shift  15
+
+State 12:
+          actor_property ::= MINUS * str
+          str ::= * STR
+
+                           STR shift  57
+                           str shift  56
+
+State 13:
+          actor_property ::= PLUS * str
+          str ::= * STR
+
+                           STR shift  57
+                           str shift  54
+
+State 14:
+          actor_property ::= OBITUARY * str
+          str ::= * STR
+
+                           STR shift  57
+                           str shift  48
+
+State 15:
+          state_def ::= str str * int
+          state_def ::= str str * int str
+          int ::= * INT
+
+                           INT shift  66
+                           int shift  25
+
+State 16:
+          actor_property ::= DEATHSOUND * str
+          str ::= * STR
+
+                           STR shift  57
+                           str shift  55
+
+State 17:
+          actor_property ::= HITOBITUARY * str
+          str ::= * STR
+
+                           STR shift  57
+                           str shift  59
+
+State 18:
+          actor_property ::= PAINSOUND * str
+          str ::= * STR
+
+                           STR shift  57
+                           str shift  58
+
+State 19:
+          actor_property ::= MODEL * str
+          str ::= * STR
+
+                           STR shift  57
+                           str shift  60
+
+State 20:
+          construction ::= str COLON * str
+          str ::= * STR
+
+                           STR shift  57
+                           str shift  86
+
+State 21:
+          actor_property ::= HEALTH * int
+          int ::= * INT
+
+                           INT shift  66
+                           int shift  64
+
+State 22:
+          actor_property ::= ATTACKSOUND * str
+          str ::= * STR
+
+                           STR shift  57
+                           str shift  85
+
+State 23:
+          actor_property ::= SEESOUND * str
+          str ::= * STR
+
+                           STR shift  57
+                           str shift  65
+
+State 24:
+          actor_property ::= REACTIONTIME * int
+          int ::= * INT
+
+                           INT shift  66
+                           int shift  70
+
+State 25:
+     (42) state_def ::= str str int *
+          state_def ::= str str int * str
+          str ::= * STR
+
+                           STR shift  57
+                           str shift  73
+                     {default} reduce 42
+
+State 26:
+          actor_property ::= PAINCHANCE * int
+          int ::= * INT
+
+                           INT shift  66
+                           int shift  72
+
+State 27:
+          state_jump ::= GOTO * str
+          state_jump ::= GOTO * str PLUS int
+          str ::= * STR
+
+                           STR shift  57
+                           str shift  34
+
+State 28:
+          state_jump ::= GOTO str PLUS * int
+          int ::= * INT
+
+                           INT shift  66
+                           int shift  79
+
+State 29:
+          actor_property ::= ACTIVESOUND * str
+          str ::= * STR
+
+                           STR shift  57
+                           str shift  49
+
+State 30:
+          actor_property ::= DAMAGE * int
+          int ::= * INT
+
+                           INT shift  66
+                           int shift  80
+
+State 31:
+          actor_property ::= STATES NL L_BRACE NL * state_seqs R_BRACE
+     (36) state_seqs ::= *
+          state_seqs ::= * state_seqs state_labeled_seq
+
+                    state_seqs shift  2
+                     {default} reduce 36
+
+State 32:
+          actor ::= actor_init construction doomednum NL L_BRACE NL * actor_properties R_BRACE NL
+     (11) actor_properties ::= *
+          actor_properties ::= * actor_properties actor_property NL
+
+              actor_properties shift  6
+                     {default} reduce 11
+
+State 33:
+          state_labeled_seq ::= state_label * state_defs state_jump NL
+     (40) state_defs ::= *
+          state_defs ::= * state_defs state_def NL
+
+                    state_defs shift  1
+                     {default} reduce 40
+
+State 34:
+     (46) state_jump ::= GOTO str *
+          state_jump ::= GOTO str * PLUS int
+
+                          PLUS shift  28
+                     {default} reduce 46
+
+State 35:
+          actor ::= actor_init construction doomednum * NL L_BRACE NL actor_properties R_BRACE NL
+
+                            NL shift  36
+
+State 36:
+          actor ::= actor_init construction doomednum NL * L_BRACE NL actor_properties R_BRACE NL
+
+                       L_BRACE shift  42
+
+State 37:
+          state_label ::= str * COLON NL
+
+                         COLON shift  38
+
+State 38:
+          state_label ::= str COLON * NL
+
+                            NL shift  82
+
+State 39:
+          state_defs ::= state_defs state_def * NL
+
+                            NL shift  69
+
+State 40:
+          state_labeled_seq ::= state_label state_defs state_jump * NL
+
+                            NL shift  67
+
+State 41:
+          actor ::= actor_init construction doomednum NL L_BRACE NL actor_properties R_BRACE * NL
+
+                            NL shift  61
+
+State 42:
+          actor ::= actor_init construction doomednum NL L_BRACE * NL actor_properties R_BRACE NL
+
+                            NL shift  32
+
+State 43:
+          actor_property ::= STATES NL * L_BRACE NL state_seqs R_BRACE
+
+                       L_BRACE shift  44
+
+State 44:
+          actor_property ::= STATES NL L_BRACE * NL state_seqs R_BRACE
+
+                            NL shift  31
+
+State 45:
+      (7) construction ::= str *
+          construction ::= str * COLON str
+
+                         COLON shift  20
+                     {default} reduce 7
+
+State 46:
+          actor_property ::= STATES * NL L_BRACE NL state_seqs R_BRACE
+
+                            NL shift  43
+
+State 47:
+          actor_properties ::= actor_properties actor_property * NL
+
+                            NL shift  53
+
+State 48:
+     (14) actor_property ::= OBITUARY str *
+
+                     {default} reduce 14
+
+State 49:
+     (29) actor_property ::= ACTIVESOUND str *
+
+                     {default} reduce 29
+
+State 50:
+     (30) actor_property ::= CLEARFLAGS *
+
+                     {default} reduce 30
+
+State 51:
+     (31) actor_property ::= MONSTER *
+
+                     {default} reduce 31
+
+State 52:
+     (32) actor_property ::= PROJECTILE *
+
+                     {default} reduce 32
+
+State 53:
+     (12) actor_properties ::= actor_properties actor_property NL *
+
+                     {default} reduce 12
+
+State 54:
+     (33) actor_property ::= PLUS str *
+
+                     {default} reduce 33
+
+State 55:
+     (28) actor_property ::= DEATHSOUND str *
+
+                     {default} reduce 28
+
+State 56:
+     (34) actor_property ::= MINUS str *
+
+                     {default} reduce 34
+
+State 57:
+     (48) str ::= STR *
+
+                     {default} reduce 48
+
+State 58:
+     (27) actor_property ::= PAINSOUND str *
+
+                     {default} reduce 27
+
+State 59:
+     (15) actor_property ::= HITOBITUARY str *
+
+                     {default} reduce 15
+
+State 60:
+     (16) actor_property ::= MODEL str *
+
+                     {default} reduce 16
+
+State 61:
+      (3) actor ::= actor_init construction doomednum NL L_BRACE NL actor_properties R_BRACE NL *
+
+                     {default} reduce 3
+
+State 62:
+     (35) actor_property ::= STATES NL L_BRACE NL state_seqs R_BRACE *
+
+                     {default} reduce 35
+
+State 63:
+     (37) state_seqs ::= state_seqs state_labeled_seq *
+
+                     {default} reduce 37
+
+State 64:
+     (17) actor_property ::= HEALTH int *
+
+                     {default} reduce 17
+
+State 65:
+     (25) actor_property ::= SEESOUND str *
+
+                     {default} reduce 25
+
+State 66:
+     (49) int ::= INT *
+
+                     {default} reduce 49
+
+State 67:
+     (38) state_labeled_seq ::= state_label state_defs state_jump NL *
+
+                     {default} reduce 38
+
+State 68:
+     (24) actor_property ::= MASS num *
+
+                     {default} reduce 24
+
+State 69:
+     (41) state_defs ::= state_defs state_def NL *
+
+                     {default} reduce 41
+
+State 70:
+     (18) actor_property ::= REACTIONTIME int *
+
+                     {default} reduce 18
+
+State 71:
+     (23) actor_property ::= HEIGHT num *
+
+                     {default} reduce 23
+
+State 72:
+     (19) actor_property ::= PAINCHANCE int *
+
+                     {default} reduce 19
+
+State 73:
+     (43) state_def ::= str str int str *
+
+                     {default} reduce 43
+
+State 74:
+     (44) state_jump ::= LOOP *
+
+                     {default} reduce 44
+
+State 75:
+     (45) state_jump ::= STOP *
+
+                     {default} reduce 45
+
+State 76:
+     (22) actor_property ::= RADIUS num *
+
+                     {default} reduce 22
+
+State 77:
+     (20) actor_property ::= SPEED num *
+
+                     {default} reduce 20
+
+State 78:
+      (2) definitions ::= definitions actor *
+
+                     {default} reduce 2
+
+State 79:
+     (47) state_jump ::= GOTO str PLUS int *
+
+                     {default} reduce 47
+
+State 80:
+     (21) actor_property ::= DAMAGE int *
+
+                     {default} reduce 21
+
+State 81:
+     (50) num ::= FLOAT *
+
+                     {default} reduce 50
+
+State 82:
+     (39) state_label ::= str COLON NL *
+
+                     {default} reduce 39
+
+State 83:
+     (10) doomednum ::= int *
+
+                     {default} reduce 10
+
+State 84:
+     (51) num ::= INT *
+
+                     {default} reduce 51
+
+State 85:
+     (26) actor_property ::= ATTACKSOUND str *
+
+                     {default} reduce 26
+
+State 86:
+      (8) construction ::= str COLON str *
+
+                     {default} reduce 8
+
+State 87:
+      (4) actor ::= NL *
+
+                     {default} reduce 4
+
+State 88:
+      (5) actor ::= SEMICOLON *
+
+                     {default} reduce 5
+
+State 89:
+      (6) actor_init ::= ACTOR *
+
+                     {default} reduce 6
+

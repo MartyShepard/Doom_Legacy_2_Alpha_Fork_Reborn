@@ -61,8 +61,12 @@ MapCluster::MapCluster(int n)
 void MapCluster::Ticker()
 {
   int i, n = maps.size();
+  
   for (i=0; i<n; i++)
-    maps[i]->Ticker();
+  {
+      maps[i]->Ticker();
+  }
+  //CONS_Printf("[%s][%d]MapCluster::Ticker\n",__FILE__,__LINE__); 
 }
 
 

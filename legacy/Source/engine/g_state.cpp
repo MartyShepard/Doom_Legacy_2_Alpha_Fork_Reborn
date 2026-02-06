@@ -336,7 +336,7 @@ void GameInfo::Ticker()
 
 	  // cluster change?
 	  if (currentcluster->number != m->cluster)
-	    {
+	  {
 	      // TODO minor thing: if several players exit maps on the same tick,
 	      // and someone besides the first one causes a cluster change, some
 	      // maps could be loaded in vain...
@@ -349,7 +349,7 @@ void GameInfo::Ticker()
 	      currentcluster = next;
 
 	      break; // this is important! no need to check the other players.
-	    }
+	  }
 
 	  p->Reset(!currentcluster->keepstuff, true);
 
@@ -358,15 +358,16 @@ void GameInfo::Ticker()
 	    I_Error("Darn!\n");
 
 	  if (conn)
-	    {
+	  {
 	      CONS_Printf(" server sending rpc\n");
 	      // nonlocal player enters a new map, notify client
 	      // send the EnterMap rpc only to the owning connection
 	      NetEvent *e = TNL_RPC_CONSTRUCT_NETEVENT(p, s2cEnterMap, (m->mapnumber));
 	      conn->postNetEvent(e);
-	    }
+	  }  
 	}
-    }
+ }
+ //CONS_Printf("[%s][%d]::Ticker -> End Routine\n",__FILE__,__LINE__);
 }
 
 
@@ -401,41 +402,51 @@ void GameInfo::StartFinale(MapCluster *next)
 {
   // check need for finale
   if (cv_deathmatch.value == 0)
-    {
+  {
+    CONS_Printf("[%s][%d]::StartFinale\n",__FILE__,__LINE__);
       // check winning
-      if (!next)
-	{
-	  SetState(GS_FINALE);
-	  F_StartFinale(currentcluster, false, true); // final piece of story is exittext
-	  return;
-	}
-
-      int c = currentcluster->number;
-      int n = next->number;
-      // check "mid-game finale" (story) (requires cluster change)
-      if (n != c)
-	{
-	  if (!next->entertext.empty())
-	    {
-	      SetState(GS_FINALE);
-	      F_StartFinale(next, true, false);
-	      return;
-	    }
-	  else if (!(currentcluster->exittext.empty()))
-	    {
-	      SetState(GS_FINALE);
-	      F_StartFinale(currentcluster, false, false);
-	      return;
-	    }
-	}
-    }
-  else
+    if (!next)
     {
-      // no finales in deathmatch
-      // FIXME end game here, show final frags
-      //if (nextcluster == NULL)
-	//CL_Reset();
+      CONS_Printf("[%s][%d]::StartFinale\n",__FILE__,__LINE__);
+      SetState(GS_FINALE);
+      F_StartFinale(currentcluster, false, true); // final piece of story is exittext
+      CONS_Printf("[%s][%d]::StartFinale\n",__FILE__,__LINE__);      
+      return;
     }
+      
+    CONS_Printf("[%s][%d]::StartFinale\n",__FILE__,__LINE__);      
+    int c = currentcluster->number;
+    int n = next->number;
+    // check "mid-game finale" (story) (requires cluster change)
+    if (n != c)
+    {
+      CONS_Printf("[%s][%d]::StartFinale\n",__FILE__,__LINE__);
+      if (!next->entertext.empty())
+      {
+        CONS_Printf("[%s][%d]::StartFinale\n",__FILE__,__LINE__);
+        SetState(GS_FINALE);
+        F_StartFinale(next, true, false);
+        CONS_Printf("[%s][%d]::StartFinale\n",__FILE__,__LINE__);        
+        return;
+      }
+      else if (!(currentcluster->exittext.empty()))
+      {
+        CONS_Printf("[%s][%d]::StartFinale\n",__FILE__,__LINE__);
+        SetState(GS_FINALE);
+        F_StartFinale(currentcluster, false, false);
+        CONS_Printf("[%s][%d]::StartFinale\n",__FILE__,__LINE__);        
+        return;
+      }
+    }
+  }
+  else
+  {
+    // no finales in deathmatch
+    // FIXME end game here, show final frags
+    //if (nextcluster == NULL)
+    //CL_Reset();
+  }
+  CONS_Printf("[%s][%d]::StartFinale\n",__FILE__,__LINE__);  
 }
 
 

@@ -468,8 +468,9 @@ public:
 /// Textbox for the menu
 static TextBox textbox;
 
-/*
+
 // TODO HexBox
+/* Marty: Auskommentiert*/
 void M_HandleFogColor(char key)
 {
   int      i, l;
@@ -502,43 +503,43 @@ void M_HandleFogColor(char key)
       break;
     }
 }
-*/
+
 
 void TextBox::Input(unsigned char ch)
 {
   int n = text.length();
-  switch (ch)
+	
+		switch (ch)
     {
-    case KEY_BACKSPACE:
-      if (n > 0)
-	text.resize(n - 1);
-      break;
-
-    case KEY_ENTER:
+      case KEY_BACKSPACE:
+        if (n > 0)        
+          text.resize(n - 1);        
+        break;
+      case KEY_ENTER:
       if (callback)
-	{
-	  callback(parameter);
-	  callback = NULL;
-	}
+      {
+        callback(parameter);
+        callback = NULL;
+      }
       else
-	cv->Set(text.c_str());
-      S_StartLocalAmbSound(sfx_menu_choose);
-      // fallthru
-
-    case KEY_ESCAPE:
-      text.clear();
-      item->flags &= ~IT_TEXTBOX_IN_USE;
-      item = NULL;
-      cv = NULL;
-      active = false;
+      {
+        cv->Set(text.c_str());
+        S_StartLocalAmbSound(sfx_menu_choose);
+        /* fallthru */
+      }
+      case KEY_ESCAPE:
+        text.clear();
+        item->flags &= ~IT_TEXTBOX_IN_USE;
+        item = NULL;
+        cv = NULL;
+        active = false;
       break;
-
-    default:
+      default:
       if (ch >= 32 && ch <= 127 && n < MAXSTRINGLENGTH-1)
-	{
-	  text += ch;
-	  S_StartLocalAmbSound(sfx_menu_adjust);
-	}
+      {
+        text += ch;
+        S_StartLocalAmbSound(sfx_menu_adjust);
+      }
       break;
     }
 }
@@ -1149,7 +1150,7 @@ static menuitem_t HereticSkill_MI[]=
 };
 
 Menu SkillDef("M_SKILL", //"M_NEWG"
-	      "Choose skill", &SinglePlayerDef, ITEMS(Skill_MI), 48, 63, 3);
+	      "Choose skill", &SinglePlayerDef, ITEMS(Skill_MI), 48, 63, /*3*/1);/*Marty: Temporaer*/
 
 
 void M_VerifyNightmare(int ch)
@@ -1494,7 +1495,7 @@ static void Startmap_Handler(consvar_t *cv, int incr)
   strncpy(cv->str, m->nicename.c_str(), consvar_t::CV_STRLEN);
 }
 
-static consvar_t cv_menu_skill     = {"skill"       , "3", CV_HIDDEN, skill_cons_t};
+static consvar_t cv_menu_skill     = {"skill"       , /*"3"*/"1", CV_HIDDEN, skill_cons_t};
 static consvar_t cv_menu_startmap  = {"starting map", "1", CV_HIDDEN | CV_HANDLER, NULL, reinterpret_cast<void (*)()>(Startmap_Handler)}; // shameful HACK using a cvar, a dedicated menu widget would be better.
 
 
@@ -1786,7 +1787,10 @@ static menuitem_t SetupPlayer_MI[] =
   //menuitem_t(IT_CVAR, NULL, "Crosshair scale" ,&cv_crosshairscale, 0),
   // TODO chasecam
   menuitem_t(IT_CALL | IT_WHITE, NULL, "Setup Controls...", M_SetupControls, 0),
-  menuitem_t(IT_LINK, NULL, "Mouse config...",  &MouseOptionsDef, 0)
+  menuitem_t(IT_LINK, NULL, "Mouse config...",  &MouseOptionsDef, 0),
+  #ifdef GRAB_MIDDLEMOUSE  
+  menuitem_t(IT_CVAR, NULL, "Release Mouse"   , &cv_mouse_release     ,0)
+  #endif  
 };
 
 
@@ -2002,8 +2006,12 @@ static menuitem_t Sound_MI[] =
   menuitem_t(IT_CV_BIGSLIDER | IT_PATCH, "M_SFXVOL", "Sound Volume",&cv_soundvolume,'s'),
   menuitem_t(IT_CV_BIGSLIDER | IT_PATCH, "M_MUSVOL", "Music Volume",&cv_musicvolume,'m'),
   menuitem_t(IT_CV_BIGSLIDER | IT_PATCH, "M_CDVOL" , "CD Volume"   ,&cd_volume     ,'c'),
+  menuitem_t(IT_CVAR, NULL, "Stereo Reverse"       ,&cv_stereoreverse       ,0),
+  menuitem_t(IT_CVAR, NULL, "Surround"             ,&cv_surround            ,0),
+  menuitem_t(IT_CVAR, NULL, "Precachesound"        ,&cv_precachesound       ,0),
+  menuitem_t(IT_CVAR, NULL, "Sound Channels", &cv_numChannels, 0),
 };
-
+  //menuitem_t(IT_CVAR | IT_CV_SLIDER, NULL, "red"  , &cv_grgammared     , 10),
 Menu  SoundDef("M_SVOL", "Sound Volume", &OptionsDef, ITEMS(Sound_MI), 80, 50);
 
 
@@ -2023,6 +2031,7 @@ static menuitem_t VideoOptions_MI[]=
 {
   menuitem_t(IT_LINK, NULL, "Video modes..."  , &VidModeDef, 0),
   menuitem_t(IT_CVAR, NULL, "Fullscreen"      , &cv_fullscreen, 0),
+  menuitem_t(IT_CVAR, NULL, "Borderless"      , &cv_borderless, 0), // Marty
   menuitem_t(IT_CV_SLIDER | IT_STRING, NULL, "Brightness" , &cv_video_gamma, 0),
   menuitem_t(IT_CV_SLIDER | IT_STRING, NULL, "Screen size", &cv_viewsize, 0),
   menuitem_t(IT_CVAR, NULL, "Scale status bar", &cv_scalestatusbar, 0),
@@ -2642,6 +2651,13 @@ bool Menu::Responder(event_t *ev)
   static  int     mousex = 0;
   static  int     lastx = 0;
 
+/*
+ * printf("Console Height ist %d\n", con.IsActive() );
+ * Prüft ob die Konsole Altiv
+ */ 
+  if ( con.IsActive() > 0 )
+    return false;
+    
   NowTic = I_GetTics();
 
   // Menu uses mostly only keydown events (exception: mouse/joystick navigation in an open menu)
@@ -2727,7 +2743,7 @@ bool Menu::Responder(event_t *ev)
         case KEY_F11:           // Toggle gamma correction
           cv_video_gamma.AddValue(1);
 	  break;
-
+        case KEY_ENTER:         /* Marty */    
         case KEY_ESCAPE:        // Open the main menu
           Open();
 	  break;
@@ -2748,51 +2764,57 @@ bool Menu::Responder(event_t *ev)
 
   // remap virtual keys (mouse & joystick buttons)
   switch (ch)
-    {
+  {
     case KEY_MOUSE1:
     case KEY_JOY0BUT0:
       ch = KEY_ENTER;
       break;
+      
     case KEY_MOUSE1 + 1:
     case KEY_JOY0BUT1:
       ch = KEY_BACKSPACE;
       break;
-    }
+  }
 
   // mouse navigation in the menu
   if (ev->type == ev_mouse)
+  {
+    if (NowTic <= mousewait)
+       return true; // just eat the event. NOTE this disables the "mouselook while menu is on" feature...
+
+    mousey += ev->data3;
+    if (mousey < lasty-30)
     {
-      if (NowTic <= mousewait)
-	return true; // just eat the event. NOTE this disables the "mouselook while menu is on" feature...
-
-      mousey += ev->data3;
-      if (mousey < lasty-30)
-	{
-	  ch = KEY_DOWNARROW;
-	  mousewait = NowTic + TICRATE/7;
-	  mousey = lasty -= 30;
-	}
-      else if (mousey > lasty+30)
-	{
-	  ch = KEY_UPARROW;
-	  mousewait = NowTic + TICRATE/7;
-	  mousey = lasty += 30;
-	}
-
-      mousex += ev->data2;
-      if (mousex < lastx-30)
-	{
-	  ch = KEY_LEFTARROW;
-	  mousewait = NowTic + TICRATE/7;
-	  mousex = lastx -= 30;
-	}
-      else if (mousex > lastx+30)
-	{
-	  ch = KEY_RIGHTARROW;
-	  mousewait = NowTic + TICRATE/7;
-	  mousex = lastx += 30;
-	}
+      ch = -1/*KEY_DOWNARROW*/;
+      mousewait = NowTic + TICRATE/7;
+      mousey = lasty -= 30;
     }
+    else if (mousey > lasty+30)
+    {
+      ch = -1/*KEY_UPARROW*/;
+      mousewait = NowTic + TICRATE/7;
+      mousey = lasty += 30;
+    }
+
+    mousex += ev->data2;
+    if (mousex < lastx-30)
+    {
+      ch = -1/*KEY_LEFTARROW*/;
+      mousewait = NowTic + TICRATE/7;
+      mousex = lastx -= 30;      
+    }
+    else if (mousex > lastx+30)
+    {
+      ch = -1/*KEY_RIGHTARROW*/;
+      /*
+       * Marty: Gehe mal auf fullscreen
+       * und scroll mal nach ausversehen
+       * nach links und rechts.....
+      */      
+      mousewait = NowTic + TICRATE/7;
+      mousex = lastx += 30;
+    }
+  }
 
   if (ch == -1)
     return true; // Not a keydown event or remapped mouse motion, but eat it anyway.
@@ -3263,16 +3285,16 @@ extern Menu OGL_LightingDef, OGL_FogDef, OGL_ColorDef, OGL_DevDef;
 
 static menuitem_t OpenGLOptions_MI[]=
 {
-  //menuitem_t(IT_CVAR, NULL, "Mouse look"          , &cv_grcrappymlook     ,  0),
+//menuitem_t(IT_CVAR, NULL, "Mouse look"          , &cv_grcrappymlook     ,  0),
   menuitem_t(IT_CVAR, NULL, "Field of view"       , &cv_fov             , 10),
   menuitem_t(IT_CVAR, NULL, "Quality"             , &cv_scr_depth         , 20),
   menuitem_t(IT_CVAR, NULL, "Texture Filter"      , &cv_grfiltermode      , 30),
   menuitem_t(IT_CV_SLIDER | IT_STRING, NULL, "Anisotropy", &cv_granisotropy , 40),
-
+  menuitem_t(IT_CVAR | IT_STRING, NULL, "Hud Aspect", &cv_graspectratio , 50),
   menuitem_t(IT_LINK, NULL, "Lighting..."       , &OGL_LightingDef   , 60),
   menuitem_t(IT_LINK, NULL, "Fog..."            , &OGL_FogDef        , 70),
   menuitem_t(IT_LINK, NULL, "Gamma..."          , &OGL_ColorDef      , 80),
-  //menuitem_t(IT_LINK, NULL, "Development..."    , &OGL_DevDef        , 90),
+ //menuitem_t(IT_LINK, NULL, "Development..."    , &OGL_DevDef        , 90),
 };
 
 static menuitem_t OGL_Lighting_MI[]=
@@ -3280,8 +3302,8 @@ static menuitem_t OGL_Lighting_MI[]=
   menuitem_t(IT_CVAR, NULL, "Coronas"                 , &cv_grcoronas         ,  0),
   menuitem_t(IT_CVAR, NULL, "Corona size"            , &cv_grcoronasize      , 10),
   menuitem_t(IT_CVAR, NULL, "Dynamic lighting"        , &cv_grdynamiclighting , 20),
-  //menuitem_t(IT_CVAR, NULL, "Static lighting"         , &cv_grstaticlighting  , 30),
-  //menuitem_t(IT_CVAR, NULL, "Monsters' balls lighting", &cv_grmblighting      , 40),
+//menuitem_t(IT_CVAR, NULL, "Static lighting"         , &cv_grstaticlighting  , 30),
+//menuitem_t(IT_CVAR, NULL, "Monsters' balls lighting", &cv_grmblighting      , 40),
 };
 
 static menuitem_t OGL_Fog_MI[]=

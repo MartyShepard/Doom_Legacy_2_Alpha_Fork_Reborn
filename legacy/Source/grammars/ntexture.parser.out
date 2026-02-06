@@ -1,0 +1,455 @@
+ State 0:
+          start ::= * definitions
+      (1) definitions ::= *
+          definitions ::= * definitions def
+
+                         start accept
+                   definitions shift  1
+                     {default} reduce 1
+
+State 1:
+      (0) start ::= definitions *
+          definitions ::= definitions * def
+          def ::= * shader_name L_BRACE shader_props R_BRACE
+          shader_name ::= * SHADER str
+          def ::= * mat_type mat_name L_BRACE mat_props R_BRACE
+          mat_type ::= * MATERIAL
+          mat_type ::= * SPRITE
+          def ::= * COLON
+
+                        SHADER shift  16
+                      MATERIAL shift  64
+                        SPRITE shift  65
+                         COLON shift  66
+                           def shift  60
+                   shader_name shift  31
+                      mat_type shift  6
+                     {default} reduce 0
+
+State 2:
+          shader_prop ::= shader_sourcetype * shader_sources SEMICOLON
+          shader_sources ::= * shader_src
+          shader_sources ::= * shader_sources shader_src
+          shader_src ::= * str
+          str ::= * STR
+
+                           STR shift  52
+                           str shift  53
+                shader_sources shift  5
+                    shader_src shift  51
+
+State 3:
+          def ::= shader_name L_BRACE shader_props * R_BRACE
+          shader_props ::= shader_props * shader_prop
+          shader_prop ::= * shader_sourcetype shader_sources SEMICOLON
+          shader_sourcetype ::= * V_SOURCE
+          shader_sourcetype ::= * F_SOURCE
+
+                       R_BRACE shift  59
+                      V_SOURCE shift  48
+                      F_SOURCE shift  47
+                   shader_prop shift  57
+             shader_sourcetype shift  2
+
+State 4:
+          def ::= mat_type mat_name L_BRACE mat_props * R_BRACE
+          mat_props ::= mat_props * mat_prop
+          mat_prop ::= * SHADER_REF str SEMICOLON
+          mat_prop ::= * tex_unit L_BRACE tex_props R_BRACE
+          tex_unit ::= * TEX_UNIT
+
+                       R_BRACE shift  43
+                    SHADER_REF shift  17
+                      TEX_UNIT shift  62
+                      mat_prop shift  42
+                      tex_unit shift  27
+
+State 5:
+          shader_prop ::= shader_sourcetype shader_sources * SEMICOLON
+          shader_sources ::= shader_sources * shader_src
+          shader_src ::= * str
+          str ::= * STR
+
+                     SEMICOLON shift  56
+                           STR shift  52
+                           str shift  53
+                    shader_src shift  55
+
+State 6:
+          def ::= mat_type * mat_name L_BRACE mat_props R_BRACE
+          mat_name ::= * str
+          str ::= * STR
+
+                           STR shift  52
+                           str shift  63
+                      mat_name shift  33
+
+State 7:
+          mat_prop ::= tex_unit L_BRACE tex_props * R_BRACE
+          tex_props ::= tex_props * tex_prop
+          tex_prop ::= * TEXTURE str SEMICOLON
+          tex_prop ::= * WORLDSIZE num num SEMICOLON
+          tex_prop ::= * SCALE num num SEMICOLON
+          tex_prop ::= * SCALE num SEMICOLON
+          tex_prop ::= * TEXELOFFSETS int SEMICOLON
+          tex_prop ::= * OFFSET num num SEMICOLON
+          tex_prop ::= * FILTERING str str SEMICOLON
+          tex_prop ::= * MAX_ANISOTROPY num SEMICOLON
+
+                       R_BRACE shift  37
+                       TEXTURE shift  20
+                     WORLDSIZE shift  13
+                         SCALE shift  12
+                  TEXELOFFSETS shift  15
+                        OFFSET shift  14
+                     FILTERING shift  18
+                MAX_ANISOTROPY shift  10
+                      tex_prop shift  36
+
+State 8:
+          tex_prop ::= SCALE num * num SEMICOLON
+          tex_prop ::= SCALE num * SEMICOLON
+          num ::= * FLOAT
+          num ::= * INT
+
+                     SEMICOLON shift  46
+                           INT shift  41
+                         FLOAT shift  40
+                           num shift  28
+
+State 9:
+          tex_prop ::= WORLDSIZE num * num SEMICOLON
+          num ::= * FLOAT
+          num ::= * INT
+
+                           INT shift  41
+                         FLOAT shift  40
+                           num shift  26
+
+State 10:
+          tex_prop ::= MAX_ANISOTROPY * num SEMICOLON
+          num ::= * FLOAT
+          num ::= * INT
+
+                           INT shift  41
+                         FLOAT shift  40
+                           num shift  32
+
+State 11:
+          tex_prop ::= OFFSET num * num SEMICOLON
+          num ::= * FLOAT
+          num ::= * INT
+
+                           INT shift  41
+                         FLOAT shift  40
+                           num shift  30
+
+State 12:
+          tex_prop ::= SCALE * num num SEMICOLON
+          tex_prop ::= SCALE * num SEMICOLON
+          num ::= * FLOAT
+          num ::= * INT
+
+                           INT shift  41
+                         FLOAT shift  40
+                           num shift  8
+
+State 13:
+          tex_prop ::= WORLDSIZE * num num SEMICOLON
+          num ::= * FLOAT
+          num ::= * INT
+
+                           INT shift  41
+                         FLOAT shift  40
+                           num shift  9
+
+State 14:
+          tex_prop ::= OFFSET * num num SEMICOLON
+          num ::= * FLOAT
+          num ::= * INT
+
+                           INT shift  41
+                         FLOAT shift  40
+                           num shift  11
+
+State 15:
+          tex_prop ::= TEXELOFFSETS * int SEMICOLON
+          int ::= * INT
+
+                           INT shift  50
+                           int shift  24
+
+State 16:
+          shader_name ::= SHADER * str
+          str ::= * STR
+
+                           STR shift  52
+                           str shift  44
+
+State 17:
+          mat_prop ::= SHADER_REF * str SEMICOLON
+          str ::= * STR
+
+                           STR shift  52
+                           str shift  25
+
+State 18:
+          tex_prop ::= FILTERING * str str SEMICOLON
+          str ::= * STR
+
+                           STR shift  52
+                           str shift  19
+
+State 19:
+          tex_prop ::= FILTERING str * str SEMICOLON
+          str ::= * STR
+
+                           STR shift  52
+                           str shift  29
+
+State 20:
+          tex_prop ::= TEXTURE * str SEMICOLON
+          str ::= * STR
+
+                           STR shift  52
+                           str shift  34
+
+State 21:
+          def ::= mat_type mat_name L_BRACE * mat_props R_BRACE
+     (18) mat_props ::= *
+          mat_props ::= * mat_props mat_prop
+
+                     mat_props shift  4
+                     {default} reduce 18
+
+State 22:
+          mat_prop ::= tex_unit L_BRACE * tex_props R_BRACE
+     (23) tex_props ::= *
+          tex_props ::= * tex_props tex_prop
+
+                     tex_props shift  7
+                     {default} reduce 23
+
+State 23:
+          def ::= shader_name L_BRACE * shader_props R_BRACE
+      (5) shader_props ::= *
+          shader_props ::= * shader_props shader_prop
+
+                  shader_props shift  3
+                     {default} reduce 5
+
+State 24:
+          tex_prop ::= TEXELOFFSETS int * SEMICOLON
+
+                     SEMICOLON shift  49
+
+State 25:
+          mat_prop ::= SHADER_REF str * SEMICOLON
+
+                     SEMICOLON shift  38
+
+State 26:
+          tex_prop ::= WORLDSIZE num num * SEMICOLON
+
+                     SEMICOLON shift  39
+
+State 27:
+          mat_prop ::= tex_unit * L_BRACE tex_props R_BRACE
+
+                       L_BRACE shift  22
+
+State 28:
+          tex_prop ::= SCALE num num * SEMICOLON
+
+                     SEMICOLON shift  45
+
+State 29:
+          tex_prop ::= FILTERING str str * SEMICOLON
+
+                     SEMICOLON shift  58
+
+State 30:
+          tex_prop ::= OFFSET num num * SEMICOLON
+
+                     SEMICOLON shift  54
+
+State 31:
+          def ::= shader_name * L_BRACE shader_props R_BRACE
+
+                       L_BRACE shift  23
+
+State 32:
+          tex_prop ::= MAX_ANISOTROPY num * SEMICOLON
+
+                     SEMICOLON shift  61
+
+State 33:
+          def ::= mat_type mat_name * L_BRACE mat_props R_BRACE
+
+                       L_BRACE shift  21
+
+State 34:
+          tex_prop ::= TEXTURE str * SEMICOLON
+
+                     SEMICOLON shift  35
+
+State 35:
+     (25) tex_prop ::= TEXTURE str SEMICOLON *
+
+                     {default} reduce 25
+
+State 36:
+     (24) tex_props ::= tex_props tex_prop *
+
+                     {default} reduce 24
+
+State 37:
+     (21) mat_prop ::= tex_unit L_BRACE tex_props R_BRACE *
+
+                     {default} reduce 21
+
+State 38:
+     (20) mat_prop ::= SHADER_REF str SEMICOLON *
+
+                     {default} reduce 20
+
+State 39:
+     (26) tex_prop ::= WORLDSIZE num num SEMICOLON *
+
+                     {default} reduce 26
+
+State 40:
+     (35) num ::= FLOAT *
+
+                     {default} reduce 35
+
+State 41:
+     (36) num ::= INT *
+
+                     {default} reduce 36
+
+State 42:
+     (19) mat_props ::= mat_props mat_prop *
+
+                     {default} reduce 19
+
+State 43:
+     (13) def ::= mat_type mat_name L_BRACE mat_props R_BRACE *
+
+                     {default} reduce 13
+
+State 44:
+      (4) shader_name ::= SHADER str *
+
+                     {default} reduce 4
+
+State 45:
+     (27) tex_prop ::= SCALE num num SEMICOLON *
+
+                     {default} reduce 27
+
+State 46:
+     (28) tex_prop ::= SCALE num SEMICOLON *
+
+                     {default} reduce 28
+
+State 47:
+      (9) shader_sourcetype ::= F_SOURCE *
+
+                     {default} reduce 9
+
+State 48:
+      (8) shader_sourcetype ::= V_SOURCE *
+
+                     {default} reduce 8
+
+State 49:
+     (29) tex_prop ::= TEXELOFFSETS int SEMICOLON *
+
+                     {default} reduce 29
+
+State 50:
+     (34) int ::= INT *
+
+                     {default} reduce 34
+
+State 51:
+     (10) shader_sources ::= shader_src *
+
+                     {default} reduce 10
+
+State 52:
+     (33) str ::= STR *
+
+                     {default} reduce 33
+
+State 53:
+     (12) shader_src ::= str *
+
+                     {default} reduce 12
+
+State 54:
+     (30) tex_prop ::= OFFSET num num SEMICOLON *
+
+                     {default} reduce 30
+
+State 55:
+     (11) shader_sources ::= shader_sources shader_src *
+
+                     {default} reduce 11
+
+State 56:
+      (7) shader_prop ::= shader_sourcetype shader_sources SEMICOLON *
+
+                     {default} reduce 7
+
+State 57:
+      (6) shader_props ::= shader_props shader_prop *
+
+                     {default} reduce 6
+
+State 58:
+     (31) tex_prop ::= FILTERING str str SEMICOLON *
+
+                     {default} reduce 31
+
+State 59:
+      (3) def ::= shader_name L_BRACE shader_props R_BRACE *
+
+                     {default} reduce 3
+
+State 60:
+      (2) definitions ::= definitions def *
+
+                     {default} reduce 2
+
+State 61:
+     (32) tex_prop ::= MAX_ANISOTROPY num SEMICOLON *
+
+                     {default} reduce 32
+
+State 62:
+     (22) tex_unit ::= TEX_UNIT *
+
+                     {default} reduce 22
+
+State 63:
+     (16) mat_name ::= str *
+
+                     {default} reduce 16
+
+State 64:
+     (14) mat_type ::= MATERIAL *
+
+                     {default} reduce 14
+
+State 65:
+     (15) mat_type ::= SPRITE *
+
+                     {default} reduce 15
+
+State 66:
+     (17) def ::= COLON *
+
+                     {default} reduce 17
+

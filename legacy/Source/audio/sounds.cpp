@@ -1047,12 +1047,14 @@ int S_StartLocalAmbSound(int sfx_id, float volume)
   if (!sfx_id)
     return -1; // no sound
 
+#ifdef PARANOIA
   // check for bogus sound #
   if (sfx_id < 0 || sfx_id >= NUMSFX)
     {
       CONS_Printf("Bad sfx number: %d\n", sfx_id);
       return -1;
     }
+#endif
 
 #ifdef HW3SOUND
   if (hws_mode != HWS_DEFAULT_MODE)

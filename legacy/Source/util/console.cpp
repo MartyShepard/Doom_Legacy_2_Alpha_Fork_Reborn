@@ -346,11 +346,36 @@ void Console::Init()
 
   con_clipviewtop = -1;     // -1 do not clip SW 3D view
 
+
+
+  /* Marty: Cache Legacy Ressource */
+  // Console background & borders vorab cachen (PU_STATIC = permanent im Cache halten)  
+  int lump_consback = fc.GetNumForName("CONSBACK", false);
+  if (lump_consback != -1)
+  {
+    fc.CacheLumpNum(lump_consback, PU_STATIC, false);
+    CONS_Printf("CONSBACK vorgecacht\n");
+  }
+
+  int lump_cbleft = fc.GetNumForName("CBLEFT", false);
+  if (lump_cbleft != -1)
+  {
+    fc.CacheLumpNum(lump_cbleft, PU_STATIC, false);
+    CONS_Printf("CBLEFT vorgecacht\n");
+  }
+
+  int lump_cbright = fc.GetNumForName("CBRIGHT", false);
+  if (lump_cbright != -1)
+  {
+    fc.CacheLumpNum(lump_cbright, PU_STATIC, false);
+    CONS_Printf("CBRIGHT vorgecacht\n");
+  }
+  
   // load console background pic & borders
   con_backpic = materials.Get("CONSBACK");
   con_lborder = materials.Get("CBLEFT");
   con_rborder = materials.Get("CBRIGHT");
-
+  
   con_lineheight = hud_font->Height();
 
   cons_msgtimeout.Reg();
@@ -403,7 +428,15 @@ void Console::RecalcSize()
     Print(tmp_buffer[i % CON_LINES]);
 }
 
+/* Marty */
+int Console::IsActive(void)
+{
 
+  if (con_destheight > 0)
+    return con_destheight;
+  
+  return 0;
+}
 
 // Toggle console on and off
 void Console::Toggle(bool forceoff)

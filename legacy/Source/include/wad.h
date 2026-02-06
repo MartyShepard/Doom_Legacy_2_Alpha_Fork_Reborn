@@ -39,7 +39,7 @@ class Wad : public VDataFile
 protected:
   struct waddir_t *directory;  ///< wad directory
 
-  virtual int Internal_ReadItem(int item, void *dest, unsigned size, unsigned offset = 0);
+  virtual int Internal_ReadItem(int item, void *dest, uint32_t size, uint32_t offset = 0);
 
 public:
   // constructor and destructor
@@ -60,7 +60,47 @@ public:
   virtual int FindPartialName(Uint32 iname, int startlump, const char **fullname);
 
   /// process any DeHackEd lumps in this wad
+  
   void LoadDehackedLumps();
+
+  //virtual bool OpenFromMemory(byte* data, size_t datasize, const char* virtual_name = nullptr);
+};
+
+/* Marty */
+class WadFromMemory : public Wad
+{
+    friend class FileCache;
+    
+protected:
+  byte* memory_data;
+  size_t memory_size;
+  struct waddir_t *directory;  ///< wad directory
+  
+  // Muss implementiert werden, weil pure virtual in VDataFile/VFile
+  virtual int Internal_ReadItem(int item, void *dest, uint32_t size, uint32_t offset = 0);
+  
+public:
+  WadFromMemory();
+  virtual ~WadFromMemory();
+
+  virtual bool Open(byte* data, size_t datasize, const char* virtual_name = nullptr);
+
+  // query data item properties
+  virtual const char *GetItemName(int i);
+  virtual int  GetItemSize(int i);
+  virtual void ListItems();
+  
+  // search
+  virtual int FindNumForName(const char* name, int startlump = 0);
+  virtual int FindPartialName(Uint32 iname, int startlump, const char **fullname);
+
+  /// process any DeHackEd lumps in this wad
+  
+  void LoadDehackedLumps();
+  
+  void Lump_Extract(int numitems, waddir_t *directory, const char* lump_ext, const char* destinationpath);
+  
+
 };
 
 
@@ -128,10 +168,13 @@ public:
 
 class ZipFile : public VDataFile
 {
+    friend class FileCache;
+    friend class Wad;
+    
 protected:
   struct zipdir_t *directory; ///< item directory
 
-  virtual int Internal_ReadItem(int item, void *dest, unsigned size, unsigned offset = 0);
+  virtual int Internal_ReadItem(int item, void *dest, uint32_t size, uint32_t offset = 0);
 
 public:
   // constructor and destructor
@@ -148,6 +191,10 @@ public:
 
   // search
   //virtual int FindPartialName(Uint32 iname, int startlump, const char **fullname);
+  
+  /* Marty */
+  virtual int  GetItemListFromMemory();
+  
 };
 
 #endif

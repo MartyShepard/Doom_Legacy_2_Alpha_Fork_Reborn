@@ -21,14 +21,21 @@
 #ifndef hwr_render_h
 #define hwr_render_h 1
 
-#define GL_GLEXT_PROTOTYPES
-#if defined(__APPLE_CC__) || defined(__MACOS__)
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
-#else
-#include <GL/gl.h>
-#include <GL/glu.h>
-#endif
+/* OpenGL Init --------------------
+ * liegt in oglinit.h 
+		#define GL_GLEXT_PROTOTYPES
+		#if defined(__APPLE_CC__) || defined(__MACOS__)
+			#include <OpenGL/gl.h>
+			#include <OpenGL/glu.h>
+		#else
+			#include <GL/gl.h>
+			#include <GL/glu.h>	
+		#endif
+*/
+#include "ogl_init.h"
+/* OpenGL Init End ------------- */
+
+
 
 #include "../r_render.h"
 

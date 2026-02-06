@@ -23,7 +23,13 @@
 #ifndef r_data_h
 #define r_data_h 1
 
-#include <GL/gl.h>
+/* OpenGL Init --------------------
+ * liegt in oglinit.h
+   #include <GL/gl.h>
+ */
+#include "Hardware/ogl_init.h"
+/* OpenGL Init End ------------- */
+	
 #include <vector>
 #include <set>
 

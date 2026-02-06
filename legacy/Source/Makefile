@@ -8,13 +8,13 @@
 
 # Platform autodetect.
 
-UNAME = $(shell uname)
+#UNAME = $(shell uname)
 
-ifeq ($(UNAME),Linux)
-export LINUX=1
-else
+#ifeq ($(UNAME),Linux)
+#export LINUX=1
+#else
 export WIN=1
-endif
+#endif
 
 # Debugging and optimization
 ifdef OPT
@@ -53,18 +53,62 @@ ifdef LINUX
 
 else # assume WIN32 is defined
 
+ exedir  = ../Build/
 # file removal utility
  RM = rm
 # compiler
  platform  = -D__WIN32__
- interface = -DSDL -DNO_MIXER $(shell sdl-config --cflags)
- CF += -mwindows
+ interface = -DSDL -I/mingw32/include/SDL -D_GNU_SOURCE=1  
+#$(shell sdl-config --cflags)
+ CF +=  -Wl,--subsystem,console
+
 # linker
- LIBS	= -lmingw32 $(shell sdl-config --libs) SDL_mixer.lib -lpng -jpeg -lz -L. -ltnl -ltomcrypt -lwsock32
- OPENGLLIBS = -lopengl32 -lglu32
- LDFLAGS = -Wall -mwindows
+ #LIBS	= -lmingw32 -lSDL -lSDL_mixer -lmad -lSDLmain -lSDL  -lm -ldinput8 -ldxguid -ldxerr8 -luser32 -lgdi32 -lwinmm -limm32 -lole32 -loleaut32 -lshell32 -lversion -luuid -static-libgcc -lpng -ljpeg -lz -L. -ltnl -ltomcrypt -lwsock32 
+ #OPENGLLIBS =-static -s  -lopengl32 -lglew32 -lglu32 -static-libgcc -lpthread -lzstd -lbcrypt -lz -lssp
+ LDFLAGS = -Wall  -Wl,--subsystem,console
+ LIB_DIR = ../LIBS/lib
+ 
+ LIBS =   -lmingw32\
+          $(LIB_DIR)SDL.a\
+          $(LIB_DIR)SDL_mixer.a\
+          $(LIB_DIR)mad.a\
+          $(LIB_DIR)SDLmain.a\
+          $(LIB_DIR)SDL.a\
+          -lm\
+          -ldinput8\
+          -ldxguid\
+          -ldxerr8\
+          -luser32\
+          -lgdi32\
+          -lwinmm\
+          -limm32\
+          -lole32\
+          -loleaut32\
+          -lshell32\
+          -lversion\
+          -luuid\
+          -static-libgcc\
+          -lpng\
+          -ljpeg\
+          -lz\
+          -L.\
+          $(LIB_DIR)tnl.a\
+          $(LIB_DIR)tomcrypt.a\
+          -lwsock32\
+          -static -s\
+          -lopengl32\
+          -lglew32\
+          -lglu32\
+          -static-libgcc\
+          -lpthread\
+          -lzstd\
+          -lbcrypt\
+          -lz\
+          -lssp
+
+
 # executable
- exename = doomlegacy2.exe
+ exename = $(exedir)doomlegacy2.exe
 
 endif
 # ----------- platform specific part ends
@@ -96,7 +140,10 @@ export CXX = g++
 # NO_MIXER   : do not include SDL_mixer in the build
 
 
-export CF += -std=c++0x -Wall $(platform) $(interface) $(linkage)
+#export CF += -std=c++0x -Wall $(platform) $(interface) $(linkage)
+export CF += -std=gnu++11 -Wall $(platform) $(interface) $(linkage)
+
+
 
 INCLUDES = -Iinclude
 CFLAGS = $(CF) $(INCLUDES)
@@ -215,7 +262,6 @@ export video_objects = \
 	$(objdir)/r_font.o \
 	$(objdir)/r_render.o \
 	$(objdir)/r_bsp.o \
-	$(objdir)/r_data.o \
 	$(objdir)/r_draw.o \
 	$(objdir)/r_draw8.o \
 	$(objdir)/r_draw16.o \
@@ -229,6 +275,7 @@ export video_objects = \
 	$(objdir)/r_anim.o \
 	$(objdir)/oglrenderer.o \
 	$(objdir)/oglshaders.o \
+	$(objdir)/r_data.o \
 	$(objdir)/oglhelpers.o
 
 export net_objects = \
@@ -247,7 +294,9 @@ export sdl_objects = \
 	$(objdir)/i_system.o \
 	$(objdir)/i_video.o
 
-
+export win_objects = \
+	$(objdir)/DL2_Icon.o \
+  
 export grammar_objects = \
 	$(objdir)/ntexture.parser.o \
 	$(objdir)/ntexture.lexer.o \
@@ -256,15 +305,15 @@ export grammar_objects = \
 	$(objdir)/parser_driver.o
 
 
-objects = $(engine_objects) $(util_objects) $(audio_objects) $(video_objects) \
-	$(net_objects) $(sdl_objects) $(grammar_objects)
-
+objects = $(engine_objects) $(util_objects) $(audio_objects) $(grammar_objects) $(video_objects) \
+	$(net_objects) $(sdl_objects) $(win_objects)
 
 SUBDIRS = engine util audio video net grammars tools
 
+RES_OBJ = win/$(objdir)/DL2_Icon.o   # Pfad anpassen
 
 # explicit rules
-.PHONY	: all mkdirobjs clean depend docs wad versionstring tnl sdl $(SUBDIRS)
+.PHONY	: all mkdirobjs clean depend docs wad versionstring tnl sdl win $(SUBDIRS)
 
 
 all	: mkdirobjs $(exename)
@@ -286,6 +335,7 @@ depend:
 	$(MAKE) -C net depend
 	$(MAKE) -C grammars depend
 	$(MAKE) -C interface/sdl depend
+	$(MAKE) -C interface/win depend  
 	$(MAKE) -C tools depend
 
 docs	: Doxyfile
@@ -297,6 +347,9 @@ wad	: tools
 sdl	:
 	$(MAKE) -C interface/sdl
 
+win	:
+	$(MAKE) -C interface/win
+  
 versionstring:
 	$(CC) -c $(CFLAGS) -DSVN_REV=\"`svn info | grep Revision | sed -e 's/Revision: //'`\" engine/d_main.cpp -o objs/d_main.o
 
@@ -321,10 +374,10 @@ endif
 
 ifdef DYNAMIC
 # main program
-$(exename) : engine util audio video net sdl grammars versionstring
+$(exename) : engine util audio video net sdl win grammars versionstring
 	$(LD) $(LDFLAGS) $(objects) $(LIBS) -o $@
 else
 # all in one
-$(exename) : engine util audio video net sdl grammars versionstring
+$(exename) : engine util audio video net sdl win grammars versionstring
 	$(LD) $(LDFLAGS) $(objects) $(LIBS) $(OPENGLLIBS) -o $@
 endif

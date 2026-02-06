@@ -85,7 +85,7 @@ enum mobjflag_t
 
 
 /// More semi-permanent flags. Mostly came with Heretic.
-enum mobjflag2_t
+enum mobjflag2_t : unsigned int
 {
   // physical properties
   MF2_LOGRAV         =     0x0001,    ///< Experiences only 1/8 gravity
@@ -135,7 +135,7 @@ enum mobjflag2_t
   MF2_IMPACT	     = 0x10000000,    ///< Can activate SPAC_IMPACT
   MF2_PUSHWALL	     = 0x20000000,    ///< Can activate SPAC_PUSH
   MF2_MCROSS	     = 0x40000000,    ///< Can activate SPAC_MCROSS
-  MF2_PCROSS	     = 0x80000000,    ///< Can activate SPAC_PCROSS
+  MF2_PCROSS	     = 0x80000000u,    ///< Can activate SPAC_PCROSS
 };
 
 

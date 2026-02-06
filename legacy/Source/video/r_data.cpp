@@ -24,9 +24,6 @@
 #include <math.h>
 #include <png.h>
 
-#define GL_GLEXT_PROTOTYPES 1
-#include <GL/glu.h>
-
 #include "doomdef.h"
 #include "doomdata.h"
 #include "command.h"
@@ -47,6 +44,14 @@
 #include "z_zone.h"
 
 #include "hardware/oglshaders.h"
+#include "hardware/hwr_render.h"
+
+/* OpenGL Init --------------------
+ * liegt in oglinit.h
+		#include <GL/glu.h>
+*/
+#include "Hardware/ogl_init.h"
+/* OpenGL Init End ------------- */
 
 
 const byte *R_BuildGammaTable();
@@ -824,7 +829,14 @@ void Material::TextureRef::GLSetTextureParams()
 
 
 int Material::GLUse()
-{
+{ 
+	#ifdef GL_USE_GLEXT		
+		static PFNGLACTIVETEXTUREPROC _GLActiveTexture= NULL;			
+		_GLActiveTexture = (PFNGLACTIVETEXTUREPROC) wglGetProcAddress("glActiveTexture");
+	#else
+		#define glActiveTexture _GLActiveTexture
+	#endif
+		
   if (shader)
     {
       shader->Use();
@@ -833,10 +845,12 @@ int Material::GLUse()
   else
     ShaderProg::DisableShaders();
 
+
   int n = tex.size(); // number of texture units
+	
   for (int i=0; i<n; i++)
     {
-      glActiveTexture(GL_TEXTURE0 + i); // activate correct texture unit
+      _GLActiveTexture/*glActiveTexture*/(GL_TEXTURE0 + i); // activate correct texture unit
       tex[i].GLSetTextureParams(); // and set its parameters
     }
 
@@ -1905,21 +1919,27 @@ static int makecol15(int r, int g, int b)
 
 void R_Init8to16()
 {
+  //printf("\n [%s][%d]R_Init8to16\n",__FILE__,__LINE__);
   int i;
   byte *palette = static_cast<byte*>(fc.CacheLumpName("PLAYPAL", PU_DAVE));
 
+
+  //printf(" [%s][%d]R_Init8to16\n",__FILE__,__LINE__);
   for (i=0;i<256;i++)
     {
       // doom PLAYPAL are 8 bit values
       color8to16[i] = makecol15(palette[0],palette[1],palette[2]);
       palette += 3;
     }
-  Z_Free(palette);
+ // Z_Free(palette); Marty: Das Crashed!
 
+  //printf(" [%s][%d]R_Init8to16\n",__FILE__,__LINE__);
   // test a big colormap
   hicolormaps = static_cast<short int*>(Z_Malloc(32768 /**34*/, PU_STATIC, 0));
   for (i=0;i<16384;i++)
     hicolormaps[i] = i<<1;
+  
+  //printf(" [%s][%d]R_Init8to16\n",__FILE__,__LINE__);  
 }
 
 

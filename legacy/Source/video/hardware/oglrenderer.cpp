@@ -20,7 +20,13 @@
 /// \file
 /// \brief OpenGL renderer.
 
-#define GL_GLEXT_PROTOTYPES 1
+/* OpenGL Init --------------------
+ * liegt in oglinit.h
+   #define GL_GLEXT_PROTOTYPES 1
+   #include <GL/gl.h>
+ */
+#include "Hardware/ogl_init.h"
+/* OpenGL Init End ------------- */
 
 #include "doomdef.h"
 #include "command.h"
@@ -107,6 +113,8 @@ OGLRenderer::OGLRenderer()
 
   fov = 90.0;
 
+ 
+
   hudar = 4.0/3.0; // Basic DOOM hud takes the full screen.
   screenar = 1.0;  // Pick a default value, any default value.
   viewportar = 1.0;
@@ -139,7 +147,8 @@ void OGLRenderer::InitGLState()
   glAlphaFunc(GL_GEQUAL, 0.5); // 0.5 is an optimal value for linear magfiltering
   glEnable(GL_ALPHA_TEST);
 
-  glDepthFunc(GL_LESS);
+  /*glDepthFunc(GL_LESS);*/
+
 
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -150,21 +159,21 @@ void OGLRenderer::InitGLState()
   glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE); // now we can use glColor4 to do alpha effects
   glColor4f(1.0, 1.0, 1.0, 1.0);
 
-  //GLfloat mat_ad[]  = { 1.0, 1.0, 1.0, 1.0 };
-  //glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, );
-  //glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, );
-  //glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, mat_ad);
-  //glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, );
-  //glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 0.0);
-  //glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, );
+  //GLfloat mat_ad[]  = { 1.0, 1.0, 1.0, 1.0 }; 											//* Marty, Ausgekommentiert
+  //glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT,mat_ad ); 							//* Marty, Ausgekommentiert, mat_ad hinmzugefügt
+  //glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE,mat_ad ); 							//* Marty, Ausgekommentiert, mat_ad hinmzugefügt
+  //glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, mat_ad); 	//* Marty, Ausgekommentiert
+  //glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR,mat_ad ); 						//* Marty, Ausgekommentiert, mat_ad hinmzugefügt
+  //glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 0.0); 								//* Marty, Ausgekommentiert
+  //glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION,mat_ad ); 						//* Marty, Ausgekommentiert, mat_ad hinmzugefügt
 
   GLfloat lmodel_ambient[] = { 1.0, 1.0, 1.0, 1.0 };
   glLightModelfv(GL_LIGHT_MODEL_AMBIENT, lmodel_ambient);
-  //glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE);
-  //glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_FALSE);
+  //glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, GL_TRUE); //* Marty, Ausgekommentiert
+  //glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_FALSE); //* Marty, Ausgekommentiert
 
   // TEST positional/directional light
-  //glEnable(GL_LIGHT0);
+  //glEnable(GL_LIGHT0); //* Marty, Ausgekommentiert
   GLfloat light_ambient[]  = { 0.0, 0.0, 0.0, 1.0 };
   GLfloat light_diffuse[]  = { 1.0, 1.0, 1.0, 1.0 };
   GLfloat light_specular[] = { 1.0, 1.0, 1.0, 1.0 };
@@ -175,16 +184,27 @@ void OGLRenderer::InitGLState()
   GLfloat light_position[] = { 1.0, -1.0, 0.0, 0.0 }; // infinitely far away
   glLightfv(GL_LIGHT0, GL_POSITION, light_position);
 
+	#ifdef GL_USE_GLEXT	
+		static PFNGLPOINTPARAMETERFPROC  _GLPointParameterf  = NULL;
+		static PFNGLPOINTPARAMETERFVPROC _GLPointParameterfv = NULL;		
+		_GLPointParameterf  = (PFNGLPOINTPARAMETERFPROC)  wglGetProcAddress("glPointParameterf");
+		_GLPointParameterfv = (PFNGLPOINTPARAMETERFVPROC) wglGetProcAddress("glPointParameterfv");
+	#else
+		#define glPointParameterf  _GLPointParameterf
+		#define glPointParameterfv _GLPointParameterfv		
+	#endif
+	
   // red aiming dot parameters
   glEnable(GL_POINT_SMOOTH);
   glPointSize(8.0);
-  glPointParameterf(GL_POINT_SIZE_MIN, 2.0);
-  glPointParameterf(GL_POINT_SIZE_MAX, 8.0);
+  _GLPointParameterf/*glPointParameterf*/(GL_POINT_SIZE_MIN, 2.0);
+  _GLPointParameterf/*glPointParameterf*/(GL_POINT_SIZE_MAX, 8.0);
   GLfloat point_att[3] = {1, 0, 1e-4};
-  glPointParameterfv(GL_POINT_DISTANCE_ATTENUATION, point_att);
+  _GLPointParameterfv/*glPointParameterfv*/(GL_POINT_DISTANCE_ATTENUATION, point_att);
 
   // other debugging stuff
   glLineWidth(3.0);
+	
 }
 
 
@@ -287,15 +307,16 @@ bool OGLRenderer::WriteScreenshot(const char *fname)
   return success;
 }
 
-bool OGLRenderer::InitVideoMode(const int w, const int h, const bool fullscreen)
+bool OGLRenderer::InitVideoMode(const int w, const int h, /*const*/ bool fullscreen)
 {
+  printf("\n [%s][%d]OGLRenderer::InitVideoMode %d\n",__FILE__,__LINE__, fullscreen);
   Uint32 surfaceflags;
   int mindepth = 16;
   int temp;
   bool first_init;
 
   first_init = screen ? false : true;
-
+	
   // Some platfroms silently destroy OpenGL textures when changing
   // resolution. Unload them all, just in case.
   materials.ClearGLTextures();
@@ -303,10 +324,17 @@ bool OGLRenderer::InitVideoMode(const int w, const int h, const bool fullscreen)
   workinggl = false;
 
   surfaceflags = SDL_OPENGL;
+	
   if(fullscreen)
     surfaceflags |= SDL_FULLSCREEN;
+  
+  if (surfaceflags & SDL_FULLSCREEN)
+  {
+    // So entfernt man ein Flag wieder (korrekt!)
+    surfaceflags &= ~SDL_FULLSCREEN;
+  }  
 
-  SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 8);
+  SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16/*8*/);
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
   // Check that we get hicolor.
@@ -321,7 +349,7 @@ bool OGLRenderer::InitVideoMode(const int w, const int h, const bool fullscreen)
     CONS_Printf(" Could not obtain requested resolution.\n");
     return false;
   }
-
+	
   // This is the earlies possible point to print these since GL
   // context is not guaranteed to exist until the call to
   // SDL_SetVideoMode.
@@ -351,19 +379,70 @@ bool OGLRenderer::InitVideoMode(const int w, const int h, const bool fullscreen)
   else
     CONS_Printf(" OpenGL mode is NOT double buffered.\n");
 
+	/* Marty */
+	
+  SDL_GL_GetAttribute(SDL_GL_BUFFER_SIZE, &temp);
+  CONS_Printf(" 24/32 Bit Farbe + Alpha: %d bits.\n", temp);
+	
+  SDL_GL_GetAttribute(SDL_GL_ACCELERATED_VISUAL, &temp);
+  if(temp==0)
+    SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL,  1);
+  
+  SDL_GL_GetAttribute(SDL_GL_ACCELERATED_VISUAL, &temp);
+  CONS_Printf(" Hardware-Beschleunigung %s.\n", (temp==1)?"Ja":"Nein");
+		
+  SDL_GL_GetAttribute(SDL_GL_SWAP_CONTROL, &temp);
+  if(temp==-1)
+		CONS_Printf(" VSync Modus: Adaptive\n", temp);
+	else
+		CONS_Printf(" VSync Modus: %s\n", (temp==1)?"An":"Aus");
+	
+  SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &temp);
+	CONS_Printf(" Anti-Aliasing %d.\n", temp);
+	if (temp==0)
+	{
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS,  1);
+		SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &temp);
+		CONS_Printf(" Anti-Aliasing %d (Geaendert).\n", temp);
+	}
+
+  SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &temp);
+	CONS_Printf(" Multisampling (MSAA): %d.\n", temp);
+	if (temp==0)
+	{
+		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES,  4);
+		SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &temp);
+		CONS_Printf(" Multisampling (MSAA): %d (Geaendert)\n", temp);
+	}		
+
   // Print state and debug info.
   CONS_Printf(" Set OpenGL video mode %dx%dx%d", w, h, cbpp);
   CONS_Printf(fullscreen ? " (fullscreen)\n" : " (windowed)\n");
 
   // Calculate the screen's aspect ratio. Assumes square pixels.
-  if(w == 1280 && h == 1024 &&     // Check a couple of exceptions.
-     surfaceflags & SDL_FULLSCREEN)
+  // Check a couple of exceptions.
+  // Marty: Dafür muss eine Routine her. Sonst crash mit fullscreen .....
+  if(w == 1280 && h == 1024 && surfaceflags & SDL_FULLSCREEN)
+  {
     screenar = 4.0/3.0;
-  else if(w == 320 && h == 200 &&
-	  surfaceflags & SDL_FULLSCREEN)
+  }
+  else if(w == 320 && h == 200 && surfaceflags & SDL_FULLSCREEN)
+  {
     screenar = 4.0/3.0;
+  }
   else
+  {
+    if (surfaceflags & SDL_FULLSCREEN)
+    {
+        surfaceflags |= SDL_FULLSCREEN;
+        fullscreen = false;
+        printf(" [%s][%d]OGLRenderer::InitVideoMode:         \n"
+               "                      Fallback to Window Mode\n"
+               "                 dump... Hardcdoded Resolution",__FILE__,__LINE__);
+    }
+    
     screenar = GLfloat(w)/h;
+  }
 
   CONS_Printf(" Screen aspect ratio %.2f.\n", screenar);
   CONS_Printf(" HUD aspect ratio %.2f.\n", hudar);
@@ -389,6 +468,15 @@ bool OGLRenderer::InitVideoMode(const int w, const int h, const bool fullscreen)
   else
     CONS_Printf(" Only power of two textures supported.\n");
 
+
+  #ifdef BORDERLESS_WIN32
+  if(!fullscreen)
+  {    
+    ToggleBorderless();
+		CenterSDL1Window();
+  }
+  #endif         // Marty
+	
   return true;
 }
 
@@ -434,17 +522,61 @@ void OGLRenderer::Setup2DMode()
   glLoadIdentity();
   gluOrtho2D(0.0, 1.0, 0.0, 1.0);
   
-  if(viewportar > hudar) {
+  /* Marty */
+  GLfloat Width  = screen->w;
+  GLfloat Height = screen->h;
+  GLfloat Ratio  = Width/Height;
+  
+  //printf("OGLRenderer: %d\n", cv_graspectratio.value);
+  
+  if ((Ratio != hudar) && (cv_graspectratio.value == 0))//Auto
+  {    
+    //printf("OGLRenderer: Ratio %.3f != hudar %.3f\n", Ratio, hudar);
+
+    if (Ratio >= 1.185f && Ratio < 1.250f)  // 32:27 bis 5:4
+        hudar = 32.0f / 27.0f;
+        
+    else if (Ratio >= 1.250f && Ratio < 1.333f)  // 5:4 bis 4:3
+        hudar = 5.0f / 4.0f;
+        
+    else if (Ratio >= 1.333f && Ratio < 1.600f)  // 4:3 bis 16:10
+        hudar = 4.0f / 3.0f;
+        
+    else if (Ratio >= 1.600f && Ratio < 1.778f)  // 16:10 bis 16:9
+        hudar = 32.0f / 27.0f/*16.0f / 10.0f*/;  // oder 4.0f / 3.0f als Fallback
+        
+    else if (Ratio >= 1.778f)  // 16:9+
+        hudar = 32.0f / 27.0f/*16.0f / 9.0f*/;   // oder pillarbox zu 4:3   
+  }
+  else if  (cv_graspectratio.value == 1) 
+    hudar = 4.0f / 3.0f;
+  else if  (cv_graspectratio.value == 2) 
+    hudar = 5.0f / 4.0f;   
+  else if  (cv_graspectratio.value == 3) 
+    hudar = 16.0f / 9.0f;     
+  else if  (cv_graspectratio.value == 4)
+     hudar = 16.0f / 10.0f;
+  else if  (cv_graspectratio.value == 5) 
+     hudar = 32.0f / 27.0f;
+  /* Marty End */
+          
+  if(viewportar > hudar)
+  {
     extraoffx = (viewportar - hudar)/(viewportar*2.0);
     extraoffy = 0.0;
     extrascalex = hudar/viewportar;
     extrascaley = 1.0;
-  } else if(viewportar < hudar) {
+  }
+  else if(viewportar < hudar)
+  {     
      extraoffx = 0.0;
      extraoffy = (hudar - viewportar)/(hudar*2.0);
      extrascalex = 1.0;
      extrascaley = viewportar/hudar;
-  } else {
+      
+  }
+  else
+  {
      extrascalex = extrascaley = 1.0;
      extraoffx = extraoffy = 0.0;
   }
@@ -1328,9 +1460,15 @@ void OGLRenderer::DrawSpriteItem(const vec_t<fixed_t>& pos, Material *mat, int f
   left = mat->leftoffs;
   right = left - mat->worldwidth;
  
-  // top = mat->worldheight; bottom = 0; // HACK, too high
-  top = mat->topoffs; // this is correct but causes the sprite to penetrate the floor, hence the depth test trick
-  bottom = top - mat->worldheight;
+  /* HACK, too high:
+   * Marty: Setzt Sprites bündig auf Boden – funktioniert bei modernen Treibern besser als korrekte Variante
+	 */
+  top = mat->worldheight;
+	bottom = 0; // HACK, too high
+	/*
+   top = mat->topoffs; // this is correct but causes the sprite to penetrate the floor, hence the depth test trick
+   bottom = top - mat->worldheight;
+	*/
 
 
   glMatrixMode(GL_MODELVIEW);
@@ -1371,6 +1509,8 @@ void OGLRenderer::DrawSpriteItem(const vec_t<fixed_t>& pos, Material *mat, int f
   glPopMatrix();
   
   glColor4f(1.0, 1.0, 1.0, 1.0); // back to normal material params
+	
+	
 }
 
 

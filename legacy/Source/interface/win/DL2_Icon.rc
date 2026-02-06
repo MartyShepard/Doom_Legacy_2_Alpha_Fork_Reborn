@@ -1,0 +1,39 @@
+#include "..\..\include\doomdef.h"
+#include "winresrc.h"
+///src/Legacy2/Source/interface/win
+// icon resource
+wLegacy ICON "DL2_Icon.ico"
+
+// version resource
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION VALUE_VERSION_COMMA
+ PRODUCTVERSION VALUE_PRODUCT_COMMA
+ FILEFLAGSMASK 0x3fL
+ FILEFLAGS 0x0L
+ FILEOS 0x40004L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "Comments", VALUE_COMMENT
+            VALUE "CompanyName", VALUE_COMPANY
+            VALUE "FileDescription", VALUE_FILEDESCRIPTION
+            VALUE "FileVersion", VALUE_VERSION_STRING
+            VALUE "InternalName", VALUE_INTERNAL_NAME
+            VALUE "LegalCopyright", VALUE_LEGALCOPYRIGHT
+            VALUE "LegalTrademarks", VALUE_LEGALTRADEMARKS
+            VALUE "OriginalFilename",VALUE_ORIGINALFILENAME
+            VALUE "PrivateBuild", VALUE_PRIVATEBUILD
+            VALUE "ProductName", VALUE_PRODUCTNAME
+            VALUE "ProductVersion",VALUE_VERSION_STRING
+            VALUE "SpecialBuild", VALUE_SPECIALBUILD
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END

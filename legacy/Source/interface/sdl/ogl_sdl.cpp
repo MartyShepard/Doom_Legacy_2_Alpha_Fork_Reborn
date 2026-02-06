@@ -21,6 +21,11 @@
 /// \brief SDL specific part of the OpenGL API for Doom Legacy
 
 #include "SDL.h"
+/* OpenGL Init --------------------
+ * liegt in oglinit.h 
+ */
+#include "hardware/ogl_init.h"
+/* OpenGL Init End ------------- */
 
 #include "screen.h"
 #include "v_video.h"
@@ -46,7 +51,7 @@ bool OglSdlSurface()
     }
 
   if (cv_fullscreen.value)
-    surfaceFlags = SDL_OPENGL|SDL_FULLSCREEN;
+    surfaceFlags = SDL_OPENGL/*|SDL_FULLSCREEN*/;
   else
     surfaceFlags = SDL_OPENGL;
 

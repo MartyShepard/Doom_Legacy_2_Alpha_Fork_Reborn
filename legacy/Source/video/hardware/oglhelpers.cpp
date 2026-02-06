@@ -24,6 +24,7 @@
 #include "r_data.h"
 #include "doomdef.h"
 #include "hardware/oglhelpers.hpp"
+#include "hardware/hwr_render.h"
 #include "i_video.h"
 #include "m_bbox.h"
 #include "p_maputl.h"
@@ -56,12 +57,15 @@ viewportdef_t gl_viewports[MAX_GLVIEWPORTS][MAX_GLVIEWPORTS] = {
    {0.0, 0.0, 0.5, 0.5},
    {0.5, 0.0, 0.5, 0.5}}
 };
-
-
-
+/*
+     * CVAR(Float, gl_hud_ratio, 1.333f, CVAR_ARCHIVE);  // Default 4:3
+     * // Dann statt hudar = 4.0f / 3.0f;
+          hudar = gl_hud_ratio.value;
+*/
 // Only list mipmapping filter modes, since we always use them.
-CV_PossibleValue_t grfiltermode_cons_t[]= {{0, "NN"}, {1, "LN"}, {2, "NL"}, {3, "LL"}, {0, NULL} };
-consvar_t cv_grfiltermode = {"gr_filtermode", "NN", CV_SAVE, grfiltermode_cons_t, NULL};
+//CV_PossibleValue_t grfiltermode_cons_t[]= {{0, "NN"}, {1, "LN"}, {2, "NL"}, {3, "LL"}, {0, NULL} };
+CV_PossibleValue_t grfiltermode_cons_t[]= {{0, "Mipmap Nearest"}, {1, "Nearest"}, {2, "Nearest Linear"}, {3, "Linear"}, {0, NULL} };
+consvar_t cv_grfiltermode = {"gr_filtermode", "Mipmap Nearest", CV_SAVE, grfiltermode_cons_t, NULL};
 
 CV_PossibleValue_t granisotropy_cons_t[]= {{1,"MIN"}, {16,"MAX"}, {0,NULL}};
 consvar_t cv_granisotropy = {"gr_anisotropy", "1", CV_SAVE, granisotropy_cons_t, NULL};
@@ -89,6 +93,16 @@ consvar_t cv_grfog        = {"gr_fog",            "On", CV_SAVE, CV_OnOff};
 consvar_t cv_grfogcolor   = {"gr_fogcolor",   "000000", CV_SAVE, NULL};
 consvar_t cv_grfogdensity = {"gr_fogdensity",    "100", CV_SAVE, CV_Unsigned};
 
+CV_PossibleValue_t gr_aspect_ratio_cons_t[]= {{0, "Auto" }, 
+                                           {1, " 4:3" },
+                                           {2, " 5:4" },
+                                           {3, "16:9" },
+                                           {4, "16:10"},
+                                           {5, "32:27"},                                           
+                                           {0, NULL   }};
+                                           
+consvar_t cv_graspectratio = {"gl_apect_ratio", "Auto", CV_SAVE, gr_aspect_ratio_cons_t, NULL};                                           
+                                           
 
 void OGL_AddCommands()
 {
@@ -106,14 +120,13 @@ void OGL_AddCommands()
   cv_grcoronas.Reg();
   cv_grcoronasize.Reg();
 
-
   cv_grfog.Reg();
   cv_grfogdensity.Reg();
   cv_grfogcolor.Reg();
+  
+  
+  cv_graspectratio.Reg();
 }
-
-
-
 // Converts Doom sector light values to suitable background pixel
 // color. extralight is for temporary brightening of the screen due to
 // muzzle flashes etc.

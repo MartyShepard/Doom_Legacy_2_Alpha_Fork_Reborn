@@ -50,10 +50,12 @@
 
 CV_PossibleValue_t soundvolume_cons_t[]={{0,"MIN"},{31,"MAX"},{0,NULL}};
 
+CV_PossibleValue_t numChannels_cons_t[]={{8,"MIN"},{32,"MAX"},{0,NULL}};// Keine Ahnung ..
+
 consvar_t cv_soundvolume = {"soundvolume","15",CV_SAVE,soundvolume_cons_t};
-consvar_t cv_musicvolume = {"musicvolume","15",CV_SAVE,soundvolume_cons_t};
-consvar_t cd_volume = {"cd_volume","31",CV_SAVE,soundvolume_cons_t};
-consvar_t cv_numChannels = {"snd_channels","16",CV_SAVE, CV_Unsigned};
+consvar_t cv_musicvolume = {"musicvolume","10",CV_SAVE,soundvolume_cons_t};
+consvar_t cd_volume = {"cd_volume","0",CV_SAVE,soundvolume_cons_t};
+consvar_t cv_numChannels = {"snd_channels","16",CV_SAVE, numChannels_cons_t/*CV_Unsigned*/};
 consvar_t cv_stereoreverse = {"stereoreverse","0",CV_SAVE ,CV_OnOff};
 consvar_t cv_surround = {"surround", "0", CV_SAVE, CV_OnOff};
 consvar_t cv_precachesound = {"precachesound","0",CV_SAVE ,CV_OnOff};
@@ -351,7 +353,8 @@ SoundSystem::SoundSystem()
 void SoundSystem::Startup()
 {
   CONS_Printf("Initializing the sound module...\n");
-
+	//CONS_Printf(" [%s][%d] ::Startup() - Registry Commands\n",__FILE__,__LINE__);	
+  
   cv_soundvolume.Reg();
   cv_musicvolume.Reg();
   cd_volume.Reg();
@@ -360,6 +363,8 @@ void SoundSystem::Startup()
   cv_surround.Reg();
   cv_precachesound.Reg();
 
+	//CONS_Printf(" [%s][%d] ::Startup() - Registry Commands, finished\n",__FILE__,__LINE__);	
+  
   nosound = M_CheckParm("-nosound");
   nomusic = M_CheckParm("-nomusic");
 
@@ -369,6 +374,7 @@ void SoundSystem::Startup()
   I_StartupSound();
   I_InitMusic();
 
+
   // Initialize CD-Audio
   if (!M_CheckParm("-nocd"))
     I_InitCD();
@@ -377,6 +383,8 @@ void SoundSystem::Startup()
   sc.SetDefaultItem("DEF_SND"); // default sound
 
   nextcleanup = game.tic + 35*100;
+    
+	//CONS_Printf(" [%s][%d] ::Startup() - Finished\n",__FILE__,__LINE__);	
 }
 
 
@@ -484,7 +492,7 @@ bool SoundSystem::StartMusic(const char *name, bool loop)
   // shutdown old music
   // TODO: add several music channels, crossfade;)
   StopMusic();
-
+  
   // TODO: no 2nd level music cache, just one music plays at a time.
   // here we would check if the music 'name' already is in the 2nd level cache.
   // if not, cache it:

@@ -34,6 +34,7 @@
 
 #include "m_argv.h"
 #include "i_video.h"
+#include "i_system.h" // Marty
 #include "r_data.h"
 #include "r_draw.h"
 #include "r_main.h"
@@ -56,15 +57,20 @@ Video vid;
 void CV_Fuzzymode_OnChange();
 void CV_Fullscreen_OnChange();
 void CV_video_gamma_OnChange();
+#ifdef BORDERLESS_WIN32
+void CV_Borderless_OnChange();
+#endif
 
 static CV_PossibleValue_t scr_depth_cons_t[]={{8,"8 bits"}, {16,"16 bits"}, {24,"24 bits"}, {32,"32 bits"}, {0,NULL}};
 
 //added:03-02-98: default screen mode, as loaded/saved in config
-consvar_t   cv_scr_width  = {"scr_width",  "320", CV_SAVE, CV_Unsigned};
-consvar_t   cv_scr_height = {"scr_height", "200", CV_SAVE, CV_Unsigned};
+consvar_t   cv_scr_width  = {"scr_width",  "800", CV_SAVE, CV_Unsigned};
+consvar_t   cv_scr_height = {"scr_height", "600", CV_SAVE, CV_Unsigned};
 consvar_t   cv_scr_depth =  {"scr_depth",  "16 bits",   CV_SAVE, scr_depth_cons_t};
-consvar_t   cv_fullscreen = {"fullscreen", "Yes", CV_SAVE | CV_CALL | CV_NOINIT, CV_YesNo, CV_Fullscreen_OnChange};
-
+consvar_t   cv_fullscreen = {"fullscreen", "no", CV_SAVE | CV_CALL | CV_NOINIT, CV_YesNo, CV_Fullscreen_OnChange};
+#ifdef BORDERLESS_WIN32
+consvar_t   cv_borderless = {"borderless", "no", CV_SAVE | CV_CALL | CV_NOINIT,CV_YesNo, CV_Borderless_OnChange};
+#endif
 // Are invisible things translucent or fuzzy?
 consvar_t   cv_fuzzymode = {"fuzzymode", "Off", CV_SAVE | CV_CALL, CV_OnOff, CV_Fuzzymode_OnChange};
 
@@ -123,6 +129,11 @@ Video::Video()
 //  by setting the setmodeneeded to a value >0
 void Video::SetMode()
 {
+  byte DebugVerbose = 1;
+  
+  if (DebugVerbose)
+	printf("\n [%s][%d]::SetMode\n",__FILE__,__LINE__);
+
   if (game.dedicated)
     return;
 
@@ -132,31 +143,47 @@ void Video::SetMode()
   I_SetVideoMode(--setmodeneeded);
   SetPalette(0);
 
+  if (DebugVerbose)
+	printf(" [%s][%d] ::SetMode() var - BytesPerPixel = %d\n",
+                           __FILE__,__LINE__, BytesPerPixel);
+	
+  
+  /* BytesPerPixel -> Klasse Video:: - extern var vid.BitsPerPixel */
+  if (BytesPerPixel == 0) // Marty: Fallabck    
+  {
+      if (DebugVerbose)
+      printf(" [%s][%d] ::SetMode() BytesPerPixel Fallback%d\n",
+                              __FILE__,__LINE__, BytesPerPixel);
+                              
+		  BytesPerPixel = 1;
+  }
+		
   //  setup the right draw routines for either 8bpp or 16bpp
   if (BytesPerPixel == 1)
-    {
-      colfunc = basecolfunc = R_DrawColumn_8;
-      skycolfunc = R_DrawColumn_8;
+  {
+    colfunc = basecolfunc = R_DrawColumn_8;
+    skycolfunc = R_DrawColumn_8;
 
-      fuzzcolfunc = (cv_fuzzymode.value) ? R_DrawFuzzColumn_8 : R_DrawTranslucentColumn_8;
-      transcolfunc = R_DrawTranslatedColumn_8;
-      shadecolfunc = R_DrawShadeColumn_8;  //R_DrawColumn_8;
-      spanfunc = basespanfunc = R_DrawSpan_8;
-    }
+    fuzzcolfunc = (cv_fuzzymode.value) ? R_DrawFuzzColumn_8 : R_DrawTranslucentColumn_8;
+    transcolfunc = R_DrawTranslatedColumn_8;
+    shadecolfunc = R_DrawShadeColumn_8;  //R_DrawColumn_8;
+    spanfunc = basespanfunc = R_DrawSpan_8;
+  }
   else if (BytesPerPixel > 1)
-    {
-      CONS_Printf("using highcolor mode\n");
+  {
+    if (DebugVerbose)
+    CONS_Printf(" Using Highcolor Mode\n");
 
-      colfunc = basecolfunc = R_DrawColumn_16;
-      skycolfunc = R_DrawColumn_16;
+    colfunc = basecolfunc = R_DrawColumn_16;
+    skycolfunc = R_DrawColumn_16;
 
-      fuzzcolfunc = (cv_fuzzymode.value) ? R_DrawFuzzColumn_16 : R_DrawTranslucentColumn_16;
-      transcolfunc = R_DrawTranslatedColumn_16;
-      shadecolfunc = NULL;      //detect error if used somewhere..
-      spanfunc = basespanfunc = R_DrawSpan_16;
-    }
+    fuzzcolfunc = (cv_fuzzymode.value) ? R_DrawFuzzColumn_16 : R_DrawTranslucentColumn_16;
+    transcolfunc = R_DrawTranslatedColumn_16;
+    shadecolfunc = NULL;      //detect error if used somewhere..
+    spanfunc = basespanfunc = R_DrawSpan_16;
+  }
   else
-    I_Error("unknown bytes per pixel mode %d\n", BytesPerPixel);
+    I_Error(" [%s][%d] ::SetMode() Unknown BytesPerPixel Mode = %d\n", BytesPerPixel);
 
   setmodeneeded = 0;
 
@@ -168,33 +195,55 @@ void R_Init8to16();
 // Starts and initializes the video subsystem
 void Video::Startup()
 {
+  byte DebugVerbose = 1;
+    
   if (game.dedicated)
     return;
 
+  if (DebugVerbose)
   CONS_Printf("Initializing the video module...\n");
 
-  I_StartupGraphics();
+  if (DebugVerbose)
+  printf("\n [%s][%d]::Startup() -> I_StartupGraphics()\n",__FILE__,__LINE__);
 
-  modenum = 0; // not exactly true, but doesn't matter here.
-  setmodeneeded = 8; // 320x200, windowed
+  I_StartupGraphics();
+  
+  if (DebugVerbose)
+  printf(" [%s][%d]::Startup() -> I_StartupGraphics() [OK..]\n",__FILE__,__LINE__);
+
+  modenum       = 0; // not exactly true, but doesn't matter here.
+  setmodeneeded = 31;// 320x200, windowed
+  
   resetpaletteneeded = false;
 
   LoadPalette("PLAYPAL");
   SetPalette(0);
+  
+  if (DebugVerbose)
+  printf(" [%s][%d]::Startup() -> BytesPerPixel: %d\n",__FILE__,__LINE__,BytesPerPixel);
 
   //fab highcolor maps
-  if (BytesPerPixel == 2)
-    {
-      CONS_Printf("\nInitHighColor...");
+  if (BytesPerPixel > 1)
+  {
+      //CONS_Printf("\nInit HighColor...");
+      if (DebugVerbose)
+      printf(" [%s][%d]::Startup() -> Init HighColor\n",__FILE__,__LINE__);      
+    
       R_Init8to16();
-    }
+  }
+  
+  if (DebugVerbose)
+  printf(" [%s][%d]::Startup() -> Create Palette Conversion\n",__FILE__,__LINE__);  
 
-  // create palette conversion colormaps if necessary (palette must be set!)
+  // create palette conversion colormaps if necessary (palette must be set!)  
   materials.InitPaletteConversion();
 
   buffer = NULL;
 
   //Recalc();
+  if (DebugVerbose)    
+  printf(" [%s][%d]::Startup() -> SetMode()\n",__FILE__,__LINE__);  
+
   SetMode();
 }
 
@@ -385,4 +434,30 @@ RGB_t *Video::GetCurrentPalette()
     return NULL;
 
   return &palette[currentpalette << 8];
+}
+
+#ifdef BORDERLESS_WIN32
+void CV_Borderless_OnChange(void)
+{
+  //CONS_Printf("[%s][%d] cv_borderless.value...%d\n",__FILE__,__LINE__,cv_borderless.value);   
+  ToggleBorderless();
+}
+#endif
+
+void Video::FillScreen(byte color)
+{
+    if (!buffer) return;
+    memset(buffer, color, width * height * (BytesPerPixel));
+}
+
+void Video::FillRect(int x, int y, int w, int h, byte color)
+{
+    if (!buffer) return;
+    // Einfache Rechteck-Füllung (kann später optimiert werden)
+    for (int yy = y; yy < y + h; yy++)
+    {
+        if (yy >= height) break;
+        byte* line = buffer + yy * rowbytes + x * BytesPerPixel;
+        memset(line, color, w * BytesPerPixel);
+    }
 }
