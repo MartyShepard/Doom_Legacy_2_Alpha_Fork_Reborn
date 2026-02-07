@@ -45,15 +45,16 @@ enum gamemode_t
   gm_doom2,   // DOOM 2 retail (commercial), E1 M34
   gm_heretic,
   gm_hexen
+  /*gm_strife*/
 };
 
 // "Mission packs". Used only during startup.
 enum gamemission_t
 {
 //gmi_none = -1,  
-  gmi_prealpha,
-  gmi_alpha,
-  gmi_beta,
+  gmi_alpha02,
+  gmi_alpha04,
+  gmi_alpha05,  
   gmi_presdemo,  
   gmi_shareware,  // DOOM 1 shareware (E1M9)
   gmi_doom1,      // registered (E3M27)
@@ -61,12 +62,15 @@ enum gamemission_t
   gmi_doom2,      // DOOM 2, default
   gmi_tnt,        // TNT Evilution mission pack
   gmi_plut,       // Plutonia Experiment pack
+  gmi_hereticsw,  // Heretic Shareware
   gmi_heretic,    // Heretic
   gmi_hexen,      // Hexen
+  gmi_hexenaddon, // Hexen - Death Kings of Citadel
   gmi_hacx,       // HacX
   gmi_strife,
   gmi_fdoomu,
-  gmi_fdoom2  
+  gmi_fdoom2
+  /*gmi_strife*/
 };
 
 /// skill levels

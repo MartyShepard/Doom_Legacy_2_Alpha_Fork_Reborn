@@ -61,7 +61,10 @@ void M_SaveConfig(char *filename);
 void strcatbf(char *s1,char *s2,char *s3);
 
 std::string string_to_upper(const char *c);
-
+//===========================================================================
+char *StringUp(const char *c);
+//==========================================Nachdem die Konsole gestartet ist
+std::string StringConUp(const char *c);
 //===========================================================================
 //#ifdef DRAGFILE
   extern byte  DrgFile_Requested;

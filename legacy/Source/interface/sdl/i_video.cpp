@@ -494,7 +494,7 @@ bool I_StartupGraphics()
   if (M_CheckParm("-opengl"))
   {
     // OpenGL mode
-    printf(" I_StartupGraphics: OpenGL Modus\n",__FILE__,__LINE__);
+    printf(" I_StartupGraphics: OpenGL Modus\n");
     rendermode = render_opengl;
     oglrenderer = new OGLRenderer;
   }
@@ -502,7 +502,7 @@ bool I_StartupGraphics()
   {
     // software mode
     rendermode = render_soft;
-    printf(" I_StartupGraphics: Software Modus\n",__FILE__,__LINE__);    
+    printf(" I_StartupGraphics: Software Modus\n");    
     //CONS_Printf("I_StartupGraphics: Windowed %dx%dx%dbit\n", vid.width, vid.height, vid.BitsPerPixel);
     vidSurface = SDL_SetVideoMode(vid.width, vid.height, vid.BitsPerPixel, surfaceFlags);
 

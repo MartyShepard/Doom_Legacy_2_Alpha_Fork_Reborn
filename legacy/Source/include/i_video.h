@@ -35,7 +35,6 @@ enum rendermode_t
 };
 
 extern rendermode_t rendermode;
-//extern consvar_t cv_borderless; // Marty
 
 bool I_StartupGraphics();
 void I_ShutdownGraphics();

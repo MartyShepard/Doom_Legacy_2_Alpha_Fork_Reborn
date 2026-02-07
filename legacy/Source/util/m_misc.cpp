@@ -492,7 +492,8 @@ void strcatbf(char *s1,char *s2,char *s3)
   strcat(s1,tmp);
 }
 
-string string_to_upper(const char *c) {
+// Upper works after Con Init
+std::string string_to_upper(const char *c) {
   string result;
   char *newc;
   int len;
@@ -513,6 +514,54 @@ string string_to_upper(const char *c) {
   return result;
 }
 
+/// Ist das gleiche wie oben
+// So wirklich mach den selben inhalt fucking GROSS? ....
+char *StringUp(const char *c)
+{
+  static char* result;
+  static char *newc;
+  int len;
+
+  if(c == NULL) return result;
+
+  len = strlen(c);
+  if(len == 0) return result;
+
+  newc = new char[len];
+  
+  for(int i=0; i<len;i++)
+  {
+    if( (c[i] >= 97) && (c[i] <= 122))
+    {
+      newc[i] = c[i]; // Kopieren, sonst gibts blösdinn..
+      newc[i] ^=0x20;
+    }
+  }
+  result = newc;
+  return result;
+}
+
+// Upper works after Con Init
+std::string StringConUp(const char *c) {
+  string result;
+  char *newc;
+  int len;
+
+  if(c == NULL)
+    return result;
+
+  len = strlen(c);
+  if(len == 0)
+    return result;
+
+  newc = new char[len];
+  strcpy(newc, c);
+  strupr(newc);
+  result = newc;
+  delete []newc;
+
+  return result;
+}
 // ==========================================================================
 //                        VARIOUS UTIL FUNCTIONS
 // ==========================================================================

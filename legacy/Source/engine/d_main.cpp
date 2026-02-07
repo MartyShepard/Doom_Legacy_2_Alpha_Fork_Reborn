@@ -57,8 +57,11 @@ void GenerateTables();
 void SV_Init();
 void CL_Init();
 void PrepareGameData();
+
 // Marty
-static void Help( void );
+static void Help(void);  
+static void Help_Hexen();
+static void Help_NoSupport(); 
 
 //#ifndef SVN_REV
 //#define SVN_REV "none"
@@ -67,47 +70,50 @@ static void Help( void );
 // Version number: major.minor.revision
 const int  LEGACY_VERSION           = 200;               // major*100 + minor
 const int  LEGACY_REVISION          = DOOMLEGACY2_MINOR; // for bugfix releases, should not affect compatibility
-const char LEGACY_VERSIONSTRING[]   = "Alpha (rev " STR(DOOMLEGACY2_PATCH) "." STR(DOOMLEGACY2_BUILD) " )";
+const char LEGACY_VERSIONSTRING[]   = "Alpha: Reborn (rev " STR(DOOMLEGACY2_PATCH) "." STR(DOOMLEGACY2_BUILD) " )";
 char       LEGACY_VERSION_BANNER[80];
 
 // game title
 // Reihenfolge muss mit gamemission_t übereinstimmen
 const char *Titles[] =
 {
-  "DOOM PreAlpha Startup",  
-  "DOOM Alpha Startup",
-  "DOOM Beta Startup",
-  "DOOM PresDemo Startup",   
-  "DOOM 1: Shareware Startup",
-  "DOOM 1: Registered Startup",
-  "DOOM 1: The Ultimate DOOM Startup",
+  "DOOM [*] PreAlpha 1993",  
+  "DOOM [*] Alpha 1993 (0.4)",
+  "DOOM [*] Alpha 1993 (0.5)",  
+  "DOOM [*] Presse Demo 1993",
+  "DOOM 1: Shareware",
+  "DOOM 1: Registered",
+  "DOOM 1: The Ultimate DOOM",
   "DOOM 2: Hell on Earth",
   "DOOM 2: TNT - Evilution",
   "DOOM 2: Plutonia Experiment",
+  "Heretic 1: Shareware",
   "Heretic 1: Shadow of the Serpent Riders",
   "Hexen 1: Beyond Heretic",
+  "Hexen 1: Death Kings of Citadel",
   "HACX - Twich'n'KIll (IWAD release v1.2)",
   "Strife",
-  "FreeDOOM: Phase 1 Startup",
-  "FreeDOOM: Phase 2 Startup"
+  "FreeDOOM: Phase 1",
+  "FreeDOOM: Phase 2"
 };
 
 // Suchreihenfolge der IWAD's
 // g_game.h: Title, gamemode_t und gamemission_t
 const iwad_info_t iwads[] = {
-    {"doomalpha.wad", gm_doom1,   gmi_alpha},
-    {"doombeta.wad",  gm_doom1,   gmi_beta},
-    {"doom01.wad",    gm_doom1,   gmi_prealpha},
+    {"doom02.wad"   , gm_doom1,   gmi_alpha02},
+    {"doom04.wad",    gm_doom1,   gmi_alpha04},
+    {"doom05.wad",    gm_doom1,   gmi_alpha05},
     {"doompres.wad",  gm_doom1,   gmi_presdemo},  
     {"doom1.wad",     gm_doom1,   gmi_shareware},  
     {"doom.wad",      gm_doom1,   gmi_doom1},
     {"doomu.wad",     gm_doom1,   gmi_ultimate},    
     {"doom2.wad",     gm_doom2,   gmi_doom2},
     {"tnt.wad",       gm_doom2,   gmi_tnt},
-    {"plutonia.wad",  gm_doom2,   gmi_plut},    
-    {"heretic.wad",   gm_heretic, gmi_heretic},
-    {"heretic1.wad",  gm_heretic, gmi_heretic},    
+    {"plutonia.wad",  gm_doom2,   gmi_plut},   
+    {"heretic1.wad",  gm_heretic, gmi_hereticsw},    
+    {"heretic.wad",   gm_heretic, gmi_heretic},   
     {"hexen.wad",     gm_hexen,   gmi_hexen},
+    {"hexdd.wad",     gm_hexen,   gmi_hexenaddon},    
     {"hacx.wad",      gm_doom2,   gmi_hacx},
     {"fdoomu.wad",    gm_doom1,   gmi_fdoomu},
     {"fdoom2.wad",    gm_doom2,   gmi_fdoom2}    
@@ -121,6 +127,7 @@ static gamemission_t mission = gmi_doom2;
 
 bool devparm    = false; // started game with -devparm
 bool singletics = false; // timedemo
+bool hexenaddon = true;  // Erlaube Hexen Addon?
 
 // Helper function: start a new game
 void BeginGame(int episode, int skill, bool public_server)
@@ -325,15 +332,29 @@ static void D_IdentifyVersion()
   
   game.mode = gm_doom2;
   mission   = gmi_doom2;
-
+  
+  const char *x;
+  
   if (M_CheckParm("-iwad"))
   {
-    const char *s = M_GetNextParm();
+    const char *s = M_GetNextParm();   
 
     if (!fc.Access(s))
       I_Error("IWAD %s not found!\n", s);
-
-    D_AddFile(s);
+       
+    x = s;
+    StringConUp(x);
+    if (strcasecmp(x, "HEXDD.WAD") == 0)
+    {     
+      s = "HEXEN.WAD";      
+      D_AddFile(s);
+    
+      if (!fc.Access(s))
+        I_Error("IWAD %s was not found and is required to play the addon (%s).\n", s,x);      
+      
+      D_AddFile(x);
+    }else
+      D_AddFile(s);
 
     // point to start of filename only
     s = FIL_StripPath(s);
@@ -361,19 +382,47 @@ static void D_IdentifyVersion()
       for (i=0; i<NUM_IWADS; i++)
         if (fc.Access(iwads[i].wadname))
         {
-          D_AddFile(iwads[i].wadname);
-          
-          game.mode = iwads[i].mode;
-          mission   = iwads[i].mission;
-          break;
+          x = iwads[i].wadname; StringConUp(x);
+          if ((strcasecmp(x, "HEXEN.WAD") == 0) && (hexenaddon))
+          {
+            x = "HEXDD.WAD";
+            if (fc.Access(x))
+            {
+              D_AddFile(iwads[i].wadname);
+              D_AddFile(x);
+              game.mode = iwads[i].mode;
+              mission   = gmi_hexenaddon;
+              break;
+            }            
+          }
+          else
+          {
+            D_AddFile(iwads[i].wadname);            
+            game.mode = iwads[i].mode;
+            mission   = iwads[i].mission;          
+            break;
+          }
         }
 
       if (i == NUM_IWADS)
       {
+        /*
         I_Error("Main IWAD file not found.\n"
           "You need either doom.wad, doom1.wad, doomu.wad, doom2.wad,\n"
           "tnt.wad, plutonia.wad, heretic.wad, heretic1.wad or hexen.wad\n"
                 "from any shareware or commercial version of Doom, Heretic or Hexen!\n");
+        */
+        CONS_Printf(" Main IWAD file not found.\n"
+                " You need either:\n");
+        
+        for (int w = 0; w < NUM_IWADS; w++)
+          CONS_Printf("  IWAD: %16s -> %s\n",iwads[w].wadname, Titles[iwads[w].mission]);
+
+        Help_NoSupport();
+        Help_Hexen();        
+        I_Error("No IWAD found. Game Over...\n");    
+                
+        
       }
     }
 
@@ -381,8 +430,6 @@ static void D_IdentifyVersion()
   // g_game.h gamemode_t
   game.inventory = (game.mode >= gm_heretic);
 }
-
-
 // ========================================================================
 // Just print the nice red titlebar like the original DOOM2 for DOS.
 // ========================================================================
@@ -534,7 +581,7 @@ void D_SetPaths()
 //
 bool D_DoomMain()
 {
-  sprintf(LEGACY_VERSION_BANNER, "Doom Legacy %d.%d.%d %s", LEGACY_VERSION/100, LEGACY_VERSION%100, LEGACY_REVISION, LEGACY_VERSIONSTRING);
+  sprintf(LEGACY_VERSION_BANNER, "Doom Legacy %d.%d %s", LEGACY_VERSION/100, LEGACY_VERSION%100, LEGACY_VERSIONSTRING);
 
   if (M_CheckParm("--version"))
     {
@@ -585,6 +632,9 @@ bool D_DoomMain()
   // external Legacy data file (load it before iwad!)
   D_AddFile("legacy.wad");
 
+  if (M_CheckParm("-noaddon"))
+      hexenaddon = false;
+    
   // identify the main IWAD file to use (if any),
   // set game.mode, mission accordingly
   D_IdentifyVersion();
@@ -592,7 +642,7 @@ bool D_DoomMain()
 
   const char *title = Titles[mission];
   // print out game title
-  CONS_Printf("%s\n\n", title);
+  CONS_Printf("%s Startup...\n\n", title);
 
   // "developement parameter"
   devparm = M_CheckParm("-devparm");
@@ -746,45 +796,112 @@ bool D_DoomMain()
   return true;
 }
 
-static void Help( void )
+static void Help(void)
 {
- printf
-   ("\n"
-    "--version       Print Doom Legacy version\n"
-    "-h /-help       Help\n"
-    "-iwad file      The game wad\n"
-    "-file file      Load PWAD and DEH files (one or more)\n"
-    "                Format Support: wad, wad2, wad3, pak, zip\n"
-    "                (zip and pak does'nt work.)\n"
-    "-loadgame num   Load savegame num\n"
-    "-episode <n>    Goto episode <nr>, level 1\n"
-    "-skill <>       Skill 1 to 5\n"
-    "-nomonsters     No monsters\n"
-    "-noendtxt       Don't print Endtext\n"
-    "-blockmap       ?\n"        
-    "-v              Verbose\n"  
-     "-console        Use console output"
-    "-config file    Config file\n"
-    "-opengl         OpenGL hardware renderer\n"
-    "-nosound        No sound effects\n"
-    "-nocd           No CD music\n"
-    "-nomusic        No music\n"
-    "-precachesound  Preload sound effects\n"
-    "-mb num         Pre-allocate num MiB of memory\n"
-    "-width num      Video mode width\n"
-    "-height num     Video mode height\n"
-    "-bpp num        Video mode in (8,15,16,24,32) bpp\n"
-    "-noversioncheck Ignore legacy.wad version\n"
-    "-server         Start as game server\n"
-    "-dedicated      Dedicated server, no player\n"
-    "-connect name   Connect to server name\n"
-    "-nodownload     No download from server\n"
-    "-ipx            Use IPX\n"
-    "-port x         Use port x for server (and client)\n"
-    "-maxdemo num    Limit record demo size, in KiB\n"
-    "-devparm        Develop mode\n"
-    "-nodraw         Timedemo without draw\n"
-    );
+  char *NextParam = M_GetNextParm();
+  Uint8 i;
+  
+  //
+  // Doom Legacy 2.0 Alpha – Forked & Revived from SVN r705 (2010)
+  // Current version: v1.0.0-alpha.1 (2026)
+  if( NextParam == NULL )
+  {  
+   printf
+     ("\n"
+      "Doom Legacy 2.0 Alpha - Forked & Revived from SVN r705 (2010)\n"
+      "==============================================================\n"
+      " --version       Print Doom Legacy version\n"
+      " -h /-help       Help... dies hier .. you know\n"
+      " -v              Verbose (same as -console)\n"
+      " -console        Use console output"      
+      " -iwad file      The game wad\n"
+      " -file file      Load PWAD and DEH files (one or more)\n"
+      "                Format Support:\n"
+      "                Wad, Wad2, Wad3, Gwa, Pak, Zip, Pk3\n"
+      " -loadgame num   Load savegame num\n"
+      " -episode <n>    Goto episode <nr>, level 1\n"
+      " -skill <>       Skill 1 to 5\n"
+      " -noaddon        Disable automatic loading of the hexen addon.\n" 
+      " -nomonsters     No monsters\n"
+      " -noendtxt       Don't print Endtext\n"
+      " -blockmap       ?\n"        
+      " -config file    Config file\n"
+      " -opengl         OpenGL hardware renderer\n"
+      " -nosound        No sound effects\n"
+      " -nocd           No CD music\n"
+      " -nomusic        No music\n"
+      " -precachesound  Preload sound effects\n"
+      " -mb num         Pre-allocate num MiB of memory\n"
+      " -width num      Video mode width\n"
+      " -height num     Video mode height\n"
+      " -bpp num        Video mode in (8,15,16,24,32) bpp\n"
+      " -noversioncheck Ignore legacy.wad version\n"
+      " -server         Start as game server\n"
+      " -dedicated      Dedicated server, no player\n"
+      " -connect name   Connect to server name\n"
+      " -nodownload     No download from server\n"
+      " -ipx            Use IPX\n"
+      " -port x         Use port x for server (and client)\n"
+      " -maxdemo num    Limit record demo size, in KiB\n"
+      " -devparm        Develop mode\n"
+      " -nodraw         Timedemo without draw\n"
+      "\n"
+      " -h Games/G      Displays all available and supported games.\n"
+      " -h WadList/WL   Displays all available iwads that are being\n"
+      "                searched for in conjunction with the title..\n"
+      "================================================= Game over...\n"   
+      );
+      return;
+  }
+  // Greife den nächsten Befehl
+  if ((strcmp(StringUp(NextParam), "GAMES") == 0) || (NextParam[0] == 'G') || (NextParam[0] == 'g'))
+  { 
+    printf(" -------------------------------------------\n");
+    for (i = 0; i < NUM_IWADS; i++)
+      printf(" %s\n",Titles[iwads[i].mission]);                      
+    
+    printf(" -------------------------------------------\n");
+    Help_NoSupport();    
+    Help_Hexen();    
+    printf(" -------------------------------------------\n");
     return;
+  }
+    
+  if ((strcmp(StringUp(NextParam), "WADLIST") == 0)|| (strcmp(StringUp(NextParam), "WL") == 0))
+  {
+    printf(" ----------------------------------------------------------------------\n");    
+    for (i = 0; i < NUM_IWADS; i++)
+      printf(" WAD Match: %16s -> %s\n",iwads[i].wadname, Titles[iwads[i].mission]);
+    
+    printf(" ----------------------------------------------------------------------\n");
+    Help_NoSupport();    
+    Help_Hexen();
+    printf(" ----------------------------------------------------------------------\n");    
+    return;
+  }
+  
+  if (strcmp(StringUp(NextParam), "MATCH") == 0)
+  {
+    for (i = 0; i < NUM_IWADS; i++)
+      printf(" Internal Match:[%-2d] %-16s -> gmi_mode=%d -> gmi_gamemission=%-2d : Title = %s\n",i,
+                                                                 iwads[i].wadname,
+                                                                 iwads[i].mode,
+                                                                 iwads[i].mission,
+                                                                 Titles[iwads[i].mission]);
+    return;
+  }  
 //      "-home name      Config and savegame directory\n"    
+}
+
+static void Help_NoSupport(void)
+{
+    printf(" [*] Not yet supported\n");
+}
+
+static void Help_Hexen(void)
+{
+    printf(
+    " [Hexen Note]\n"
+    " if the addon hexdd.wad (DKOTC) in the folder, the\n"
+    " addon will be loaded with Hexen automatically.\n");
 }
