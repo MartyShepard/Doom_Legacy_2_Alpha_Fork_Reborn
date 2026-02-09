@@ -37,6 +37,7 @@
 #include "p_camera.h"
 #include "screen.h"
 #include "console.h"
+#include "console_log.h" // für CONS_Printf
 #include "hud.h"
 #include "m_menu.h"
 #include "am_map.h"

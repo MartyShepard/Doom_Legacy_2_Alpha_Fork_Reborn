@@ -98,6 +98,7 @@ extern consvar_t cv_mouse_release;// Marty
 #endif
 
 // client console (console.cpp)
+extern consvar_t cons_loglevel; //Marty
 extern consvar_t cons_msgtimeout;
 extern consvar_t cons_speed;
 extern consvar_t cons_height;

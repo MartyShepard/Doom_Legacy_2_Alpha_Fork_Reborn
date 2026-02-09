@@ -34,6 +34,7 @@
 #include "doomdef.h"
 #include "command.h"
 #include "console.h"
+#include "console_log.h" // für CONS_Printf
 #include "z_zone.h"
 
 #include "n_interface.h"

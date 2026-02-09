@@ -232,6 +232,10 @@ public:
   inline large_t  value() const { return val; }
   inline fixed_t& setvalue(value_t v) { val = v; return *this; }
 
+  /* Marty */
+  // Member-Funktion für Integer-Teil
+  inline int int_part() const { return val >> FBITS; }
+  inline int frac_part() const { return val & FMASK; }
 
   /// OpenTNL packing method
   void Pack(TNL::BitStream *s);

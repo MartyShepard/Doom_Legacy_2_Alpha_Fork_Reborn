@@ -28,6 +28,7 @@
 
 #include "g_game.h"
 #include "console.h"
+#include "console_log.h" // für CONS_Printf
 #include "command.h"
 #include "am_map.h"
 #include "hud.h"

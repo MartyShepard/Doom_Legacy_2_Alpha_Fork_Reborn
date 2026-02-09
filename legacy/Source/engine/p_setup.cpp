@@ -31,6 +31,7 @@
 #include "doomdata.h"
 #include "command.h"
 #include "console.h"
+#include "console_log.h" // für CONS_Printf
 #include "cvars.h"
 
 #include "g_game.h"

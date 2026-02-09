@@ -378,6 +378,7 @@ void Console::Init()
   
   con_lineheight = hud_font->Height();
 
+  cons_loglevel.Reg(); // Marty
   cons_msgtimeout.Reg();
   cons_speed.Reg();
   cons_height.Reg();
@@ -1010,15 +1011,93 @@ void Console::Drawer()
 
 
 
+//======================================================================
+// Log Level
+// Siehe console_log.h für Erklärungen und Funktion
+// Für neue LOG_xxx Anmeldungen, siehe console.h
+//======================================================================
 
+byte LogLvl;                      //externe var in console.h
+LogLevel CurLogLevel = LOG_INFO;  //externe var in console.h
+
+void CV_LogLevelChanged(void);
+
+// console.h
+static CV_PossibleValue_t loglevel_cons_t[] = {
+    {LOG_HELP,  "Help"  },// 0, Hilfe Nachricht was man einstellen kann
+    {LOG_OFF,   "Off"   },// 1, Log ist aus
+    {LOG_DOOM,  "Doom"  },// 2, Doom, Hexen, Heretic ec.. Standard Spiel Nachrichten   
+    {LOG_INFO,  "Info"  },// 3, Info Generell (Info die neu sind)
+    {LOG_HUD,   "Hud"   },// 4, Doom, Hexen, Heretic ec.. Standard Spiel Nachrichten     
+    {LOG_WARN,  "Warn"  },// 6, Warnungen
+    {LOG_ERROR, "Error" },// 7, Fehler, Abbruch (I_Error ausgabe)
+    {LOG_DEBUG, "Debug" },// 8, Debug, Interne Nachrichten (Übergeht I_Error())
+    {LOG_ALL,   "All"   },// 9, Alles anzeigen von Infos bis Debug     
+    {0, NULL}
+};
+
+consvar_t cons_loglevel = {
+    "loglevel",            // const char*name;                  // name
+    "4",                   // const char*defaultvalue;          // defaultvalue
+    CV_SAVE | CV_CALL,     // int flags;                        // flags
+    loglevel_cons_t,       // CV_PossibleValue_t *PossibleValue;// PossibleValue
+    CV_LogLevelChanged,    // void (*func)(); if CV_CALL is set // func (callback)
+    0,                     // int value;                        // min
+    8,                     // char str[CV_STRLEN];              // max
+    0                      // netid? oder next? – in dieser Version wahrscheinlich NULL
+};
+
+
+void CV_LogLevelChanged(void)
+{
+    int val = cons_loglevel.value;
+    
+    if (val == 0)
+        LogLvl = 0; // Einmalige Hilfe (oder bei "help loglevel")
+    else      
+        CurLogLevel = (LogLevel)val;
+     
+    CONS_Printf(" Log Level Set to %s (%d)\n", loglevel_cons_t[val].strvalue, val);
+    
+    if (LogLvl == 0 && con.IsActive())
+    {  // z. B. bei erstem Set oder speziellem Wert
+        CONS_Printf("\2Log Output Level:\2 Controls which messages appear in console.\n");
+        CONS_Printf("  0 = Help (shows this)\n");
+        CONS_Printf("  1 = Off\n");
+        CONS_Printf("  2 = Doom Standard Messages\n");
+        CONS_Printf("  3 = Info Messages\n");
+        CONS_Printf("  4 = Hud Messages (screen pickups)\n");
+        CONS_Printf("  5 = Warning\n");
+        CONS_Printf("  6 = Error (crash)\n");
+        CONS_Printf("  7 = Debug\n");
+        CONS_Printf("  8 = All\n\n");
+    }
+}
 
 //======================================================================
 //   Wrappers
 //======================================================================
 
+
+
 //
 //  Console print! Wahooo! Lots o fun!
 //
+/*
+ *
+ *
+///CONS_Printf(const char fmt, ...)
+ * Das ist das normale printf für die Konsole
+ * Es macht folgendes:
+ * Baut den String mit vsnprintf (sicher gegen Buffer-Overflow)
+ * Sendet eine Kopie auch an stdout via I_OutputMsg
+   (deshalb siehst du manches im Terminal, wenn es läuft)
+ * Schreibt den Text in den Konsolen-Buffer con (con.Print(txt))
+ * Setzt con.con_scrollup = 0 ? scrollt automatisch nach unten
+ * Wenn die Konsole sichtbar ist (!con.graphic) ? - macht nichts weiter
+ * Wenn con.refresh true ist ? zeichnet die Konsole sofort neu und
+ * flippt den Screen (con.Drawer(); I_FinishUpdate();)
+*/
 void CONS_Printf(const char *fmt, ...)
 {
 #define BUF_SIZE 1024
@@ -1061,6 +1140,13 @@ void CONS_Printf(const char *fmt, ...)
 
 //  Print an error message, and wait for ENTER key to continue.
 //  To make sure the user has seen the message
+/*
+/// CONS_Error(const char msg)
+ * Für kritische Fehlermeldungen
+ * Schreibt in roter Farbe (\2 ist der Farbcode für rot in Legacy)
+ * Fügt „Press ENTER to continue“ hinzu
+ * Wartet dann blockierend auf ENTER (while (I_GetKey() != KEY_ENTER))
+*/
 void CONS_Error(const char *msg)
 {
   CONS_Printf("\2%s",msg);   // write error msg in different colour

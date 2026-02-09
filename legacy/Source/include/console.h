@@ -38,6 +38,23 @@ using namespace std;
 /// draws the messages on screen.
 /// There is only one global instance in use, called "con".
 
+// ==============================================
+// Log-Level für DLOG-Makro (kann später erweitert werden)
+// ==============================================
+enum LogLevel {
+    LOG_HELP  = 0, // Hilfe Nachricht was man einstellen kann
+    LOG_OFF   = 1, // Log ist aus
+    LOG_DOOM  = 2, // Doom, Hexen, Heretic ec.. Standard Spiel Nachrichten
+    LOG_INFO  = 3, // INfo Generell (Info die neu sind)
+    LOG_HUD   = 4, // INfo Generell (Info die neu sind)    
+    LOG_WARN  = 5, // Warnungen
+    LOG_ERROR = 6, // Fehler, Abbruch (I_Error ausgabe)
+    LOG_DEBUG = 7, // Debug, Interne Nachrichten (Übergeht I_Error())
+    LOG_ALL   = 8  // Alles anzeigen von Infos bis Debug
+};
+extern byte LogLvl;
+extern LogLevel CurLogLevel;  // ? nur Deklaration (extern!)
+
 class Console
 {
 public:
@@ -127,7 +144,6 @@ public:
   /// wrapper
   friend void CONS_Printf(const char *fmt, ...);
 };
-
 
 void CONS_Error(char *msg); // print out error msg, wait for keypress
 

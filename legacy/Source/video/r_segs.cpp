@@ -28,6 +28,7 @@
 #include "command.h"
 #include "cvars.h"
 #include "console.h" //Con_clipviewtop
+#include "console_log.h" // für CONS_Printf
 
 #include "r_render.h"
 #include "r_data.h"

@@ -33,6 +33,7 @@
 
 #include "command.h"
 #include "console.h"
+#include "console_log.h" // für CONS_Printf
 
 #include "g_game.h"
 #include "d_event.h"
@@ -70,7 +71,7 @@ static void Help_NoSupport();
 // Version number: major.minor.revision
 const int  LEGACY_VERSION           = 200;               // major*100 + minor
 const int  LEGACY_REVISION          = DOOMLEGACY2_MINOR; // for bugfix releases, should not affect compatibility
-const char LEGACY_VERSIONSTRING[]   = "Alpha: Reborn (rev " STR(DOOMLEGACY2_PATCH) "." STR(DOOMLEGACY2_BUILD) " )";
+const char LEGACY_VERSIONSTRING[]   = "Alpha: Reborn (rev " TOSTR(DOOMLEGACY2_PATCH) "." TOSTR(DOOMLEGACY2_BUILD) " )";
 char       LEGACY_VERSION_BANNER[80];
 
 // game title

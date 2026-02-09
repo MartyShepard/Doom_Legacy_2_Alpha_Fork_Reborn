@@ -138,3 +138,14 @@ union RGBA_t
 #endif
 
 #endif
+
+///
+// Marty: für alle Fälle
+// 
+#ifndef FRACBITS
+#define FRACBITS        16
+#endif
+
+#ifndef FRACUNIT
+#define FRACUNIT        (1<<FRACBITS)
+#endif

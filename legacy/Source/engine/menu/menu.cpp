@@ -33,6 +33,7 @@
 #include "command.h"
 #include "cvars.h"
 #include "console.h"
+#include "console_log.h" // für CONS_Printf
 
 #include "m_menu.h"
 
@@ -1458,6 +1459,7 @@ static menuitem_t Options_MI[] =
   menuitem_t(IT_LINK, NULL, "Video Options..." ,&VideoOptionsDef   ,0),
 
   menuitem_t(IT_CVAR, NULL, "Controls per key" ,&cv_controlperkey   ,0),
+  menuitem_t(IT_CVAR|IT_STRING, NULL, "Log Output Level", &cons_loglevel, 0),
   menuitem_t(IT_NONE | IT_STRING | IT_DISABLED | IT_WHITE | IT_DY, NULL, "Shared controls:", 4),
   menuitem_t(IT_CONTROLSTR, NULL, "Console"       , gk_console),
   menuitem_t(IT_CONTROLSTR, NULL, "Talk key"      , gk_talk),

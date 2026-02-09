@@ -27,6 +27,7 @@
 #include "hardware/hwr_bsp.h"
 #include "hardware/hwr_render.h"
 #include "console.h"
+#include "console_log.h" // für CONS_Printf
 #include "command.h"
 #include "cvars.h"
 #include "m_bbox.h"

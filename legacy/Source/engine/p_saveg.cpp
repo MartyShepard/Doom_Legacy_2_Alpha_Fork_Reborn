@@ -26,6 +26,7 @@
 
 #include "command.h"
 #include "console.h"
+#include "console_log.h" // für CONS_Printf
 
 #include "m_archive.h"
 

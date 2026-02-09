@@ -25,6 +25,7 @@
 
 #include "doomdef.h"
 #include "console.h"
+#include "console_log.h" // für CONS_Printf
 #include "command.h"
 
 #include "r_data.h"

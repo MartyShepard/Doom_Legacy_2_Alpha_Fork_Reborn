@@ -23,6 +23,7 @@
 #include "command.h"
 #include "cvars.h"
 #include "console.h"
+#include "console_log.h" // für CONS_Printf
 #include "parser.h"
 
 #include "n_interface.h"

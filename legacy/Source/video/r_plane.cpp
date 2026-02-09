@@ -25,6 +25,7 @@
 
 #include "doomdef.h"
 #include "console.h"
+#include "console_log.h" // für CONS_Printf
 
 #include "g_game.h"
 #include "g_map.h"

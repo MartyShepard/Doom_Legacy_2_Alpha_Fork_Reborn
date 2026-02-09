@@ -99,6 +99,7 @@ Have polymorphed class GameType which creates these into GameInfo containers
 #include "command.h"
 #include "cvars.h"
 #include "console.h"
+#include "console_log.h" // für CONS_Printf
 
 #include "d_event.h"
 
